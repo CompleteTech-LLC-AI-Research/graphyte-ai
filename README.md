@@ -190,13 +190,6 @@ The following diagram illustrates the sequence of agents and data flow in the cu
 
 ![Current Agent Workflow Diagram](agent_workflow_graph.png)
 
-*(This diagram is generated from `agent_workflow_graph.gv` using Graphviz.)*
-## Agent Workflow Visualization
-
-The diagram below illustrates the multi-agent workflow designed for comprehensive document analysis and knowledge extraction. This workflow aims to be domain-agnostic, processing unstructured text input to produce structured insights suitable for enriching knowledge bases or graphs.
-
-![Agent Workflow Diagram](future_agent_workflow_graph.png "Document Analysis Workflow")
-
 The workflow progresses through several key phases:
 
 1.  **Context Building (Steps 1-3):**
@@ -217,6 +210,13 @@ The workflow progresses through several key phases:
     * **Schema Alignment (Step 7):** Aligns the extracted instances...
     * **Conflict Resolution (Step 8):** Detects and resolves inconsistencies...
     * **Evaluation & Filtering (Step 9):** Evaluates the verified extractions...
+
+## Agent Workflow Visualization
+
+The diagram below illustrates the multi-agent workflow designed for comprehensive document analysis and knowledge extraction. This workflow aims to be domain-agnostic, processing unstructured text input to produce structured insights suitable for enriching knowledge bases or graphs.
+
+![Future Agent Workflow Diagram](future_agent_workflow_graph.png "Document Analysis Workflow")
+
 
 **Key Features:**
 
