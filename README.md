@@ -184,3 +184,10 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 ## Keywords
 
 Knowledge Graph, KG, Knowledge Graph Enrichment, Automated Knowledge Extraction, Multi-Agent System, Large Language Models, LLM, AI, Artificial Intelligence, Machine Learning, Natural Language Processing, NLP, Entity Recognition, Relation Extraction, Schema Alignment, Conflict Resolution, Structured Data, Unstructured Data Analysis, Data Integration, Graph Database, Neo4j, RDF, SPARQL, Python, Data Science, Information Extraction, Semantic Technology, Ontology.
+## Workflow Diagram
+
+The following diagram illustrates the sequence of agents and data flow in the current workflow:
+
+![Agent Workflow Diagram](src/agentic_team_workflow/outputs/00_visualization/agent_workflow_graph.png)
+
+*(This diagram is generated from `agent_workflow_graph.gv` using Graphviz.)*
