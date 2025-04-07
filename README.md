@@ -188,6 +188,6 @@ Knowledge Graph, KG, Knowledge Graph Enrichment, Automated Knowledge Extraction,
 
 The following diagram illustrates the sequence of agents and data flow in the current workflow:
 
-![Agent Workflow Diagram](agent_workflow_graph.png)
+![Current Agent Workflow Diagram](agent_workflow_graph.png)
 
 *(This diagram is generated from `agent_workflow_graph.gv` using Graphviz.)*
