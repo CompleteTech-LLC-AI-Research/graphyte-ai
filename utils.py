@@ -1,0 +1,286 @@
+import argparse
+import asyncio
+import json
+import logging
+import os
+import sys
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
+
+# Conditional Imports for Optional Features
+try:
+    import fitz # PyMuPDF
+    PYMUPDF_AVAILABLE = True
+except ImportError:
+    PYMUPDF_AVAILABLE = False
+
+try:
+    from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+    TENACITY_AVAILABLE = True
+except ImportError:
+    TENACITY_AVAILABLE = False
+
+# NOTE: Using 'agentic_team' as the alias for the SDK import
+try:
+    from agentic_team import (
+        Agent,
+        Runner,
+        RunConfig,
+        TResponseInputItem,
+        RunResult,
+        AgentsException # Import base SDK exception for retry
+    )
+except ImportError:
+    print("Error: 'agentic_team' SDK library not found or incomplete. Cannot define utils.")
+    raise
+
+# Import config constants needed in utils
+from .config import (
+    LOGS_DIR, PROJECT_ROOT, BINARY_FILE_EXTENSIONS, MAX_INPUT_CONTENT_LENGTH
+)
+
+# Get logger for utils module
+logger = logging.getLogger(__name__)
+
+# --- Logging Setup ---
+def setup_logging():
+    """Configures logging for the application."""
+    # Ensure the logs directory exists
+    LOGS_DIR.mkdir(exist_ok=True)
+    # Define the log file path
+    log_file = LOGS_DIR / "workflow.log" # Changed filename to be more generic
+    # Remove existing handlers to avoid duplication if called multiple times
+    root_logger = logging.getLogger()
+    if root_logger.hasHandlers():
+        for handler in root_logger.handlers[:]:
+            root_logger.removeHandler(handler)
+
+    # Configure logging to write to both file and console
+    logging.basicConfig(
+        level=logging.INFO, # Set the minimum logging level (e.g., INFO, DEBUG)
+        format="%(asctime)s [%(levelname)s] %(name)s [%(filename)s:%(lineno)d]: %(message)s",
+        handlers=[
+            logging.FileHandler(log_file, mode='a', encoding='utf-8'), # Append to log file
+            logging.StreamHandler() # Output to console (stderr by default)
+        ],
+        # Force=True might be useful in some complex scenarios, but avoid if possible
+        # force=True
+    )
+    logger.info(f"Logging configured. Log file: {log_file}")
+
+# --- Input Handling Functions ---
+
+def parse_arguments() -> argparse.Namespace:
+    """Parses command-line arguments for input source (file or directory) or visualization."""
+    parser = argparse.ArgumentParser(
+        description=(
+            "Analyzes text input to identify domain, sub-domains, topics, entities, and relationships. "
+            "Can also generate a visualization of the agent structure."
+        )
+    )
+    input_group = parser.add_mutually_exclusive_group() # Group file/dir/stdin implicitly
+    input_group.add_argument(
+        "--file", type=str, help="Path to a single text file used as input."
+    )
+    input_group.add_argument(
+        "--dir", type=str, help="Path to a directory containing text files used as input."
+    )
+    # Stdin is the default if --file or --dir is not provided
+
+    parser.add_argument(
+        "--visualize", action="store_true", help="Generate a visualization of the agent workflow structure and exit."
+    )
+    return parser.parse_args()
+
+def read_input_from_file(file_path: Path) -> str:
+    """Reads content from a single file. Attempts PDF text extraction if applicable."""
+    if not file_path.is_file():
+        logger.error(f"Input path is not a valid file: {file_path}")
+        raise FileNotFoundError(f"Input path is not a valid file: {file_path}")
+
+    logger.info(f"Reading input from file: {file_path}")
+
+    if file_path.suffix.lower() == '.pdf':
+        if not PYMUPDF_AVAILABLE:
+            logger.error(f"Cannot read PDF '{file_path.name}'. 'PyMuPDF' library not found. Skipping.")
+            raise ImportError(f"PyMuPDF not installed, cannot process PDF: {file_path.name}")
+        try:
+            logger.info(f"Attempting to extract text from PDF: {file_path.name}")
+            doc = fitz.open(file_path)
+            text = ""
+            for page_num in range(len(doc)):
+                page = doc.load_page(page_num)
+                text += page.get_text("text")
+            doc.close()
+            if text and text.strip():
+                logger.info(f"Successfully extracted {len(text)} characters from PDF: {file_path.name}")
+                return text
+            else:
+                logger.warning(f"Extracted empty or whitespace-only text from PDF: {file_path.name}. It might be image-based or corrupted.")
+                return ""
+        except Exception as e:
+            logger.exception(f"Error reading PDF file {file_path}: {e}")
+            raise IOError(f"Error reading PDF file {file_path}: {e}") from e
+    else:
+        try:
+            encodings_to_try = ['utf-8', 'latin-1', 'iso-8859-1', 'cp1252']
+            content = None
+            for enc in encodings_to_try:
+                try:
+                    content = file_path.read_text(encoding=enc)
+                    logger.debug(f"Successfully read {file_path.name} with encoding {enc}")
+                    return content
+                except UnicodeDecodeError:
+                    logger.debug(f"Failed to decode {file_path.name} with {enc}")
+                    continue
+            logger.warning(f"Could not decode {file_path.name} with standard encodings, trying with errors='replace'.")
+            return file_path.read_text(encoding="utf-8", errors="replace")
+        except Exception as e:
+            logger.exception(f"Error reading non-PDF file {file_path}: {e}")
+            raise IOError(f"Error reading file {file_path}: {e}") from e
+
+def read_input_from_directory(dir_path: Path) -> str:
+    """Reads and combines content from readable files (including PDFs) in a directory."""
+    if not dir_path.is_dir():
+        logger.error(f"Input path is not a valid directory: {dir_path}")
+        raise NotADirectoryError(f"Input path is not a valid directory: {dir_path}")
+
+    logger.info(f"Reading input from directory: {dir_path}")
+    combined_content = []
+    file_count = 0
+    processed_files = 0
+    skipped_binary = 0
+    read_errors = 0
+
+    try:
+        files_to_process = sorted(list(dir_path.iterdir()))
+    except OSError as e:
+        logger.exception(f"Error listing files in directory {dir_path}: {e}")
+        raise IOError(f"Error listing files in directory {dir_path}: {e}") from e
+
+    for item_path in files_to_process:
+        if item_path.is_file():
+            processed_files += 1
+            if item_path.suffix.lower() in BINARY_FILE_EXTENSIONS and item_path.suffix.lower() != '.pdf':
+                logger.debug(f"Skipping potentially binary file (non-PDF): {item_path.name}")
+                skipped_binary += 1
+                continue
+            try:
+                logger.debug(f"Processing file: {item_path}")
+                text = read_input_from_file(item_path)
+                if text and text.strip():
+                    combined_content.append(f"\n\n--- Content from: {item_path.name} ---\n\n{text}")
+                    file_count += 1
+                elif text is not None:
+                     logger.debug(f"File {item_path.name} resulted in empty or whitespace-only content.")
+                # Else: read_input_from_file would raise an error if None/failure
+
+            except (IOError, ImportError, Exception) as e:
+                 read_errors += 1
+                 logger.warning(f"Could not read or process file {item_path.name}: {type(e).__name__}: {e}")
+                 if isinstance(e, ImportError):
+                     logger.error(f"ImportError likely due to missing dependency for {item_path.name}")
+        elif item_path.is_dir():
+             logger.info(f"Skipping subdirectory: {item_path.name}")
+        else:
+            logger.warning(f"Skipping non-file/non-directory item: {item_path.name}")
+
+    if file_count == 0:
+         logger.warning(f"No readable text files (or extractable PDFs) found or processed in directory: {dir_path} (out of {processed_files} items checked; {skipped_binary} skipped as binary; {read_errors} read errors).")
+
+    logger.info(f"Read content from {file_count} files in directory {dir_path}.")
+    return "\n".join(combined_content)
+
+def prompt_user_for_input() -> str:
+    """Prompts the user to enter text via standard input (stdin)."""
+    print("\nNo --file or --dir specified. Please enter your input text below.")
+    print("End input with Ctrl+D (Unix/macOS) or Ctrl+Z then Enter (Windows).")
+    print("-" * 20)
+    try:
+        lines = sys.stdin.readlines()
+        if not lines:
+             logger.warning("Received empty input from stdin.")
+             return ""
+        logger.info(f"Reading {len(lines)} lines of input from stdin.")
+        return "".join(lines)
+    except KeyboardInterrupt:
+        print("\nInput cancelled by user.")
+        logger.warning("Stdin input cancelled by user.")
+        return ""
+
+# --- Helper Function to Save JSON Output ---
+def direct_save_json_output(output_dir: Path, filename: str, content: Dict[str, Any], trace_id: Optional[str]) -> str:
+    """Saves the provided dictionary content as a JSON file in the designated output directory."""
+    safe_filename = Path(filename).name
+    if not safe_filename:
+        default_filename = f"output_{trace_id or 'unknown_trace'}.json"
+        logger.warning(f"Original filename '{filename}' was invalid or empty, using default '{default_filename}'")
+        safe_filename = default_filename
+
+    if not safe_filename.lower().endswith(".json"):
+        safe_filename += ".json"
+
+    try:
+        output_dir.mkdir(parents=True, exist_ok=True)
+        logger.debug(f"Ensured output directory exists: {output_dir}")
+    except OSError as e:
+        logger.exception(f"Failed to create output directory {output_dir}: {e}", extra={"trace_id": trace_id or 'N/A'})
+        return f"Error creating output directory '{output_dir}' before saving {safe_filename}: {e}"
+
+    output_path = output_dir / safe_filename
+    try:
+        with open(output_path, 'w', encoding='utf-8') as f:
+            json.dump(content, f, indent=2, ensure_ascii=False)
+
+        try:
+            relative_output_dir = output_dir.relative_to(PROJECT_ROOT)
+        except ValueError:
+            relative_output_dir = output_dir # Fallback to absolute path
+
+        logger.info(f"Successfully saved data to file '{output_path.name}' in directory '{relative_output_dir}'.")
+        return f"Success: Saved data to file '{output_path.name}' in directory '{relative_output_dir}'."
+
+    except OSError as e:
+        logger.exception(f"OS error saving file {output_path}: {e}", extra={"trace_id": trace_id or 'N/A'})
+        return f"Error saving data to {safe_filename} due to OS error: {e}"
+    except TypeError as e:
+         logger.exception(f"Type error preparing data for JSON serialization to {output_path}: {e}", extra={"trace_id": trace_id or 'N/A'})
+         return f"Error saving data to {safe_filename} due to data type issue: {e}"
+    except Exception as e:
+        logger.exception(f"Unexpected error saving file {output_path}: {e}", extra={"trace_id": trace_id or 'N/A'})
+        return f"Error saving data to {safe_filename}: {e}"
+
+# --- Retry Logic Setup ---
+# Define a retry decorator if the 'tenacity' library is available
+if TENACITY_AVAILABLE:
+    logger.info("Tenacity library found. Enabling retry logic for agent runs.")
+    retry_decorator = retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=2, max=10),
+        retry=retry_if_exception_type((AgentsException, asyncio.TimeoutError)),
+        reraise=True,
+        before_sleep=lambda retry_state: logger.warning(f"Retrying agent run for {retry_state.args[0].name if retry_state.args else 'unknown agent'} after error: {retry_state.outcome.exception()}. Attempt {retry_state.attempt_number+1}...")
+    )
+
+    @retry_decorator
+    async def run_agent_with_retry(
+        agent: Agent,
+        input_data: Union[str, List[TResponseInputItem]],
+        config: Optional[RunConfig] = None
+    ) -> RunResult:
+        """Wrapper function to run an agent with configured retry logic."""
+        logger.debug(f"Attempting to run agent '{agent.name}'...")
+        result = await Runner.run(starting_agent=agent, input=input_data, run_config=config)
+        logger.debug(f"Agent '{agent.name}' run successful.")
+        return result
+
+else:
+    logger.warning("Tenacity library not found. Agent runs will not have automatic retries.")
+    async def run_agent_with_retry(
+        agent: Agent,
+        input_data: Union[str, List[TResponseInputItem]],
+        config: Optional[RunConfig] = None
+    ) -> RunResult:
+        """Placeholder function when tenacity is not available. Runs the agent once."""
+        # No retry logic here, just call the runner directly.
+        return await Runner.run(starting_agent=agent, input=input_data, run_config=config)
