@@ -14,13 +14,14 @@ from .schemas import (
     DomainSchema, SubDomainSchema, SingleSubDomainTopicSchema,
     EntityTypeSchema, OntologyTypeSchema, EventSchema,
     StatementTypeSchema, EvidenceTypeSchema, MeasurementTypeSchema,
-    ModalityTypeSchema, SingleEntityTypeRelationshipSchema
+    ModalityTypeSchema, SingleEntityTypeRelationshipSchema,
+    ResolvedTripletSchema
 )
 from .config import (
     DOMAIN_MODEL, SUB_DOMAIN_MODEL, TOPIC_MODEL,
     ENTITY_TYPE_MODEL, ONTOLOGY_TYPE_MODEL, EVENT_TYPE_MODEL,
     STATEMENT_TYPE_MODEL, EVIDENCE_TYPE_MODEL, MEASUREMENT_TYPE_MODEL,
-    MODALITY_TYPE_MODEL, RELATIONSHIP_MODEL
+    MODALITY_TYPE_MODEL, RELATIONSHIP_MODEL, CONFLICT_RESOLUTION_MODEL
 )
 
 # --- Agent 1: Domain Identifier ---
@@ -214,6 +215,21 @@ relationship_type_identifier_agent = Agent(
     handoffs=[],
 )
 
+# --- Agent 8: Conflict Resolution ---
+conflict_resolution_agent = Agent(
+    name="ConflictResolutionAgent",
+    instructions=(
+        "You are provided with candidate triplets that have been aligned to the target schema. "
+        "Compare these candidates with existing facts in the knowledge graph. "
+        "For each candidate determine whether it should be added as new, update an existing fact, or be ignored. "
+        "Return only the resolved triplets using the ResolvedTripletSchema."
+    ),
+    model=CONFLICT_RESOLUTION_MODEL,
+    output_type=ResolvedTripletSchema,
+    tools=[],
+    handoffs=[],
+)
+
 # You can optionally create a list or dict to easily access all agents
 all_agents = {
     "domain_identifier": domain_identifier_agent,
@@ -227,5 +243,6 @@ all_agents = {
     "measurement_type_identifier": measurement_type_identifier_agent,
     "modality_type_identifier": modality_type_identifier_agent,
     "relationship_identifier": relationship_type_identifier_agent,
+    "conflict_resolution": conflict_resolution_agent,
     # Note: Base agent is not typically included here unless used directly
 }

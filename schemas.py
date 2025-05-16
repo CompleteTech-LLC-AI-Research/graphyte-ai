@@ -271,3 +271,20 @@ class RelationshipSchema(BaseModel):
         description="A list containing the relationship analysis results for each entity type focus."
     )
     analysis_summary: Optional[str] = Field(None, description="Optional summary of the relationship identification process across all analyzed entity types.")
+
+
+# --- Schemas for Step 8 (Conflict Resolution) ---
+
+class ResolvedTriplet(BaseModel):
+    """Represents a single triplet after conflict resolution."""
+    subject: str = Field(description="Subject node of the knowledge graph triplet.")
+    predicate: str = Field(description="Predicate/relationship label of the triplet.")
+    object: str = Field(description="Object node of the knowledge graph triplet.")
+    resolution: str = Field(description="Action taken during resolution (e.g., added, updated, ignored).")
+    final_confidence: float = Field(description="Confidence score after resolution.")
+
+
+class ResolvedTripletSchema(BaseModel):
+    """Schema for the output of the conflict resolution agent (Step 8)."""
+    resolved_triplets: List[ResolvedTriplet] = Field(description="List of triplets reconciled with existing knowledge.")
+    summary: Optional[str] = Field(None, description="Optional summary of the conflict resolution process.")

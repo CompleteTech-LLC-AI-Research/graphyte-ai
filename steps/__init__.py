@@ -12,6 +12,7 @@ from .step4e_evidence_types import identify_evidence_types
 from .step4f_measurement_types import identify_measurement_types
 from .step4g_modality_types import identify_modality_types # Added import for new step (4g)
 from .step5_relationship_types import identify_relationship_types
+from .step8_conflict_resolution import resolve_conflicts
 from .visualization import generate_workflow_visualization
 
 __all__ = [
@@ -26,5 +27,6 @@ __all__ = [
     "identify_measurement_types",
     "identify_modality_types", # Added export for new step (4g)
     "identify_relationship_types",
+    "resolve_conflicts",
     "generate_workflow_visualization",
 ]

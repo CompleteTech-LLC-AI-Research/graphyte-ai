@@ -46,6 +46,7 @@ from .steps import (
     identify_measurement_types,
     identify_modality_types, # Added import for new step (4g)
     identify_relationship_types,
+    resolve_conflicts,
     generate_workflow_visualization
 )
 
@@ -71,6 +72,8 @@ async def run_combined_workflow(content: str) -> None:
     measurement_data = None
     modality_data = None # Added variable for new step (4g)
     relationship_data = None
+    alignment_data = None  # Placeholder for future schema alignment (Step 7)
+    resolved_data = None
     primary_domain = None
 
     # Metadata for the single overall trace
@@ -236,6 +239,11 @@ async def run_combined_workflow(content: str) -> None:
                 content, primary_domain, sub_domain_data, topic_data, entity_data, overall_trace_id
             ) if primary_domain and sub_domain_data and topic_data and entity_data else None
 
+            # === Step 8: Resolve Conflicts with Existing Knowledge ===
+            resolved_data = await resolve_conflicts(
+                alignment_data, overall_trace_id
+            ) if alignment_data else None
+
 
             # Log completion status of individual steps (optional)
             logger.info(f"Step 1 (Domain) Result: {'Success' if domain_data else 'Failed/Skipped'}")
@@ -249,6 +257,7 @@ async def run_combined_workflow(content: str) -> None:
             logger.info(f"Step 4f (Measurement Types) Result: {'Success' if measurement_data else 'Failed/Skipped/Error'}")
             logger.info(f"Step 4g (Modality Types) Result: {'Success' if modality_data else 'Failed/Skipped/Error'}") # Added log for new step (4g)
             logger.info(f"Step 5 (Relationships) Result: {'Success' if relationship_data else 'Failed/Skipped'}")
+            logger.info(f"Step 8 (Conflict Resolution) Result: {'Success' if resolved_data else 'Failed/Skipped'}")
 
 
     except Exception as e:
