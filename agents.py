@@ -14,13 +14,14 @@ from .schemas import (
     DomainSchema, SubDomainSchema, SingleSubDomainTopicSchema,
     EntityTypeSchema, OntologyTypeSchema, EventSchema,
     StatementTypeSchema, EvidenceTypeSchema, MeasurementTypeSchema,
-    ModalityTypeSchema, SingleEntityTypeRelationshipSchema
+    ModalityTypeSchema, EvidenceInstanceSchema,
+    SingleEntityTypeRelationshipSchema
 )
 from .config import (
     DOMAIN_MODEL, SUB_DOMAIN_MODEL, TOPIC_MODEL,
     ENTITY_TYPE_MODEL, ONTOLOGY_TYPE_MODEL, EVENT_TYPE_MODEL,
     STATEMENT_TYPE_MODEL, EVIDENCE_TYPE_MODEL, MEASUREMENT_TYPE_MODEL,
-    MODALITY_TYPE_MODEL, RELATIONSHIP_MODEL
+    MODALITY_TYPE_MODEL, EVIDENCE_INSTANCE_MODEL, RELATIONSHIP_MODEL
 )
 
 # --- Agent 1: Domain Identifier ---
@@ -194,6 +195,20 @@ modality_type_identifier_agent = base_type_identifier_agent.clone(
     output_type=ModalityTypeSchema,
 )
 
+# --- Agent 5a: Evidence Instance Extractor ---
+evidence_instance_extractor_agent = Agent(
+    name="EvidenceInstanceExtractorAgent",
+    instructions=(
+        "Extract specific snippets or references from the text that serve as evidence. "
+        "Where possible, associate each snippet with an evidence type or source. "
+        "Output ONLY using the provided EvidenceInstanceSchema."
+    ),
+    model=EVIDENCE_INSTANCE_MODEL,
+    output_type=EvidenceInstanceSchema,
+    tools=[],
+    handoffs=[],
+)
+
 
 # --- Agent 5: Relationship Identifier (for one entity type) ---
 relationship_type_identifier_agent = Agent(
@@ -224,6 +239,7 @@ all_agents = {
     "event_type_identifier": event_type_identifier_agent,
     "statement_type_identifier": statement_type_identifier_agent,
     "evidence_type_identifier": evidence_type_identifier_agent,
+    "evidence_instance_extractor": evidence_instance_extractor_agent,
     "measurement_type_identifier": measurement_type_identifier_agent,
     "modality_type_identifier": modality_type_identifier_agent,
     "relationship_identifier": relationship_type_identifier_agent,
