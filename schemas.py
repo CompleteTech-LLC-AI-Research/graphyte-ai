@@ -236,6 +236,28 @@ class ModalityTypeSchema(BaseModel):
     analysis_summary: Optional[str] = Field(None, description="A brief summary or commentary on the modality identification analysis.")
 
 
+# --- Schema for Ontology Instance Extraction (New Step) ---
+
+class OntologyInstanceDetail(BaseModel):
+    """Represents a specific ontology concept mention and its relevance."""
+    ontology_concept: str = Field(description="The ontology concept or term mentioned in the text.")
+    relevance_score: float = Field(
+        description="The confidence or relevance score (0.0 to 1.0) for this concept mention based on the context."
+    )
+
+
+class OntologyInstanceSchema(BaseModel):
+    """Schema defining the output for ontology instance extraction."""
+    primary_domain: str = Field(description="The primary domain context provided for the analysis.")
+    analyzed_sub_domains: List[str] = Field(
+        description="The list of sub-domains used as context during ontology instance extraction."
+    )
+    identified_concepts: List[OntologyInstanceDetail] = Field(
+        description="A list of ontology concept mentions identified within the text, each with a relevance score."
+    )
+    analysis_summary: Optional[str] = Field(None, description="A brief summary or commentary on the ontology instance extraction analysis.")
+
+
 # --- Schemas for Step 5 (Relationship Identification) ---
 
 # Nested schema for a specific identified relationship between entities

@@ -14,13 +14,14 @@ from .schemas import (
     DomainSchema, SubDomainSchema, SingleSubDomainTopicSchema,
     EntityTypeSchema, OntologyTypeSchema, EventSchema,
     StatementTypeSchema, EvidenceTypeSchema, MeasurementTypeSchema,
-    ModalityTypeSchema, SingleEntityTypeRelationshipSchema
+    ModalityTypeSchema, OntologyInstanceSchema,
+    SingleEntityTypeRelationshipSchema
 )
 from .config import (
     DOMAIN_MODEL, SUB_DOMAIN_MODEL, TOPIC_MODEL,
     ENTITY_TYPE_MODEL, ONTOLOGY_TYPE_MODEL, EVENT_TYPE_MODEL,
     STATEMENT_TYPE_MODEL, EVIDENCE_TYPE_MODEL, MEASUREMENT_TYPE_MODEL,
-    MODALITY_TYPE_MODEL, RELATIONSHIP_MODEL
+    MODALITY_TYPE_MODEL, ONTOLOGY_INSTANCE_MODEL, RELATIONSHIP_MODEL
 )
 
 # --- Agent 1: Domain Identifier ---
@@ -194,6 +195,21 @@ modality_type_identifier_agent = base_type_identifier_agent.clone(
     output_type=ModalityTypeSchema,
 )
 
+# --- Agent 5: Ontology Instance Extractor ---
+ontology_instance_extractor_agent = Agent(
+    name="OntologyInstanceExtractorAgent",
+    instructions=(
+        "Extract specific ontology concept mentions from the provided text. "
+        "Use the given domain and sub-domain context to focus your extraction and "
+        "provide a relevance score (0.0 to 1.0) for each concept mention. "
+        "Output ONLY using the OntologyInstanceSchema."
+    ),
+    model=ONTOLOGY_INSTANCE_MODEL,
+    output_type=OntologyInstanceSchema,
+    tools=[],
+    handoffs=[],
+)
+
 
 # --- Agent 5: Relationship Identifier (for one entity type) ---
 relationship_type_identifier_agent = Agent(
@@ -226,6 +242,7 @@ all_agents = {
     "evidence_type_identifier": evidence_type_identifier_agent,
     "measurement_type_identifier": measurement_type_identifier_agent,
     "modality_type_identifier": modality_type_identifier_agent,
+    "ontology_instance_extractor": ontology_instance_extractor_agent,
     "relationship_identifier": relationship_type_identifier_agent,
     # Note: Base agent is not typically included here unless used directly
 }
