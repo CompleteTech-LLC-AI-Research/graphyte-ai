@@ -271,3 +271,24 @@ class RelationshipSchema(BaseModel):
         description="A list containing the relationship analysis results for each entity type focus."
     )
     analysis_summary: Optional[str] = Field(None, description="Optional summary of the relationship identification process across all analyzed entity types.")
+
+
+# --- Schema for Step 9 Evaluation ---
+
+class EnrichmentTriple(BaseModel):
+    """Represents a single enrichment triple."""
+    subject: str = Field(description="Subject entity or concept of the triple.")
+    predicate: str = Field(description="Relationship or property connecting subject and object.")
+    object: str = Field(description="Object entity or value in the triple.")
+    confidence_score: float = Field(description="Confidence score for this triple (0.0 to 1.0).")
+
+
+class EvaluationResultSchema(BaseModel):
+    """Result of evaluating verified extractions."""
+    final_triples: List[EnrichmentTriple] = Field(
+        description="Filtered list of high-quality enrichment triples ready for integration."
+    )
+    evaluation_summary: Optional[str] = Field(
+        None,
+        description="Optional summary describing the evaluation or filtering process."
+    )
