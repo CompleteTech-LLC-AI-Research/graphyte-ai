@@ -236,6 +236,25 @@ class ModalityTypeSchema(BaseModel):
     analysis_summary: Optional[str] = Field(None, description="A brief summary or commentary on the modality identification analysis.")
 
 
+# --- Schema for Step 5: Entity Instance Extraction ---
+
+class EntityInstanceDetail(BaseModel):
+    """Represents a specific entity mention extracted from the text."""
+    entity_type: str = Field(description="The type of the entity as classified in previous steps.")
+    text_span: str = Field(description="Exact text of the entity mention.")
+    start_char: Optional[int] = Field(None, description="Start character index of the mention in the full text (0-based).")
+    end_char: Optional[int] = Field(None, description="End character index of the mention in the full text (exclusive).")
+
+
+class EntityInstanceSchema(BaseModel):
+    """Schema defining extracted entity instances within the document."""
+    primary_domain: str = Field(description="The primary domain context for the extraction.")
+    analyzed_sub_domains: List[str] = Field(description="Sub-domains used as context during extraction.")
+    analyzed_entity_types: List[str] = Field(description="Entity types considered when extracting instances.")
+    identified_instances: List[EntityInstanceDetail] = Field(description="List of extracted entity mentions with type and text span.")
+    analysis_summary: Optional[str] = Field(None, description="Optional summary of the entity instance extraction process.")
+
+
 # --- Schemas for Step 5 (Relationship Identification) ---
 
 # Nested schema for a specific identified relationship between entities
