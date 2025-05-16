@@ -26,11 +26,11 @@ except ImportError:
 # Import local configuration
 from .config import (
     DOMAIN_MODEL, SUB_DOMAIN_MODEL, TOPIC_MODEL,
-    ENTITY_TYPE_MODEL, ONTOLOGY_TYPE_MODEL, EVENT_TYPE_MODEL, STATEMENT_TYPE_MODEL, EVIDENCE_TYPE_MODEL, MEASUREMENT_TYPE_MODEL, MODALITY_TYPE_MODEL, RELATIONSHIP_MODEL, # Added MODALITY_TYPE_MODEL
+    ENTITY_TYPE_MODEL, ONTOLOGY_TYPE_MODEL, EVENT_TYPE_MODEL, STATEMENT_TYPE_MODEL, EVIDENCE_TYPE_MODEL, MEASUREMENT_TYPE_MODEL, MODALITY_TYPE_MODEL, RELATIONSHIP_MODEL, SCHEMA_ALIGNMENT_MODEL, # Added MODALITY_TYPE_MODEL
     AGENT_TRACE_BASE_URL
 )
 from .schemas import (
-    EntityTypeSchema, OntologyTypeSchema, EventSchema, StatementTypeSchema, EvidenceTypeSchema, MeasurementTypeSchema, ModalityTypeSchema, RelationshipSchema # Added ModalityTypeSchema
+    EntityTypeSchema, OntologyTypeSchema, EventSchema, StatementTypeSchema, EvidenceTypeSchema, MeasurementTypeSchema, ModalityTypeSchema, RelationshipSchema, AlignedCandidateSchema
 )
 
 # Import steps
@@ -46,12 +46,13 @@ from .steps import (
     identify_measurement_types,
     identify_modality_types, # Added import for new step (4g)
     identify_relationship_types,
+    align_schema,
     generate_workflow_visualization
 )
 
 # --- Main Execution Logic (Combined Workflow in Single Trace) ---
 async def run_combined_workflow(content: str) -> None:
-    """Runs domain, sub-domain, topic, entity, ontology, event, statement, evidence, measurement, modality and relationship identification within a single trace."""
+    """Runs domain, sub-domain, topic, entity, ontology, event, statement, evidence, measurement, modality, relationship identification, and schema alignment within a single trace."""
     # Skip processing if input content is empty or only whitespace
     if not content or not content.strip():
         logger.warning("Input content is empty or whitespace only. Skipping analysis.")
@@ -71,6 +72,7 @@ async def run_combined_workflow(content: str) -> None:
     measurement_data = None
     modality_data = None # Added variable for new step (4g)
     relationship_data = None
+    alignment_data = None
     primary_domain = None
 
     # Metadata for the single overall trace
@@ -89,6 +91,7 @@ async def run_combined_workflow(content: str) -> None:
         "measurement_type_model": MEASUREMENT_TYPE_MODEL,
         "modality_type_model": MODALITY_TYPE_MODEL, # Added modality model (4g)
         "relationship_model": RELATIONSHIP_MODEL,
+        "schema_alignment_model": SCHEMA_ALIGNMENT_MODEL,
     }
 
     # Start the overall trace for the entire workflow
@@ -236,6 +239,15 @@ async def run_combined_workflow(content: str) -> None:
                 content, primary_domain, sub_domain_data, topic_data, entity_data, overall_trace_id
             ) if primary_domain and sub_domain_data and topic_data and entity_data else None
 
+            # === Step 7: Schema Alignment ===
+            alignment_data = await align_schema(
+                primary_domain,
+                [sd.sub_domain for sd in sub_domain_data.identified_sub_domains] if sub_domain_data else [],
+                entity_data,
+                relationship_data,
+                overall_trace_id,
+            ) if entity_data and relationship_data else None
+
 
             # Log completion status of individual steps (optional)
             logger.info(f"Step 1 (Domain) Result: {'Success' if domain_data else 'Failed/Skipped'}")
@@ -249,6 +261,7 @@ async def run_combined_workflow(content: str) -> None:
             logger.info(f"Step 4f (Measurement Types) Result: {'Success' if measurement_data else 'Failed/Skipped/Error'}")
             logger.info(f"Step 4g (Modality Types) Result: {'Success' if modality_data else 'Failed/Skipped/Error'}") # Added log for new step (4g)
             logger.info(f"Step 5 (Relationships) Result: {'Success' if relationship_data else 'Failed/Skipped'}")
+            logger.info(f"Step 7 (Schema Alignment) Result: {'Success' if alignment_data else 'Failed/Skipped'}")
 
 
     except Exception as e:
