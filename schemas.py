@@ -133,6 +133,29 @@ class EventSchema(BaseModel):
     analysis_summary: Optional[str] = Field(None, description="A brief summary or commentary on the event identification analysis.")
 
 
+# Nested schema for a specific event mention extracted from the text (Step 5)
+class EventInstanceDetail(BaseModel):
+    """Represents a single event mention along with its classified type."""
+    event_type: str = Field(description="The event type this mention represents (e.g., Meeting, Acquisition).")
+    mention_text: str = Field(description="The text snippet referencing this specific event instance.")
+    relevance_score: float = Field(
+        description="Confidence score (0.0 to 1.0) that this text truly represents the specified event type."
+    )
+
+
+# Schema for event instance extraction output (used in Step 5)
+class EventInstanceSchema(BaseModel):
+    """Schema defining extracted event mentions from the document."""
+    primary_domain: str = Field(description="The primary domain context provided for the extraction.")
+    analyzed_sub_domains: List[str] = Field(
+        description="The list of sub-domains used as context during event extraction."
+    )
+    event_instances: List[EventInstanceDetail] = Field(
+        description="List of event instances mentioned in the text with their classified types and relevance scores."
+    )
+    analysis_summary: Optional[str] = Field(None, description="Optional summary of the event instance extraction process.")
+
+
 # Nested schema for a statement type and relevance score (Agent 4d)
 class StatementDetail(BaseModel):
     """Represents an identified statement type and its relevance score."""

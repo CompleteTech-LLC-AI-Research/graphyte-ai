@@ -12,7 +12,7 @@ except ImportError:
 
 from .schemas import (
     DomainSchema, SubDomainSchema, SingleSubDomainTopicSchema,
-    EntityTypeSchema, OntologyTypeSchema, EventSchema,
+    EntityTypeSchema, OntologyTypeSchema, EventSchema, EventInstanceSchema,
     StatementTypeSchema, EvidenceTypeSchema, MeasurementTypeSchema,
     ModalityTypeSchema, SingleEntityTypeRelationshipSchema
 )
@@ -138,6 +138,22 @@ event_type_identifier_agent = base_type_identifier_agent.clone(
     output_type=EventSchema,
 )
 
+# --- Agent 5c: Event Instance Extractor ---
+event_instance_extractor_agent = Agent(
+    name="EventInstanceExtractorAgent",
+    instructions=(
+        "Extract concrete event mentions from the provided text. "
+        "Use any previously identified event types as context. "
+        "For each event mention, return the event type, a short text snippet describing the mention, "
+        "and a relevance score between 0.0 and 1.0. "
+        "Output ONLY the results using the EventInstanceSchema."
+    ),
+    model=EVENT_TYPE_MODEL,
+    output_type=EventInstanceSchema,
+    tools=[],
+    handoffs=[],
+)
+
 # --- Agent 4d: Statement Type Identifier ---
 statement_type_identifier_agent = base_type_identifier_agent.clone(
     name="StatementTypeIdentifierAgent",
@@ -222,6 +238,7 @@ all_agents = {
     "entity_type_identifier": entity_type_identifier_agent,
     "ontology_type_identifier": ontology_type_identifier_agent,
     "event_type_identifier": event_type_identifier_agent,
+    "event_instance_extractor": event_instance_extractor_agent,
     "statement_type_identifier": statement_type_identifier_agent,
     "evidence_type_identifier": evidence_type_identifier_agent,
     "measurement_type_identifier": measurement_type_identifier_agent,

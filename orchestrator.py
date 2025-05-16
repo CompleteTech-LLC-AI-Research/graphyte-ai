@@ -26,11 +26,11 @@ except ImportError:
 # Import local configuration
 from .config import (
     DOMAIN_MODEL, SUB_DOMAIN_MODEL, TOPIC_MODEL,
-    ENTITY_TYPE_MODEL, ONTOLOGY_TYPE_MODEL, EVENT_TYPE_MODEL, STATEMENT_TYPE_MODEL, EVIDENCE_TYPE_MODEL, MEASUREMENT_TYPE_MODEL, MODALITY_TYPE_MODEL, RELATIONSHIP_MODEL, # Added MODALITY_TYPE_MODEL
+    ENTITY_TYPE_MODEL, ONTOLOGY_TYPE_MODEL, EVENT_TYPE_MODEL, EVENT_INSTANCE_MODEL, STATEMENT_TYPE_MODEL, EVIDENCE_TYPE_MODEL, MEASUREMENT_TYPE_MODEL, MODALITY_TYPE_MODEL, RELATIONSHIP_MODEL,
     AGENT_TRACE_BASE_URL
 )
 from .schemas import (
-    EntityTypeSchema, OntologyTypeSchema, EventSchema, StatementTypeSchema, EvidenceTypeSchema, MeasurementTypeSchema, ModalityTypeSchema, RelationshipSchema # Added ModalityTypeSchema
+    EntityTypeSchema, OntologyTypeSchema, EventSchema, EventInstanceSchema, StatementTypeSchema, EvidenceTypeSchema, MeasurementTypeSchema, ModalityTypeSchema, RelationshipSchema
 )
 
 # Import steps
@@ -45,6 +45,7 @@ from .steps import (
     identify_evidence_types,
     identify_measurement_types,
     identify_modality_types, # Added import for new step (4g)
+    extract_event_instances,
     identify_relationship_types,
     generate_workflow_visualization
 )
@@ -70,6 +71,7 @@ async def run_combined_workflow(content: str) -> None:
     evidence_data = None
     measurement_data = None
     modality_data = None # Added variable for new step (4g)
+    event_instance_data = None
     relationship_data = None
     primary_domain = None
 
@@ -88,6 +90,7 @@ async def run_combined_workflow(content: str) -> None:
         "evidence_type_model": EVIDENCE_TYPE_MODEL,
         "measurement_type_model": MEASUREMENT_TYPE_MODEL,
         "modality_type_model": MODALITY_TYPE_MODEL, # Added modality model (4g)
+        "event_instance_model": EVENT_INSTANCE_MODEL,
         "relationship_model": RELATIONSHIP_MODEL,
     }
 
@@ -229,9 +232,17 @@ async def run_combined_workflow(content: str) -> None:
                 print("Skipping Step 4 (Parallel ID) due to missing prior results.")
 
 
-            # === Step 5: Identify Relationships in PARALLEL for each Entity Type (Based on Context) ===
-            # Note: Step 5 currently only uses entity_data. If relationships involving other types (events, statements, etc.)
-            # were needed, this step would require modification to accept and use that data.
+            # === Step 5: Extract Event Instances ===
+            event_instance_data = await extract_event_instances(
+                content,
+                primary_domain,
+                sub_domain_data,
+                topic_data,
+                event_data,
+                overall_trace_id,
+            ) if primary_domain and sub_domain_data and topic_data and event_data else None
+
+            # === Step 6: Identify Relationships in PARALLEL for each Entity Type (Based on Context) ===
             relationship_data = await identify_relationship_types(
                 content, primary_domain, sub_domain_data, topic_data, entity_data, overall_trace_id
             ) if primary_domain and sub_domain_data and topic_data and entity_data else None
@@ -248,7 +259,8 @@ async def run_combined_workflow(content: str) -> None:
             logger.info(f"Step 4e (Evidence Types) Result: {'Success' if evidence_data else 'Failed/Skipped/Error'}")
             logger.info(f"Step 4f (Measurement Types) Result: {'Success' if measurement_data else 'Failed/Skipped/Error'}")
             logger.info(f"Step 4g (Modality Types) Result: {'Success' if modality_data else 'Failed/Skipped/Error'}") # Added log for new step (4g)
-            logger.info(f"Step 5 (Relationships) Result: {'Success' if relationship_data else 'Failed/Skipped'}")
+            logger.info(f"Step 5 (Event Instances) Result: {'Success' if event_instance_data else 'Failed/Skipped/Error'}")
+            logger.info(f"Step 6 (Relationships) Result: {'Success' if relationship_data else 'Failed/Skipped'}")
 
 
     except Exception as e:
