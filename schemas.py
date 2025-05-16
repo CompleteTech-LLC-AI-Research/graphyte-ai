@@ -210,6 +210,22 @@ class MeasurementTypeSchema(BaseModel):
     analysis_summary: Optional[str] = Field(None, description="A brief summary or commentary on the measurement identification analysis.")
 
 
+# --- Schema for measurement instances (Step 5) ---
+class MeasurementInstance(BaseModel):
+    """Represents a specific measurement mention extracted from the text."""
+    measurement_indicator: str = Field(description="Name or description of the measurement or indicator (e.g., GDP, temperature, profit margin).")
+    measurement_value: str = Field(description="The value or qualitative indicator as mentioned in the text (e.g., '5%', 'high', '100 kg').")
+    context_snippet: Optional[str] = Field(None, description="Optional snippet of the text containing this measurement.")
+
+
+class MeasurementInstanceSchema(BaseModel):
+    """Schema defining measurement instances extracted from the text."""
+    primary_domain: str = Field(description="The primary domain context provided for extraction.")
+    analyzed_sub_domains: List[str] = Field(description="List of sub-domains considered during extraction.")
+    measurement_instances: List[MeasurementInstance] = Field(description="List of extracted measurement instances with values or indicators.")
+    analysis_summary: Optional[str] = Field(None, description="Optional summary or notes about the extraction process.")
+
+
 # Nested schema for a modality type and relevance score (Agent 4g - NEW)
 class ModalityDetail(BaseModel):
     """Represents an identified modality type and its relevance score."""
