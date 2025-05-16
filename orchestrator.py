@@ -45,13 +45,14 @@ from .steps import (
     identify_evidence_types,
     identify_measurement_types,
     identify_modality_types, # Added import for new step (4g)
+    identify_statement_instances,
     identify_relationship_types,
     generate_workflow_visualization
 )
 
 # --- Main Execution Logic (Combined Workflow in Single Trace) ---
 async def run_combined_workflow(content: str) -> None:
-    """Runs domain, sub-domain, topic, entity, ontology, event, statement, evidence, measurement, modality and relationship identification within a single trace."""
+    """Runs domain, sub-domain, topic, entity, ontology, event, statement, evidence, measurement, modality, statement instance and relationship identification within a single trace."""
     # Skip processing if input content is empty or only whitespace
     if not content or not content.strip():
         logger.warning("Input content is empty or whitespace only. Skipping analysis.")
@@ -70,6 +71,7 @@ async def run_combined_workflow(content: str) -> None:
     evidence_data = None
     measurement_data = None
     modality_data = None # Added variable for new step (4g)
+    statement_instance_data = None
     relationship_data = None
     primary_domain = None
 
@@ -229,9 +231,19 @@ async def run_combined_workflow(content: str) -> None:
                 print("Skipping Step 4 (Parallel ID) due to missing prior results.")
 
 
-            # === Step 5: Identify Relationships in PARALLEL for each Entity Type (Based on Context) ===
-            # Note: Step 5 currently only uses entity_data. If relationships involving other types (events, statements, etc.)
-            # were needed, this step would require modification to accept and use that data.
+            # === Step 5: Extract Statement Instances ===
+            statement_instance_data = await identify_statement_instances(
+                content,
+                primary_domain,
+                sub_domain_data,
+                topic_data,
+                statement_data,
+                overall_trace_id,
+            ) if primary_domain and sub_domain_data and topic_data and statement_data else None
+
+            # === Step 5b: Identify Relationships in PARALLEL for each Entity Type (Based on Context) ===
+            # Note: Step 5b currently only uses entity_data. If relationships involving other types were needed,
+            # this step would require modification.
             relationship_data = await identify_relationship_types(
                 content, primary_domain, sub_domain_data, topic_data, entity_data, overall_trace_id
             ) if primary_domain and sub_domain_data and topic_data and entity_data else None
@@ -248,6 +260,7 @@ async def run_combined_workflow(content: str) -> None:
             logger.info(f"Step 4e (Evidence Types) Result: {'Success' if evidence_data else 'Failed/Skipped/Error'}")
             logger.info(f"Step 4f (Measurement Types) Result: {'Success' if measurement_data else 'Failed/Skipped/Error'}")
             logger.info(f"Step 4g (Modality Types) Result: {'Success' if modality_data else 'Failed/Skipped/Error'}") # Added log for new step (4g)
+            logger.info(f"Step 5a (Statement Instances) Result: {'Success' if statement_instance_data else 'Failed/Skipped'}")
             logger.info(f"Step 5 (Relationships) Result: {'Success' if relationship_data else 'Failed/Skipped'}")
 
 
