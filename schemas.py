@@ -236,6 +236,24 @@ class ModalityTypeSchema(BaseModel):
     analysis_summary: Optional[str] = Field(None, description="A brief summary or commentary on the modality identification analysis.")
 
 
+# --- Schema for Step 5 (Statement Instance Extraction) ---
+
+class StatementInstance(BaseModel):
+    """Represents a specific statement extracted from the text along with its classification."""
+    statement_text: str = Field(description="The exact text of the statement extracted from the source.")
+    statement_type: str = Field(description="The type of statement (e.g., Fact, Claim, Opinion, Question).")
+
+
+class StatementInstanceSchema(BaseModel):
+    """Schema defining the output for statement instance extraction."""
+    primary_domain: str = Field(description="The primary domain context provided for the analysis.")
+    analyzed_sub_domains: List[str] = Field(description="The list of sub-domains used as context during instance extraction.")
+    statement_instances: List[StatementInstance] = Field(
+        description="A list of specific statements extracted from the text with their classified types."
+    )
+    analysis_summary: Optional[str] = Field(None, description="A brief summary or commentary on the statement instance extraction analysis.")
+
+
 # --- Schemas for Step 5 (Relationship Identification) ---
 
 # Nested schema for a specific identified relationship between entities

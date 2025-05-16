@@ -194,6 +194,20 @@ modality_type_identifier_agent = base_type_identifier_agent.clone(
     output_type=ModalityTypeSchema,
 )
 
+# --- Agent 5a: Statement Instance Extractor ---
+statement_instance_extractor_agent = Agent(
+    name="StatementInstanceExtractorAgent",
+    instructions=(
+        "Extract distinct statements from the provided text and label each with its statement type. "
+        "Use the context of the primary domain, sub-domains, topics, and previously identified statement types. "
+        "Output ONLY the result using the required StatementInstanceSchema."
+    ),
+    model=STATEMENT_INSTANCE_MODEL,
+    output_type=StatementInstanceSchema,
+    tools=[],
+    handoffs=[],
+)
+
 
 # --- Agent 5: Relationship Identifier (for one entity type) ---
 relationship_type_identifier_agent = Agent(
@@ -226,6 +240,7 @@ all_agents = {
     "evidence_type_identifier": evidence_type_identifier_agent,
     "measurement_type_identifier": measurement_type_identifier_agent,
     "modality_type_identifier": modality_type_identifier_agent,
+    "statement_instance_extractor": statement_instance_extractor_agent,
     "relationship_identifier": relationship_type_identifier_agent,
     # Note: Base agent is not typically included here unless used directly
 }
