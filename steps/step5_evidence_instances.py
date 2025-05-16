@@ -1,0 +1,128 @@
+"""Step 5: Evidence instance extraction functionality."""
+
+import logging
+from datetime import datetime, timezone
+from typing import List, Optional
+
+from pydantic import ValidationError
+
+from agentic_team import RunConfig, RunResult, TResponseInputItem
+
+from ..agents import evidence_instance_extractor_agent
+from ..config import (
+    EVIDENCE_INSTANCE_MODEL, EVIDENCE_INSTANCE_OUTPUT_DIR, EVIDENCE_INSTANCE_OUTPUT_FILENAME
+)
+from ..schemas import (
+    EvidenceInstanceSchema, EvidenceTypeSchema, SubDomainSchema, TopicSchema
+)
+from ..utils import direct_save_json_output, run_agent_with_retry
+
+logger = logging.getLogger(__name__)
+
+
+async def extract_evidence_instances(
+    content: str,
+    primary_domain: str,
+    sub_domain_data: SubDomainSchema,
+    topic_data: TopicSchema,
+    evidence_type_data: EvidenceTypeSchema,
+    overall_trace_id: Optional[str] = None,
+) -> Optional[EvidenceInstanceSchema]:
+    """Extract concrete evidence snippets or references from the text."""
+    if not (primary_domain and sub_domain_data and topic_data and evidence_type_data):
+        logger.info("Skipping Step 5 (Evidence Instances) because prerequisites were not met.")
+        return None
+
+    logger.info(
+        f"--- Running Step 5: Evidence Instance Extraction (Agent: {evidence_instance_extractor_agent.name}) ---"
+    )
+    print(f"\n--- Running Step 5: Evidence Instance Extraction using model: {EVIDENCE_INSTANCE_MODEL} ---")
+
+    metadata = {
+        "workflow_step": "5_evidence_instance_extract",
+        "agent_name": evidence_instance_extractor_agent.name,
+        "evidence_type_count": str(len(evidence_type_data.identified_evidence)),
+    }
+    run_config = RunConfig(trace_metadata={k: str(v) for k, v in metadata.items()})
+
+    context_summary = (
+        f"Primary Domain: {primary_domain}\n"
+        f"Sub-Domains: {', '.join(sd.sub_domain for sd in sub_domain_data.identified_sub_domains)}\n"
+        f"Evidence Types: {', '.join(et.evidence_type for et in evidence_type_data.identified_evidence)}"
+    )
+
+    input_list: List[TResponseInputItem] = [
+        {
+            "role": "user",
+            "content": (
+                "Identify specific snippets or references in the text that serve as evidence. "
+                "Where possible, note the evidence type or source. "
+                "Output ONLY using the EvidenceInstanceSchema."
+            ),
+        },
+        {"role": "user", "content": f"Context:\n{context_summary}"},
+        {"role": "user", "content": f"--- Full Text Start ---\n{content}\n--- Full Text End ---"},
+    ]
+
+    evidence_instance_data: Optional[EvidenceInstanceSchema] = None
+    try:
+        result: Optional[RunResult] = await run_agent_with_retry(
+            agent=evidence_instance_extractor_agent,
+            input_data=input_list,
+            config=run_config,
+        )
+        if result:
+            potential_output = getattr(result, "final_output", None)
+            if isinstance(potential_output, EvidenceInstanceSchema):
+                evidence_instance_data = potential_output
+            elif isinstance(potential_output, dict):
+                evidence_instance_data = EvidenceInstanceSchema.model_validate(potential_output)
+            else:
+                logger.warning(
+                    "Step 5 evidence instance extractor returned unexpected output type: %s",
+                    type(potential_output),
+                )
+    except (ValidationError, TypeError) as e:
+        logger.exception("Validation error during evidence instance extraction.", exc_info=e)
+        evidence_instance_data = None
+    except Exception as e:  # noqa: BLE001
+        logger.exception("Unexpected error during evidence instance extraction.")
+        evidence_instance_data = None
+
+    if evidence_instance_data and evidence_instance_data.evidence_instances:
+        logger.info("Step 5 Evidence Instances successfully extracted.")
+        print("\n--- Evidence Instances Extracted ---")
+        print(evidence_instance_data.model_dump_json(indent=2))
+
+        output_content = {
+            "primary_domain": evidence_instance_data.primary_domain,
+            "analyzed_sub_domains": evidence_instance_data.analyzed_sub_domains,
+            "evidence_instances": [item.model_dump() for item in evidence_instance_data.evidence_instances],
+            "analysis_summary": evidence_instance_data.analysis_summary,
+            "analysis_details": {
+                "source_text_length": len(content),
+                "evidence_type_context_count": len(evidence_type_data.identified_evidence),
+                "model_used": EVIDENCE_INSTANCE_MODEL,
+                "agent_name": evidence_instance_extractor_agent.name,
+                "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+            },
+            "trace_information": {
+                "trace_id": overall_trace_id or "N/A",
+                "notes": f"Generated by {evidence_instance_extractor_agent.name} in Step 5 of workflow.",
+            },
+        }
+
+        save_res = direct_save_json_output(
+            EVIDENCE_INSTANCE_OUTPUT_DIR,
+            EVIDENCE_INSTANCE_OUTPUT_FILENAME,
+            output_content,
+            overall_trace_id,
+        )
+        print(f"  - {save_res}")
+        logger.info("Evidence instance output saved: %s", save_res)
+    elif evidence_instance_data:
+        logger.warning("Evidence instance extraction returned no instances.")
+    else:
+        print("\nError: Failed to extract evidence instances.")
+
+    return evidence_instance_data

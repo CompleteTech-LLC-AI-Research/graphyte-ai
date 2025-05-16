@@ -183,6 +183,26 @@ class EvidenceTypeSchema(BaseModel):
     analysis_summary: Optional[str] = Field(None, description="A brief summary or commentary on the evidence identification analysis.")
 
 
+# Nested schema for an evidence instance (Step 5)
+class EvidenceInstanceDetail(BaseModel):
+    """Represents a snippet or reference serving as evidence."""
+    evidence_snippet: str = Field(description="Text snippet or citation that provides evidence.")
+    evidence_type: Optional[str] = Field(None, description="The type or category of this evidence snippet, if known.")
+    reference: Optional[str] = Field(None, description="Optional reference or source for the evidence snippet.")
+
+# Schema for evidence instance extraction output
+class EvidenceInstanceSchema(BaseModel):
+    """Schema defining extracted evidence snippets or references."""
+    primary_domain: str = Field(description="The primary domain context provided for the analysis.")
+    analyzed_sub_domains: List[str] = Field(
+        description="The list of sub-domains used as context during evidence extraction."
+    )
+    evidence_instances: List[EvidenceInstanceDetail] = Field(
+        description="A list of evidence snippets or references extracted from the text."
+    )
+    analysis_summary: Optional[str] = Field(None, description="A brief summary of the evidence instance extraction analysis.")
+
+
 # Nested schema for a measurement type and relevance score (Agent 4f)
 class MeasurementDetail(BaseModel):
     """Represents an identified measurement type and its relevance score."""
