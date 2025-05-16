@@ -14,13 +14,13 @@ from .schemas import (
     DomainSchema, SubDomainSchema, SingleSubDomainTopicSchema,
     EntityTypeSchema, OntologyTypeSchema, EventSchema,
     StatementTypeSchema, EvidenceTypeSchema, MeasurementTypeSchema,
-    ModalityTypeSchema, SingleEntityTypeRelationshipSchema
+    ModalityTypeSchema, EntityInstanceSchema, SingleEntityTypeRelationshipSchema
 )
 from .config import (
     DOMAIN_MODEL, SUB_DOMAIN_MODEL, TOPIC_MODEL,
     ENTITY_TYPE_MODEL, ONTOLOGY_TYPE_MODEL, EVENT_TYPE_MODEL,
     STATEMENT_TYPE_MODEL, EVIDENCE_TYPE_MODEL, MEASUREMENT_TYPE_MODEL,
-    MODALITY_TYPE_MODEL, RELATIONSHIP_MODEL
+    MODALITY_TYPE_MODEL, ENTITY_INSTANCE_MODEL, RELATIONSHIP_MODEL
 )
 
 # --- Agent 1: Domain Identifier ---
@@ -195,7 +195,23 @@ modality_type_identifier_agent = base_type_identifier_agent.clone(
 )
 
 
-# --- Agent 5: Relationship Identifier (for one entity type) ---
+# --- Agent 5: Entity Instance Extractor ---
+entity_instance_extractor_agent = Agent(
+    name="EntityInstanceExtractorAgent",
+    instructions=(
+        "Extract specific entity mentions from the provided text. "
+        "Use the context of domain, sub-domains, topics and identified entity types to guide relevance. "
+        "For each mention provide the entity type, the exact text span and character offsets. "
+        "Output ONLY using the provided EntityInstanceSchema."
+    ),
+    model=ENTITY_INSTANCE_MODEL,
+    output_type=EntityInstanceSchema,
+    tools=[],
+    handoffs=[],
+)
+
+
+# --- Agent 6: Relationship Identifier (for one entity type) ---
 relationship_type_identifier_agent = Agent(
     name="RelationshipTypeIdentifierAgent",
     instructions=(
@@ -226,6 +242,7 @@ all_agents = {
     "evidence_type_identifier": evidence_type_identifier_agent,
     "measurement_type_identifier": measurement_type_identifier_agent,
     "modality_type_identifier": modality_type_identifier_agent,
+    "entity_instance_extractor": entity_instance_extractor_agent,
     "relationship_identifier": relationship_type_identifier_agent,
     # Note: Base agent is not typically included here unless used directly
 }
