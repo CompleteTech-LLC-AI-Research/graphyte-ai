@@ -14,13 +14,14 @@ from .schemas import (
     DomainSchema, SubDomainSchema, SingleSubDomainTopicSchema,
     EntityTypeSchema, OntologyTypeSchema, EventSchema,
     StatementTypeSchema, EvidenceTypeSchema, MeasurementTypeSchema,
-    ModalityTypeSchema, SingleEntityTypeRelationshipSchema
+    ModalityTypeSchema, SingleEntityTypeRelationshipSchema,
+    EvaluationResultSchema
 )
 from .config import (
     DOMAIN_MODEL, SUB_DOMAIN_MODEL, TOPIC_MODEL,
     ENTITY_TYPE_MODEL, ONTOLOGY_TYPE_MODEL, EVENT_TYPE_MODEL,
     STATEMENT_TYPE_MODEL, EVIDENCE_TYPE_MODEL, MEASUREMENT_TYPE_MODEL,
-    MODALITY_TYPE_MODEL, RELATIONSHIP_MODEL
+    MODALITY_TYPE_MODEL, RELATIONSHIP_MODEL, EVALUATION_MODEL
 )
 
 # --- Agent 1: Domain Identifier ---
@@ -214,6 +215,21 @@ relationship_type_identifier_agent = Agent(
     handoffs=[],
 )
 
+# --- Agent 9: Evaluator Agent ---
+evaluator_agent = Agent(
+    name="EvaluatorAgent",
+    instructions=(
+        "You are given verified extractions (triples) from prior steps. "
+        "Evaluate each triple for quality and consistency, remove duplicates or low-confidence items, "
+        "and return the final set of enrichment triples ready for integration. "
+        "Output ONLY using the EvaluationResultSchema."
+    ),
+    model=EVALUATION_MODEL,
+    output_type=EvaluationResultSchema,
+    tools=[],
+    handoffs=[],
+)
+
 # You can optionally create a list or dict to easily access all agents
 all_agents = {
     "domain_identifier": domain_identifier_agent,
@@ -227,5 +243,6 @@ all_agents = {
     "measurement_type_identifier": measurement_type_identifier_agent,
     "modality_type_identifier": modality_type_identifier_agent,
     "relationship_identifier": relationship_type_identifier_agent,
+    "evaluator": evaluator_agent,
     # Note: Base agent is not typically included here unless used directly
 }

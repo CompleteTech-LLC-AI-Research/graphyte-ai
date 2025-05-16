@@ -48,6 +48,7 @@ EVIDENCE_TYPE_OUTPUT_DIR = OUTPUTS_DIR_BASE / "04e_evidence_type_identifier"
 MEASUREMENT_TYPE_OUTPUT_DIR = OUTPUTS_DIR_BASE / "04f_measurement_type_identifier"
 MODALITY_TYPE_OUTPUT_DIR = OUTPUTS_DIR_BASE / "04g_modality_type_identifier" # Added directory for new agent (4g)
 RELATIONSHIP_OUTPUT_DIR = OUTPUTS_DIR_BASE / "05_relationship_identifier"
+EVALUATION_OUTPUT_DIR = OUTPUTS_DIR_BASE / "09_evaluation"  # Output for step 9
 DOMAIN_OUTPUT_FILENAME = "domain_identifier_output.json"
 SUB_DOMAIN_OUTPUT_FILENAME = "sub_domain_identifier_output.json"
 TOPIC_OUTPUT_FILENAME = "topic_identifier_output.json"
@@ -59,6 +60,7 @@ EVIDENCE_TYPE_OUTPUT_FILENAME = "evidence_type_identifier_output.json"
 MEASUREMENT_TYPE_OUTPUT_FILENAME = "measurement_type_identifier_output.json"
 MODALITY_TYPE_OUTPUT_FILENAME = "modality_type_identifier_output.json" # Added filename for new agent (4g)
 RELATIONSHIP_OUTPUT_FILENAME = "relationship_identifier_output.json"
+EVALUATION_OUTPUT_FILENAME = "evaluation_output.json"
 VISUALIZATION_OUTPUT_DIR = OUTPUTS_DIR_BASE / "00_visualization"
 VISUALIZATION_FILENAME = "agent_workflow_graph.gv"
 
@@ -106,6 +108,7 @@ EVIDENCE_TYPE_MODEL = os.getenv("EVIDENCE_TYPE_IDENTIFIER_MODEL", DEFAULT_MODEL)
 MEASUREMENT_TYPE_MODEL = os.getenv("MEASUREMENT_TYPE_IDENTIFIER_MODEL", DEFAULT_MODEL)
 MODALITY_TYPE_MODEL = os.getenv("MODALITY_TYPE_IDENTIFIER_MODEL", DEFAULT_MODEL) # Added model for new agent (4g)
 RELATIONSHIP_MODEL = os.getenv("RELATIONSHIP_IDENTIFIER_MODEL", DEFAULT_MODEL)
+EVALUATION_MODEL = os.getenv("EVALUATION_MODEL", DEFAULT_MODEL)
 # Load OpenAI API Key from environment variable
 API_KEY = os.getenv("OPENAI_API_KEY")
 # Load optional base URL for tracing platform
