@@ -14,13 +14,14 @@ from .schemas import (
     DomainSchema, SubDomainSchema, SingleSubDomainTopicSchema,
     EntityTypeSchema, OntologyTypeSchema, EventSchema,
     StatementTypeSchema, EvidenceTypeSchema, MeasurementTypeSchema,
-    ModalityTypeSchema, SingleEntityTypeRelationshipSchema
+    ModalityTypeSchema, MeasurementInstanceSchema,
+    SingleEntityTypeRelationshipSchema
 )
 from .config import (
     DOMAIN_MODEL, SUB_DOMAIN_MODEL, TOPIC_MODEL,
     ENTITY_TYPE_MODEL, ONTOLOGY_TYPE_MODEL, EVENT_TYPE_MODEL,
     STATEMENT_TYPE_MODEL, EVIDENCE_TYPE_MODEL, MEASUREMENT_TYPE_MODEL,
-    MODALITY_TYPE_MODEL, RELATIONSHIP_MODEL
+    MODALITY_TYPE_MODEL, MEASUREMENT_INSTANCE_MODEL, RELATIONSHIP_MODEL
 )
 
 # --- Agent 1: Domain Identifier ---
@@ -176,7 +177,7 @@ measurement_type_identifier_agent = base_type_identifier_agent.clone(
         list_field_name="identified_measurements",
         item_field_name="measurement_type"
     ),
-    model=MEASUREMENT_TYPE_MODEL,
+    model=MEASUREMENT_INSTANCE_MODEL,
     output_type=MeasurementTypeSchema,
 )
 
@@ -192,6 +193,20 @@ modality_type_identifier_agent = base_type_identifier_agent.clone(
     ),
     model=MODALITY_TYPE_MODEL,
     output_type=ModalityTypeSchema,
+)
+
+# --- Agent 5: Measurement Instance Extractor ---
+measurement_instance_extractor_agent = Agent(
+    name="MeasurementInstanceExtractorAgent",
+    instructions=(
+        "Extract specific measurement values or indicators mentioned in the text. "
+        "Use the provided context (domain, sub-domains, topics, and identified measurement types) to focus on relevant measurements. "
+        "Output ONLY using the MeasurementInstanceSchema with a list of measurement_instances including indicator names and values."
+    ),
+    model=MEASUREMENT_INSTANCE_MODEL,
+    output_type=MeasurementInstanceSchema,
+    tools=[],
+    handoffs=[],
 )
 
 
@@ -226,6 +241,7 @@ all_agents = {
     "evidence_type_identifier": evidence_type_identifier_agent,
     "measurement_type_identifier": measurement_type_identifier_agent,
     "modality_type_identifier": modality_type_identifier_agent,
+    "measurement_instance_extractor": measurement_instance_extractor_agent,
     "relationship_identifier": relationship_type_identifier_agent,
     # Note: Base agent is not typically included here unless used directly
 }
