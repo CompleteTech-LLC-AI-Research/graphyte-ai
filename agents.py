@@ -14,13 +14,13 @@ from .schemas import (
     DomainSchema, SubDomainSchema, SingleSubDomainTopicSchema,
     EntityTypeSchema, OntologyTypeSchema, EventSchema,
     StatementTypeSchema, EvidenceTypeSchema, MeasurementTypeSchema,
-    ModalityTypeSchema, SingleEntityTypeRelationshipSchema
+    ModalityTypeSchema, ModalityInstanceSchema, SingleEntityTypeRelationshipSchema
 )
 from .config import (
     DOMAIN_MODEL, SUB_DOMAIN_MODEL, TOPIC_MODEL,
     ENTITY_TYPE_MODEL, ONTOLOGY_TYPE_MODEL, EVENT_TYPE_MODEL,
     STATEMENT_TYPE_MODEL, EVIDENCE_TYPE_MODEL, MEASUREMENT_TYPE_MODEL,
-    MODALITY_TYPE_MODEL, RELATIONSHIP_MODEL
+    MODALITY_TYPE_MODEL, MODALITY_INSTANCE_MODEL, RELATIONSHIP_MODEL
 )
 
 # --- Agent 1: Domain Identifier ---
@@ -194,6 +194,21 @@ modality_type_identifier_agent = base_type_identifier_agent.clone(
     output_type=ModalityTypeSchema,
 )
 
+# --- Agent 5a: Modality Instance Extractor ---
+modality_instance_extractor_agent = Agent(
+    name="ModalityInstanceExtractorAgent",
+    instructions=(
+        "Identify occurrences of different modalities within the provided text. "
+        "Modalities include formats such as Text, Image, Table, Chart, Video, Audio, or Code Snippet. "
+        "For each occurrence, provide the modality_type and a short snippet or description. "
+        "Output ONLY using the ModalityInstanceSchema format."
+    ),
+    model=MODALITY_INSTANCE_MODEL,
+    output_type=ModalityInstanceSchema,
+    tools=[],
+    handoffs=[],
+)
+
 
 # --- Agent 5: Relationship Identifier (for one entity type) ---
 relationship_type_identifier_agent = Agent(
@@ -226,6 +241,7 @@ all_agents = {
     "evidence_type_identifier": evidence_type_identifier_agent,
     "measurement_type_identifier": measurement_type_identifier_agent,
     "modality_type_identifier": modality_type_identifier_agent,
+    "modality_instance_extractor": modality_instance_extractor_agent,
     "relationship_identifier": relationship_type_identifier_agent,
     # Note: Base agent is not typically included here unless used directly
 }

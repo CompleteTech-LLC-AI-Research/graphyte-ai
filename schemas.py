@@ -236,6 +236,25 @@ class ModalityTypeSchema(BaseModel):
     analysis_summary: Optional[str] = Field(None, description="A brief summary or commentary on the modality identification analysis.")
 
 
+# --- Schema for Step 5a: Modality Instance Extraction ---
+class ModalityOccurrence(BaseModel):
+    """Represents a single occurrence of a specific modality in the text."""
+    modality_type: str = Field(description="The modality identified (e.g., Text, Image, Table, Chart, Code Snippet).")
+    snippet: Optional[str] = Field(None, description="A short snippet or description showing where the modality appears.")
+
+
+class ModalityInstanceSchema(BaseModel):
+    """Schema defining the expected output for modality instance extraction."""
+    primary_domain: str = Field(description="The primary domain context provided for the analysis.")
+    analyzed_sub_domains: List[str] = Field(
+        description="The list of sub-domains used as context during modality instance extraction."
+    )
+    modality_occurrences: List[ModalityOccurrence] = Field(
+        description="A list of modality occurrences mentioned in the text."
+    )
+    analysis_summary: Optional[str] = Field(None, description="Optional summary of the modality instance extraction.")
+
+
 # --- Schemas for Step 5 (Relationship Identification) ---
 
 # Nested schema for a specific identified relationship between entities
