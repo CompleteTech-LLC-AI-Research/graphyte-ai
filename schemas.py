@@ -271,3 +271,20 @@ class RelationshipSchema(BaseModel):
         description="A list containing the relationship analysis results for each entity type focus."
     )
     analysis_summary: Optional[str] = Field(None, description="Optional summary of the relationship identification process across all analyzed entity types.")
+
+
+# --- Schema for Step 7 (Schema Alignment) ---
+
+class AlignmentMapping(BaseModel):
+    """Represents a mapping from an extracted item to a target schema element."""
+    source_item: str = Field(description="The extracted instance or relationship being aligned.")
+    target_schema_element: str = Field(description="The corresponding element in the target schema.")
+    confidence_score: float = Field(description="Confidence score (0.0 to 1.0) for this alignment.")
+
+
+class AlignedCandidateSchema(BaseModel):
+    """Schema capturing results of aligning extractions with an existing schema."""
+    primary_domain: str = Field(description="The primary domain context used for alignment.")
+    analyzed_sub_domains: List[str] = Field(description="Sub-domains considered during alignment.")
+    candidate_mappings: List[AlignmentMapping] = Field(description="List of proposed schema mappings with scores.")
+    analysis_summary: Optional[str] = Field(None, description="Optional summary of the schema alignment process.")

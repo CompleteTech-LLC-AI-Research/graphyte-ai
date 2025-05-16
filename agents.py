@@ -14,13 +14,14 @@ from .schemas import (
     DomainSchema, SubDomainSchema, SingleSubDomainTopicSchema,
     EntityTypeSchema, OntologyTypeSchema, EventSchema,
     StatementTypeSchema, EvidenceTypeSchema, MeasurementTypeSchema,
-    ModalityTypeSchema, SingleEntityTypeRelationshipSchema
+    ModalityTypeSchema, SingleEntityTypeRelationshipSchema,
+    AlignedCandidateSchema
 )
 from .config import (
     DOMAIN_MODEL, SUB_DOMAIN_MODEL, TOPIC_MODEL,
     ENTITY_TYPE_MODEL, ONTOLOGY_TYPE_MODEL, EVENT_TYPE_MODEL,
     STATEMENT_TYPE_MODEL, EVIDENCE_TYPE_MODEL, MEASUREMENT_TYPE_MODEL,
-    MODALITY_TYPE_MODEL, RELATIONSHIP_MODEL
+    MODALITY_TYPE_MODEL, RELATIONSHIP_MODEL, SCHEMA_ALIGNMENT_MODEL
 )
 
 # --- Agent 1: Domain Identifier ---
@@ -214,6 +215,20 @@ relationship_type_identifier_agent = Agent(
     handoffs=[],
 )
 
+# --- Agent 7: Schema Alignment Agent ---
+schema_alignment_agent = Agent(
+    name="SchemaAlignmentAgent",
+    instructions=(
+        "You are provided with extracted instances and relationships along with a target knowledge schema. "
+        "Map each instance or relationship to the closest matching element in the schema and provide a confidence score. "
+        "Return ONLY the results using the provided AlignedCandidateSchema."
+    ),
+    model=SCHEMA_ALIGNMENT_MODEL,
+    output_type=AlignedCandidateSchema,
+    tools=[],
+    handoffs=[],
+)
+
 # You can optionally create a list or dict to easily access all agents
 all_agents = {
     "domain_identifier": domain_identifier_agent,
@@ -227,5 +242,6 @@ all_agents = {
     "measurement_type_identifier": measurement_type_identifier_agent,
     "modality_type_identifier": modality_type_identifier_agent,
     "relationship_identifier": relationship_type_identifier_agent,
+    "schema_alignment": schema_alignment_agent,
     # Note: Base agent is not typically included here unless used directly
 }
