@@ -1,35 +1,61 @@
 # File: /Users/completetech/Desktop/python-agent-sdk/src/agentic_team_workflow/agents.py
 # NOTE: Using 'agentic_team' as the alias for the SDK import
+from typing import Any
+
 try:
     # Assuming 'agents' is the correct SDK import name based on previous examples
     # If your alias is truly 'agentic_team', adjust the import accordingly.
-    from agents import Agent
+    from agents import Agent  # type: ignore[attr-defined]
 except ImportError:
     print("Error: Agent SDK library not found or incomplete. Cannot define agents.")
     # Depending on execution context, might want `sys.exit(1)` here,
     # but typically module-level errors are handled by the importer.
-    raise # Re-raise the import error
+    Agent = Any  # type: ignore[misc]
 
 from .schemas import (
-    DomainSchema, SubDomainSchema, SingleSubDomainTopicSchema,
-    EntityTypeSchema, OntologyTypeSchema, EventSchema,
-    StatementTypeSchema, EvidenceTypeSchema, MeasurementTypeSchema,
-    ModalityTypeSchema, EntityInstanceSchema, StatementInstanceSchema,
-    EvidenceInstanceSchema, MeasurementInstanceSchema, ModalityInstanceSchema,
-    SingleEntityTypeRelationshipSchema, RelationshipInstanceSchema,
-    OntologyInstanceSchema, EventInstanceSchema, ConfidenceScoreSchema,
-    RelevanceScoreSchema, ClarityScoreSchema
+    DomainSchema,
+    SubDomainSchema,
+    SingleSubDomainTopicSchema,
+    EntityTypeSchema,
+    OntologyTypeSchema,
+    EventSchema,
+    StatementTypeSchema,
+    EvidenceTypeSchema,
+    MeasurementTypeSchema,
+    ModalityTypeSchema,
+    EntityInstanceSchema,
+    StatementInstanceSchema,
+    EvidenceInstanceSchema,
+    MeasurementInstanceSchema,
+    ModalityInstanceSchema,
+    SingleEntityTypeRelationshipSchema,
+    RelationshipInstanceSchema,
+    OntologyInstanceSchema,
+    EventInstanceSchema,
+    ConfidenceScoreSchema,
+    RelevanceScoreSchema,
 )
 from .config import (
-    DOMAIN_MODEL, SUB_DOMAIN_MODEL, TOPIC_MODEL,
-    ENTITY_TYPE_MODEL, ONTOLOGY_TYPE_MODEL, EVENT_TYPE_MODEL,
-    STATEMENT_TYPE_MODEL, EVIDENCE_TYPE_MODEL, MEASUREMENT_TYPE_MODEL,
-    MODALITY_TYPE_MODEL, ENTITY_INSTANCE_MODEL, ONTOLOGY_INSTANCE_MODEL,
-    EVENT_INSTANCE_MODEL, STATEMENT_INSTANCE_MODEL, EVIDENCE_INSTANCE_MODEL, MEASUREMENT_INSTANCE_MODEL,
+    DOMAIN_MODEL,
+    SUB_DOMAIN_MODEL,
+    TOPIC_MODEL,
+    ENTITY_TYPE_MODEL,
+    ONTOLOGY_TYPE_MODEL,
+    EVENT_TYPE_MODEL,
+    STATEMENT_TYPE_MODEL,
+    EVIDENCE_TYPE_MODEL,
+    MEASUREMENT_TYPE_MODEL,
+    MODALITY_TYPE_MODEL,
+    ENTITY_INSTANCE_MODEL,
+    ONTOLOGY_INSTANCE_MODEL,
+    EVENT_INSTANCE_MODEL,
+    STATEMENT_INSTANCE_MODEL,
+    EVIDENCE_INSTANCE_MODEL,
+    MEASUREMENT_INSTANCE_MODEL,
     MODALITY_INSTANCE_MODEL,
     RELATIONSHIP_MODEL,
     RELATIONSHIP_INSTANCE_MODEL,
-    DEFAULT_MODEL
+    DEFAULT_MODEL,
 )
 
 # --- Agent 1: Domain Identifier ---
@@ -101,7 +127,7 @@ confidence_score_agent = base_scoring_agent.clone(
     name="ConfidenceScoreAgent",
     instructions=base_scoring_instructions_template.format(
         item_description="domain or relationship instance",
-        score_type="confidence score "
+        score_type="confidence score ",
     ),
     model=DEFAULT_MODEL,
     output_type=ConfidenceScoreSchema,
@@ -117,7 +143,7 @@ relevance_score_agent = base_scoring_agent.clone(
             "sub-domain, topic, entity/ontology/event/statement/evidence/"
             "measurement/modality type, or relationship type"
         ),
-        score_type="relevance score "
+        score_type="relevance score ",
     ),
     model=DEFAULT_MODEL,
     output_type=RelevanceScoreSchema,
@@ -128,8 +154,7 @@ relevance_score_agent = base_scoring_agent.clone(
 clarity_score_agent = base_scoring_agent.clone(
     name="ClarityScoreAgent",
     instructions=base_scoring_instructions_template.format(
-        item_description="text, relationship, or entity",
-        score_type="clarity score "
+        item_description="text, relationship, or entity", score_type="clarity score "
     ),
 )
 
@@ -150,8 +175,8 @@ base_type_identifier_instructions_template = (
 )
 
 base_type_identifier_agent = Agent(
-    name="BaseTypeIdentifierAgent", # Generic name, will be overridden
-    instructions=base_type_identifier_instructions_template, # Will be formatted in clones
+    name="BaseTypeIdentifierAgent",  # Generic name, will be overridden
+    instructions=base_type_identifier_instructions_template,  # Will be formatted in clones
     # No default model or output_type, must be specified in clones
     tools=[confidence_score_agent, relevance_score_agent, clarity_score_agent],
     handoffs=[],
@@ -163,10 +188,10 @@ entity_type_identifier_agent = base_type_identifier_agent.clone(
     name="EntityTypeIdentifierAgent",
     instructions=base_type_identifier_instructions_template.format(
         concept_description="entity types (e.g., PERSON, ORGANIZATION, LOCATION, DATE, MONEY, PRODUCT, TECHNOLOGY, SCIENTIFIC_CONCEPT, ECONOMIC_INDICATOR)",
-        specific_constraint="Do NOT identify Event types - that is handled by another agent.", # Retain original constraint
+        specific_constraint="Do NOT identify Event types - that is handled by another agent.",  # Retain original constraint
         concept_type_singular="entity type",
         list_field_name="identified_entities",
-        item_field_name="entity_type"
+        item_field_name="entity_type",
     ),
     model=ENTITY_TYPE_MODEL,
     output_type=EntityTypeSchema,
@@ -177,10 +202,10 @@ ontology_type_identifier_agent = base_type_identifier_agent.clone(
     name="OntologyTypeIdentifierAgent",
     instructions=base_type_identifier_instructions_template.format(
         concept_description="relevant ontology types or concepts, potentially referencing standard ontologies (like Schema.org, FIBO, domain-specific ones) where applicable",
-        specific_constraint="Focus on conceptual or taxonomic classifications, potentially referencing standard ontologies (like Schema.org, FIBO). Avoid simple entity labels.", # Added constraint
+        specific_constraint="Focus on conceptual or taxonomic classifications, potentially referencing standard ontologies (like Schema.org, FIBO). Avoid simple entity labels.",  # Added constraint
         concept_type_singular="ontology type/concept",
         list_field_name="identified_ontology_types",
-        item_field_name="ontology_type"
+        item_field_name="ontology_type",
     ),
     model=ONTOLOGY_TYPE_MODEL,
     output_type=OntologyTypeSchema,
@@ -191,10 +216,10 @@ event_type_identifier_agent = base_type_identifier_agent.clone(
     name="EventTypeIdentifierAgent",
     instructions=base_type_identifier_instructions_template.format(
         concept_description="key EVENT types (e.g., Meeting, Acquisition, Conference, Product Launch, Election, Natural Disaster, Release, Protest, Accident, Celebration)",
-        specific_constraint="Do NOT identify other entity types like Person, Organization, Location etc. - focus ONLY on events.", # Retain original constraint
+        specific_constraint="Do NOT identify other entity types like Person, Organization, Location etc. - focus ONLY on events.",  # Retain original constraint
         concept_type_singular="event type",
         list_field_name="identified_events",
-        item_field_name="event_type"
+        item_field_name="event_type",
     ),
     model=EVENT_TYPE_MODEL,
     output_type=EventSchema,
@@ -205,10 +230,10 @@ statement_type_identifier_agent = base_type_identifier_agent.clone(
     name="StatementTypeIdentifierAgent",
     instructions=base_type_identifier_instructions_template.format(
         concept_description="key STATEMENT types (e.g., Fact, Claim, Opinion, Question, Instruction, Hypothesis, Prediction)",
-        specific_constraint="Focus only on classifying the nature or type of the statement (e.g., Fact, Opinion, Claim, Hypothesis), not its specific content or truth value.", # Added constraint
+        specific_constraint="Focus only on classifying the nature or type of the statement (e.g., Fact, Opinion, Claim, Hypothesis), not its specific content or truth value.",  # Added constraint
         concept_type_singular="statement type",
         list_field_name="identified_statements",
-        item_field_name="statement_type"
+        item_field_name="statement_type",
     ),
     model=STATEMENT_TYPE_MODEL,
     output_type=StatementTypeSchema,
@@ -219,10 +244,10 @@ evidence_type_identifier_agent = base_type_identifier_agent.clone(
     name="EvidenceTypeIdentifierAgent",
     instructions=base_type_identifier_instructions_template.format(
         concept_description="key types of EVIDENCE presented (e.g., Testimony, Document Reference, Statistic, Anecdote, Expert Opinion, Observation, Example, Case Study, Logical Argument)",
-        specific_constraint="Focus on the *form* or *category* of evidence used to support claims or statements (e.g., Statistic, Testimony, Document Reference).", # Added constraint
+        specific_constraint="Focus on the *form* or *category* of evidence used to support claims or statements (e.g., Statistic, Testimony, Document Reference).",  # Added constraint
         concept_type_singular="evidence type",
         list_field_name="identified_evidence",
-        item_field_name="evidence_type"
+        item_field_name="evidence_type",
     ),
     model=EVIDENCE_TYPE_MODEL,
     output_type=EvidenceTypeSchema,
@@ -233,10 +258,10 @@ measurement_type_identifier_agent = base_type_identifier_agent.clone(
     name="MeasurementTypeIdentifierAgent",
     instructions=base_type_identifier_instructions_template.format(
         concept_description="key types of MEASUREMENTS mentioned (e.g., Financial Metric, Physical Quantity, Performance Indicator, Survey Result, Count, Ratio, Percentage, Score)",
-        specific_constraint="Focus on the *category* or *type* of measurement being used (e.g., Financial Metric, Physical Quantity, Ratio), not necessarily the specific values.", # Added constraint
+        specific_constraint="Focus on the *category* or *type* of measurement being used (e.g., Financial Metric, Physical Quantity, Ratio), not necessarily the specific values.",  # Added constraint
         concept_type_singular="measurement type",
         list_field_name="identified_measurements",
-        item_field_name="measurement_type"
+        item_field_name="measurement_type",
     ),
     model=MEASUREMENT_TYPE_MODEL,
     output_type=MeasurementTypeSchema,
@@ -253,7 +278,7 @@ modality_type_identifier_agent = base_type_identifier_agent.clone(
         item_field_name="modality_type",
     ),
     model=MODALITY_TYPE_MODEL,
-  output_type=ModalityTypeSchema,
+    output_type=ModalityTypeSchema,
 )
 
 

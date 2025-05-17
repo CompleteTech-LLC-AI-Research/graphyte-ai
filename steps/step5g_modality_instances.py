@@ -9,11 +9,21 @@ from pydantic import ValidationError
 from agentic_team import RunConfig, RunResult, TResponseInputItem
 
 from ..agents import modality_instance_extractor_agent
-from ..config import MODALITY_INSTANCE_MODEL, MODALITY_INSTANCE_OUTPUT_DIR, MODALITY_INSTANCE_OUTPUT_FILENAME
-from ..schemas import ModalityInstanceSchema, SubDomainSchema, TopicSchema, ModalityTypeSchema
+from ..config import (
+    MODALITY_INSTANCE_MODEL,
+    MODALITY_INSTANCE_OUTPUT_DIR,
+    MODALITY_INSTANCE_OUTPUT_FILENAME,
+)
+from ..schemas import (
+    ModalityInstanceSchema,
+    SubDomainSchema,
+    TopicSchema,
+    ModalityTypeSchema,
+)
 from ..utils import direct_save_json_output, run_agent_with_retry
 
 logger = logging.getLogger(__name__)
+
 
 async def identify_modality_instances(
     content: str,
@@ -39,7 +49,9 @@ async def identify_modality_instances(
     logger.info(
         f"--- Running Step 5g: Modality Instance Extraction (Agent: {modality_instance_extractor_agent.name}) ---"
     )
-    print(f"\n--- Running Step 5g: Modality Instance Extraction using model: {MODALITY_INSTANCE_MODEL} ---")
+    print(
+        f"\n--- Running Step 5g: Modality Instance Extraction using model: {MODALITY_INSTANCE_MODEL} ---"
+    )
 
     step5g_metadata_for_trace = {
         "workflow_step": "5g_modality_instance_extraction",
@@ -47,10 +59,14 @@ async def identify_modality_instances(
         "actual_agent": str(modality_instance_extractor_agent.name),
         "primary_domain_input": primary_domain,
         "sub_domains_analyzed_count": str(len(sub_domain_data.identified_sub_domains)),
-        "topic_context_count": str(sum(len(t.identified_topics) for t in topic_data.sub_domain_topic_map)),
+        "topic_context_count": str(
+            sum(len(t.identified_topics) for t in topic_data.sub_domain_topic_map)
+        ),
         "modality_type_count": str(len(modality_data.identified_modalities)),
     }
-    step5g_run_config = RunConfig(trace_metadata={k: str(v) for k, v in step5g_metadata_for_trace.items()})
+    step5g_run_config = RunConfig(
+        trace_metadata={k: str(v) for k, v in step5g_metadata_for_trace.items()}
+    )
     step5g_result: Optional[RunResult] = None
     instance_data: Optional[ModalityInstanceSchema] = None
 
@@ -68,7 +84,10 @@ async def identify_modality_instances(
                 f"Provide the modality type, exact text span and character offsets. Output ONLY using the required ModalityInstanceSchema."
             ),
         },
-        {"role": "user", "content": f"--- Full Text Start ---\n{content}\n--- Full Text End ---"},
+        {
+            "role": "user",
+            "content": f"--- Full Text Start ---\n{content}\n--- Full Text End ---",
+        },
     ]
 
     try:
@@ -84,9 +103,13 @@ async def identify_modality_instances(
                 instance_data = potential_output
             elif isinstance(potential_output, dict):
                 try:
-                    instance_data = ModalityInstanceSchema.model_validate(potential_output)
+                    instance_data = ModalityInstanceSchema.model_validate(
+                        potential_output
+                    )
                 except ValidationError as e:
-                    logger.warning(f"Step 5g dict output failed ModalityInstanceSchema validation: {e}")
+                    logger.warning(
+                        f"Step 5g dict output failed ModalityInstanceSchema validation: {e}"
+                    )
             else:
                 logger.warning(
                     f"Step 5g final_output was not ModalityInstanceSchema or dict (type: {type(potential_output)})."
@@ -96,7 +119,9 @@ async def identify_modality_instances(
                 if instance_data.primary_domain != primary_domain:
                     instance_data.primary_domain = primary_domain
                 if not set(instance_data.analyzed_sub_domains):
-                    instance_data.analyzed_sub_domains = [sd.sub_domain for sd in sub_domain_data.identified_sub_domains]
+                    instance_data.analyzed_sub_domains = [
+                        sd.sub_domain for sd in sub_domain_data.identified_sub_domains
+                    ]
                 logger.info(
                     f"Step 5g Result (Structured Instances):\n{instance_data.model_dump_json(indent=2)}"
                 )
@@ -107,7 +132,9 @@ async def identify_modality_instances(
                     "primary_domain": instance_data.primary_domain,
                     "analyzed_sub_domains": instance_data.analyzed_sub_domains,
                     "analyzed_modality_types": instance_data.analyzed_modality_types,
-                    "identified_instances": [item.model_dump() for item in instance_data.identified_instances],
+                    "identified_instances": [
+                        item.model_dump() for item in instance_data.identified_instances
+                    ],
                     "analysis_summary": instance_data.analysis_summary,
                     "analysis_details": {
                         "source_text_length": len(content),
@@ -130,26 +157,36 @@ async def identify_modality_instances(
                 print(f"  - {save_result}")
                 logger.info(f"Result of saving modality instance output: {save_result}")
             elif instance_data and not instance_data.identified_instances:
-                logger.warning("Step 5g completed but identified_instances list is empty.")
+                logger.warning(
+                    "Step 5g completed but identified_instances list is empty."
+                )
                 print("\nStep 5g completed, but no modality instances were identified.")
             else:
-                logger.error("Step 5g FAILED: Could not extract valid ModalityInstanceSchema output.")
+                logger.error(
+                    "Step 5g FAILED: Could not extract valid ModalityInstanceSchema output."
+                )
                 print("\nError: Failed to extract modality instances in Step 5g.")
                 instance_data = None
         else:
             logger.error("Step 5g FAILED: Runner.run did not return a result.")
-            print("\nError: Failed to get a result from the modality instance extraction step.")
+            print(
+                "\nError: Failed to get a result from the modality instance extraction step."
+            )
             instance_data = None
 
     except (ValidationError, TypeError) as e:
         logger.exception(
-            f"Validation or Type error during Step 5g agent run. Error: {e}", extra={"trace_id": overall_trace_id or 'N/A'}
+            f"Validation or Type error during Step 5g agent run. Error: {e}",
+            extra={"trace_id": overall_trace_id or "N/A"},
         )
         print("\nError: A data validation or type issue occurred during Step 5g.")
         print(f"Error details: {e}")
         instance_data = None
     except Exception as e:
-        logger.exception("An unexpected error occurred during Step 5g.", extra={"trace_id": overall_trace_id or 'N/A'})
+        logger.exception(
+            "An unexpected error occurred during Step 5g.",
+            extra={"trace_id": overall_trace_id or "N/A"},
+        )
         print(f"\nAn unexpected error occurred during Step 5g: {type(e).__name__}: {e}")
         instance_data = None
 

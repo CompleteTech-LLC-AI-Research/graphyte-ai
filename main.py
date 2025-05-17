@@ -6,20 +6,35 @@ from pathlib import Path
 
 # Import components from the workflow package
 try:
-    from agentic_team_workflow.utils import parse_arguments, read_input_from_file, read_input_from_directory, prompt_user_for_input, setup_logging, MAX_INPUT_CONTENT_LENGTH
-    from agentic_team_workflow.orchestrator import run_combined_workflow, generate_workflow_visualization # Added import
-    from agentic_team_workflow.config import PYMUPDF_AVAILABLE, TENACITY_AVAILABLE # For initial logging
+    from agentic_team_workflow.utils import (
+        parse_arguments,
+        read_input_from_file,
+        read_input_from_directory,
+        prompt_user_for_input,
+        setup_logging,
+        MAX_INPUT_CONTENT_LENGTH,
+    )
+    from agentic_team_workflow.orchestrator import (
+        run_combined_workflow,
+        generate_workflow_visualization,
+    )  # Added import
+    from agentic_team_workflow.config import PYMUPDF_AVAILABLE  # For initial logging
 except ImportError as e:
-    print(f"FATAL ERROR: Could not import necessary components from 'agentic_team_workflow'. Ensure the package is installed correctly and accessible.")
+    print(
+        "FATAL ERROR: Could not import necessary components from 'agentic_team_workflow'. Ensure the package is installed correctly and accessible."
+    )
     print(f"Import Error: {e}")
     # Try to provide a hint if it's a module not found related to the package itself
-    if 'agentic_team_workflow' in str(e):
-        print("Hint: Make sure you are running this script from the 'your_project_root' directory or that 'agentic_team_workflow' is in your Python path.")
+    if "agentic_team_workflow" in str(e):
+        print(
+            "Hint: Make sure you are running this script from the 'your_project_root' directory or that 'agentic_team_workflow' is in your Python path."
+        )
     sys.exit(1)
 
 # Setup logging as early as possible
 setup_logging()
-logger = logging.getLogger(__name__) # Get logger for the main script
+logger = logging.getLogger(__name__)  # Get logger for the main script
+
 
 # --- Async Main Function ---
 async def main_async() -> None:
@@ -27,8 +42,9 @@ async def main_async() -> None:
     logger.info("=== Starting Document Analysis Workflow ===")
     try:
         # Optional: Timezone context logging
-        import pytz
-        tz = pytz.timezone('Etc/UTC') # Or try to get local timezone
+        import pytz  # type: ignore
+
+        tz = pytz.timezone("Etc/UTC")  # Or try to get local timezone
         logger.info(f"Using timezone context: {tz.zone}")
     except ImportError:
         # Fallback if pytz is not installed
@@ -47,7 +63,7 @@ async def main_async() -> None:
         logger.info("Visualization flag detected. Running visualization generation.")
         await generate_workflow_visualization()
         logger.info("Visualization generation complete. Exiting.")
-        sys.exit(0) # Exit after generating visualization
+        sys.exit(0)  # Exit after generating visualization
 
     # --- Proceed with Normal Workflow if not visualizing ---
     content = ""
@@ -68,48 +84,86 @@ async def main_async() -> None:
 
         # Check content length warning
         if len(content) > MAX_INPUT_CONTENT_LENGTH:
-            logger.warning(f"Input content length ({len(content)} characters) exceeds threshold ({MAX_INPUT_CONTENT_LENGTH}). May impact performance/cost.")
-            print(f"\nWarning: Input content length ({len(content):,} characters) is large and may result in long processing times or high costs.")
+            logger.warning(
+                f"Input content length ({len(content)} characters) exceeds threshold ({MAX_INPUT_CONTENT_LENGTH}). May impact performance/cost."
+            )
+            print(
+                f"\nWarning: Input content length ({len(content):,} characters) is large and may result in long processing times or high costs."
+            )
 
         # Proceed only if content is valid (and we are not visualizing)
         if content and content.strip():
-            logger.info(f"Obtained content from {input_source} (length: {len(content)}). Running analysis workflow.")
+            logger.info(
+                f"Obtained content from {input_source} (length: {len(content)}). Running analysis workflow."
+            )
             await run_combined_workflow(content)
 
         else:
             # Log and print specific messages based on the input source if no content was found
             if input_source == "stdin":
-                logger.warning("No input content provided via stdin or input was cancelled.")
+                logger.warning(
+                    "No input content provided via stdin or input was cancelled."
+                )
                 print("No input content provided. Exiting.")
             elif args.dir:
-                 logger.warning(f"Directory '{args.dir}' provided, but no readable text content found or processed.")
-                 print(f"Directory '{args.dir}' provided, but no readable text content found or processed. Exiting.")
+                logger.warning(
+                    f"Directory '{args.dir}' provided, but no readable text content found or processed."
+                )
+                print(
+                    f"Directory '{args.dir}' provided, but no readable text content found or processed. Exiting."
+                )
             elif args.file:
-                 logger.warning(f"File '{args.file}' resulted in empty content.")
-                 print(f"File '{args.file}' resulted in empty content. Exiting.")
-            else: # Should not happen if args parsing is correct, but include for completeness
-                 logger.warning("No valid input source provided or content was empty.")
-                 print("No input content found. Exiting.")
+                logger.warning(f"File '{args.file}' resulted in empty content.")
+                print(f"File '{args.file}' resulted in empty content. Exiting.")
+            else:  # Should not happen if args parsing is correct, but include for completeness
+                logger.warning("No valid input source provided or content was empty.")
+                print("No input content found. Exiting.")
 
     # Catch specific input errors
-    except (FileNotFoundError, NotADirectoryError, IsADirectoryError, IOError, OSError, ImportError) as e:
-        logger.exception(f"Input Error processing source '{input_source}': {type(e).__name__}: {e}")
-        print(f"\nError processing input source '{input_source}': {type(e).__name__}: {e}", file=sys.stderr)
-        if isinstance(e, ImportError) and PYMUPDF_AVAILABLE is False and ('.pdf' in input_source if isinstance(input_source, str) else False):
-             print("Hint: PDF processing failed. Ensure 'PyMuPDF' is installed ('pip install pymupdf').", file=sys.stderr)
+    except (
+        FileNotFoundError,
+        NotADirectoryError,
+        IsADirectoryError,
+        IOError,
+        OSError,
+        ImportError,
+    ) as e:
+        logger.exception(
+            f"Input Error processing source '{input_source}': {type(e).__name__}: {e}"
+        )
+        print(
+            f"\nError processing input source '{input_source}': {type(e).__name__}: {e}",
+            file=sys.stderr,
+        )
+        if (
+            isinstance(e, ImportError)
+            and PYMUPDF_AVAILABLE is False
+            and (".pdf" in input_source if isinstance(input_source, str) else False)
+        ):
+            print(
+                "Hint: PDF processing failed. Ensure 'PyMuPDF' is installed ('pip install pymupdf').",
+                file=sys.stderr,
+            )
         sys.exit(1)
     # Catch unexpected errors during input processing or workflow execution
     except Exception as e:
-        logger.exception(f"Unhandled exception during processing from '{input_source}'.")
-        print(f"\nAn unexpected error occurred: {type(e).__name__}: {e}", file=sys.stderr)
+        logger.exception(
+            f"Unhandled exception during processing from '{input_source}'."
+        )
+        print(
+            f"\nAn unexpected error occurred: {type(e).__name__}: {e}", file=sys.stderr
+        )
         sys.exit(1)
     finally:
         logger.info("=== Document Analysis Workflow Finished ===")
 
+
 # --- Entry Point ---
 if __name__ == "__main__":
     # Log initial status using the configured logger
-    logger.info(f"Starting main application coroutine using Python {sys.version_info.major}.{sys.version_info.minor}.")
+    logger.info(
+        f"Starting main application coroutine using Python {sys.version_info.major}.{sys.version_info.minor}."
+    )
     # Optionally log status of dependencies again here if useful
     # if not PYMUPDF_AVAILABLE: logger.warning(...)
     # if not TENACITY_AVAILABLE: logger.warning(...)
@@ -122,6 +176,12 @@ if __name__ == "__main__":
         sys.exit(0)
     except Exception as e:
         # Catch any truly fatal errors not caught within main_async
-        logger.critical(f"Fatal error running the application: {type(e).__name__}: {e}", exc_info=True)
-        print(f"\nFATAL ERROR: Failed to run the application: {type(e).__name__}: {e}", file=sys.stderr)
+        logger.critical(
+            f"Fatal error running the application: {type(e).__name__}: {e}",
+            exc_info=True,
+        )
+        print(
+            f"\nFATAL ERROR: Failed to run the application: {type(e).__name__}: {e}",
+            file=sys.stderr,
+        )
         sys.exit(1)
