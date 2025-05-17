@@ -237,7 +237,7 @@ The workflow progresses through several key phases, as depicted in the diagram:
         * Modality Types (e.g., Text, Image, Table)
 
 3.  **Instance Extraction (Step 5 - Parallel):**
-    * Extracts specific **Instances** or mentions from the text that correspond to the types identified in Step 4. This step also runs in parallel, with dedicated agents extracting instances for each type category (e.g., Entity Instances, Event Instances, Evidence Instances, etc.).
+    * Extracts specific **Instances** or mentions from the text that correspond to the types identified in Step 4. This step also runs in parallel, with dedicated agents extracting instances for each type category (e.g., Entity Instances, Event Instances, Evidence Instances, etc.). Each extractor agent is a clone of a shared **BaseInstanceExtractorAgent**.
     * All instance outputs are combined into an `ExtractedInstances` data node to streamline later schema alignment.
 
 4.  **Relationship Identification (Step 6 - Parallel):**

@@ -192,125 +192,146 @@ modality_type_identifier_agent = base_type_identifier_agent.clone(
     name="ModalityTypeIdentifierAgent",
     instructions=base_type_identifier_instructions_template.format(
         concept_description="the types of MODALITIES represented or referred to (e.g., Text, Image, Video, Audio, Table, Chart, Code Snippet, Mathematical Formula, Diagram)",
-        specific_constraint="Identify the *format or medium* of information presented or referenced (e.g., Text, Image, Table, Code Snippet).", # Added constraint
+        specific_constraint="Identify the *format or medium* of information presented or referenced (e.g., Text, Image, Table, Code Snippet).",  # Added constraint
         concept_type_singular="modality type",
         list_field_name="identified_modalities",
-        item_field_name="modality_type"
+        item_field_name="modality_type",
     ),
     model=MODALITY_TYPE_MODEL,
-    output_type=ModalityTypeSchema,
+  output_type=ModalityTypeSchema,
+)
+
+
+# --- Base Agent for Instance Extraction (Agents 5a-5g & 6b) ---
+# Provides a reusable template for extracting specific instances of the previously
+# identified types. Specific extractor agents clone this base and customize the
+# placeholders for their schema fields.
+
+base_instance_extractor_instructions_template = (
+    "Extract specific {concept_description} from the provided text. "
+    "Use the context of domain, sub-domains, topics and identified {type_list_name} to guide relevance. "
+    "For each extracted instance provide the {instance_field} and {span_field}. "
+    "Output ONLY the result using the provided schema structure. "
+    "Ensure the '{list_field}' field contains all extracted items and include the 'primary_domain' and 'analyzed_sub_domains' fields from the context."
+)
+
+base_instance_extractor_agent = Agent(
+    name="BaseInstanceExtractorAgent",  # Generic name, overridden in clones
+    instructions=base_instance_extractor_instructions_template,  # Formatted in clones
+    tools=[],
+    handoffs=[],
 )
 
 
 # --- Agent 5: Entity Instance Extractor ---
-entity_instance_extractor_agent = Agent(
+# Clone of base_instance_extractor_agent specialized for entity mentions.
+entity_instance_extractor_agent = base_instance_extractor_agent.clone(
     name="EntityInstanceExtractorAgent",
-    instructions=(
-        "Extract specific entity mentions from the provided text. "
-        "Use the context of domain, sub-domains, topics and identified entity types to guide relevance. "
-        "For each mention provide the entity type, the exact text span and character offsets. "
-        "Output ONLY using the provided EntityInstanceSchema."
+    instructions=base_instance_extractor_instructions_template.format(
+        concept_description="entity mentions",
+        type_list_name="entity types",
+        instance_field="entity type",
+        span_field="exact text span and character offsets",
+        list_field="identified_instances",
     ),
     model=ENTITY_INSTANCE_MODEL,
     output_type=EntityInstanceSchema,
-    tools=[],
-    handoffs=[],
 )
 
 
 # --- Agent 5b: Ontology Instance Extractor ---
-ontology_instance_extractor_agent = Agent(
+# Clone of base_instance_extractor_agent specialized for ontology concepts.
+ontology_instance_extractor_agent = base_instance_extractor_agent.clone(
     name="OntologyInstanceExtractorAgent",
-    instructions=(
-        "Extract specific mentions of ontology concepts from the provided text. "
-        "Use the context of domain, sub-domains, topics and identified ontology types to guide relevance. "
-        "For each mention provide the ontology type, the exact text span and character offsets. "
-        "Output ONLY using the provided OntologyInstanceSchema."
+    instructions=base_instance_extractor_instructions_template.format(
+        concept_description="ontology concept mentions",
+        type_list_name="ontology types",
+        instance_field="ontology type",
+        span_field="exact text span and character offsets",
+        list_field="identified_instances",
     ),
     model=ONTOLOGY_INSTANCE_MODEL,
     output_type=OntologyInstanceSchema,
-    tools=[],
-    handoffs=[],
 )
 
 
 # --- Agent 5c: Event Instance Extractor ---
-event_instance_extractor_agent = Agent(
+# Clone of base_instance_extractor_agent specialized for event mentions.
+event_instance_extractor_agent = base_instance_extractor_agent.clone(
     name="EventInstanceExtractorAgent",
-    instructions=(
-        "Extract specific event mentions from the provided text. "
-        "Use the context of domain, sub-domains, topics and identified event types to guide relevance. "
-        "For each mention provide the event type, the exact text span and character offsets. "
-        "Output ONLY using the provided EventInstanceSchema."
+    instructions=base_instance_extractor_instructions_template.format(
+        concept_description="event mentions",
+        type_list_name="event types",
+        instance_field="event type",
+        span_field="exact text span and character offsets",
+        list_field="identified_instances",
     ),
     model=EVENT_INSTANCE_MODEL,
     output_type=EventInstanceSchema,
-    tools=[],
-    handoffs=[],
 )
 
 
 # --- Agent 5d: Statement Instance Extractor ---
-statement_instance_extractor_agent = Agent(
+# Clone of base_instance_extractor_agent specialized for statement snippets.
+statement_instance_extractor_agent = base_instance_extractor_agent.clone(
     name="StatementInstanceExtractorAgent",
-    instructions=(
-        "Extract specific statement snippets from the provided text. "
-        "Use the context of domain, sub-domains, topics and identified statement types to guide relevance. "
-        "For each snippet provide the statement type, the exact text span and character offsets. "
-        "Output ONLY using the provided StatementInstanceSchema."
+    instructions=base_instance_extractor_instructions_template.format(
+        concept_description="statement snippets",
+        type_list_name="statement types",
+        instance_field="statement type",
+        span_field="exact text span and character offsets",
+        list_field="identified_instances",
     ),
     model=STATEMENT_INSTANCE_MODEL,
     output_type=StatementInstanceSchema,
-    tools=[],
-    handoffs=[],
 )
 
 
 # --- Agent 5e: Evidence Instance Extractor ---
-evidence_instance_extractor_agent = Agent(
+# Clone of base_instance_extractor_agent specialized for evidence mentions.
+evidence_instance_extractor_agent = base_instance_extractor_agent.clone(
     name="EvidenceInstanceExtractorAgent",
-    instructions=(
-        "Extract specific evidence mentions from the provided text. "
-        "Use the context of domain, sub-domains, topics and identified evidence types to guide relevance. "
-        "For each mention provide the evidence type, the exact text span and character offsets. "
-        "Output ONLY using the provided EvidenceInstanceSchema."
+    instructions=base_instance_extractor_instructions_template.format(
+        concept_description="evidence mentions",
+        type_list_name="evidence types",
+        instance_field="evidence type",
+        span_field="exact text span and character offsets",
+        list_field="identified_instances",
     ),
     model=EVIDENCE_INSTANCE_MODEL,
     output_type=EvidenceInstanceSchema,
-    tools=[],
-    handoffs=[],
 )
 
 
 # --- Agent 5f: Measurement Instance Extractor ---
-measurement_instance_extractor_agent = Agent(
+# Clone of base_instance_extractor_agent specialized for measurement mentions.
+measurement_instance_extractor_agent = base_instance_extractor_agent.clone(
     name="MeasurementInstanceExtractorAgent",
-    instructions=(
-        "Extract specific measurement mentions from the provided text. "
-        "Use the context of domain, sub-domains, topics and identified measurement types to guide relevance. "
-        "For each mention provide the measurement type, the exact text span and character offsets. "
-        "Output ONLY using the provided MeasurementInstanceSchema."
+    instructions=base_instance_extractor_instructions_template.format(
+        concept_description="measurement mentions",
+        type_list_name="measurement types",
+        instance_field="measurement type",
+        span_field="exact text span and character offsets",
+        list_field="identified_instances",
     ),
     model=MEASUREMENT_INSTANCE_MODEL,
     output_type=MeasurementInstanceSchema,
-    tools=[],
-    handoffs=[],
 )
 
 
 # --- Agent 5g: Modality Instance Extractor ---
-modality_instance_extractor_agent = Agent(
+# Clone of base_instance_extractor_agent specialized for modality references.
+modality_instance_extractor_agent = base_instance_extractor_agent.clone(
     name="ModalityInstanceExtractorAgent",
-    instructions=(
-        "Extract specific modality references from the provided text. "
-        "Use the context of domain, sub-domains, topics and identified modality types to guide relevance. "
-        "For each mention provide the modality type, the exact text span and character offsets. "
-        "Output ONLY using the provided ModalityInstanceSchema."
+    instructions=base_instance_extractor_instructions_template.format(
+        concept_description="modality references",
+        type_list_name="modality types",
+        instance_field="modality type",
+        span_field="exact text span and character offsets",
+        list_field="identified_instances",
     ),
     model=MODALITY_INSTANCE_MODEL,
     output_type=ModalityInstanceSchema,
-    tools=[],
-    handoffs=[],
 )
 
 
@@ -334,18 +355,18 @@ relationship_type_identifier_agent = Agent(
 )
 
 # --- Agent 6b: Relationship Instance Extractor ---
-relationship_extractor_agent = Agent(
+# Clone of base_instance_extractor_agent specialized for relationship instances.
+relationship_extractor_agent = base_instance_extractor_agent.clone(
     name="RelationshipInstanceExtractorAgent",
-    instructions=(
-        "Extract specific subject-object relationships from the provided text. "
-        "Use the identified relationship types and extracted entity instances as context. "
-        "For each relationship instance, provide the subject, relationship type, object, relevance score, and optional snippet. "
-        "Output ONLY using the provided RelationshipInstanceSchema."
+    instructions=base_instance_extractor_instructions_template.format(
+        concept_description="subject-object relationships",
+        type_list_name="relationship types and extracted entity instances",
+        instance_field="subject, relationship type, object, and relevance score",
+        span_field="optional snippet",
+        list_field="identified_instances",
     ),
     model=RELATIONSHIP_INSTANCE_MODEL,
     output_type=RelationshipInstanceSchema,
-    tools=[],
-    handoffs=[],
 )
 
 # You can optionally create a list or dict to easily access all agents
