@@ -71,7 +71,10 @@ async def identify_relationship_instances(
                 "Output ONLY using the required RelationshipInstanceSchema."
             ),
         },
-        {"role": "user", "content": f"--- Full Text Start ---\n{content}\n--- Full Text End ---"},
+        {
+            "role": "user",
+            "content": f"--- Full Text Start ---\n{content}\n--- Full Text End ---",
+        },
     ]
 
     try:
@@ -92,11 +95,15 @@ async def identify_relationship_instances(
                 except ValidationError as e:
                     logger.warning("Validation error for relationship instances: %s", e)
             else:
-                logger.warning("Unexpected output type for relationship instances: %s", type(data))
+                logger.warning(
+                    "Unexpected output type for relationship instances: %s", type(data)
+                )
 
         if final and final.identified_instances:
             if not final.analyzed_sub_domains:
-                final.analyzed_sub_domains = [sd.sub_domain for sd in sub_domain_data.identified_sub_domains]
+                final.analyzed_sub_domains = [
+                    sd.sub_domain for sd in sub_domain_data.identified_sub_domains
+                ]
             if final.primary_domain != primary_domain:
                 final.primary_domain = primary_domain
             logger.info("Step 6b result:\n%s", final.model_dump_json(indent=2))
@@ -106,7 +113,9 @@ async def identify_relationship_instances(
             output_content = {
                 "primary_domain": final.primary_domain,
                 "analyzed_sub_domains": final.analyzed_sub_domains,
-                "identified_instances": [i.model_dump() for i in final.identified_instances],
+                "identified_instances": [
+                    i.model_dump() for i in final.identified_instances
+                ],
                 "analysis_summary": final.analysis_summary,
                 "analysis_details": {
                     "source_text_length": len(content),
@@ -126,7 +135,9 @@ async def identify_relationship_instances(
         else:
             if final:
                 logger.warning("Step 6b completed but no instances identified.")
-                print("\nStep 6b completed, but no relationship instances were identified.")
+                print(
+                    "\nStep 6b completed, but no relationship instances were identified."
+                )
             else:
                 logger.error("Step 6b FAILED: Could not get valid output.")
                 print("\nError: Failed to extract relationship instances in Step 6b.")
