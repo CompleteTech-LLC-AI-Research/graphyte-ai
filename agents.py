@@ -41,8 +41,7 @@ domain_identifier_agent = Agent(
         "Politics, Education, Environment, Business, Lifestyle, Travel, etc. "
         "Focus on the *primary* topic. The 'domain' field must contain a single concise label representing this dominant topic.\n"
         "If several potential domains appear in the text, select the one with the greatest overall coverage.\n"
-        "Also provide a confidence score between 0.0 (uncertain) and 1.0 (very confident) that the identified domain is correct.\n"
-        "Output ONLY valid JSON matching the DomainSchema, including the domain and confidence_score fields. No additional commentary."
+        "Output ONLY valid JSON matching the DomainSchema. No additional commentary."
     ),
     model=DOMAIN_MODEL,
     output_type=DomainSchema,
@@ -56,9 +55,8 @@ sub_domain_identifier_agent = Agent(
     instructions=(
         "You are given text content and its primary domain. Your task is to identify specific sub-domains "
         "within the text related to the primary domain. "
-        "For EACH identified sub-domain, provide a relevance score between 0.0 (not relevant) and 1.0 (highly relevant) indicating how strongly it relates to the primary domain within the context of the text. "
         "Also provide a brief overall analysis summary.\n"
-        "Output ONLY the result using the provided SubDomainSchema. Ensure the identified_sub_domains field contains a list of items, each with a sub_domain string and a relevance_score."
+        "Output ONLY the result using the provided SubDomainSchema. Ensure the identified_sub_domains field contains a list of items, each with a sub_domain string."
     ),
     model=SUB_DOMAIN_MODEL,
     tools=[],
@@ -72,8 +70,7 @@ topic_identifier_agent = Agent(
     instructions=(
         "You are provided with text, its primary domain, and ONE specific sub-domain. "
         "Your task: Analyze the *full text* and identify specific, relevant topics mentioned within the text that fall under the provided single sub-domain. "
-        "For EACH identified topic, provide a relevance score between 0.0 (not relevant) and 1.0 (highly relevant) indicating how strongly the topic relates to the specified sub-domain within the context of the text. "
-        "Output the results ONLY using the provided SingleSubDomainTopicSchema, including the topic string and its relevance_score for each item in the identified_topics list."
+        "Output the results ONLY using the provided SingleSubDomainTopicSchema, including the topic string for each item in the identified_topics list."
     ),
     model=TOPIC_MODEL,
     tools=[],
@@ -89,12 +86,11 @@ topic_identifier_agent = Agent(
 base_type_identifier_instructions_template = (
     "Your primary task: Analyze the provided text content to identify key {concept_description}. {specific_constraint} "
     "You will be given the full text AND context about its primary domain, identified sub-domains, and relevant topics found in previous analysis steps.\n"
-    "Use this context to assess the relevance of each identified {concept_type_singular} to the overall subject matter.\n"
+    "Use this context to assess which {concept_type_singular}s are most relevant to the overall subject matter.\n"
     "For EACH identified {concept_type_singular}, provide:\n"
     "1. The classified {concept_type_singular}.\n"
-    "2. A relevance score between 0.0 (not relevant to the context) and 1.0 (highly relevant to the context).\n"
     "Provide an overall analysis summary if applicable.\n"
-    "Output ONLY the result using the provided schema structure. Ensure the {list_field_name} field contains a list of items, each with '{item_field_name}' and 'relevance_score'. Include the 'primary_domain' and 'analyzed_sub_domains' fields from the context in your output schema."
+    "Output ONLY the result using the provided schema structure. Ensure the {list_field_name} field contains a list of items, each with '{item_field_name}'. Include the 'primary_domain' and 'analyzed_sub_domains' fields from the context in your output schema."
 )
 
 base_type_identifier_agent = Agent(
