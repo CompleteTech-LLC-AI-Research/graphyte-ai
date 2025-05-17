@@ -124,15 +124,15 @@ Graphyte AI can be run via the command line, processing input from files, direct
 
 ```bash
 # Process a single text file
-python -m agentic_team_workflow --file path/to/your/document.txt
+python -m graphyte_ai --file path/to/your/document.txt
 
 # Process all readable files in a directory
-python -m agentic_team_workflow --dir path/to/your/documents/
+python -m graphyte_ai --dir path/to/your/documents/
 
 # Process input piped from another command or entered manually
-cat report.txt | python -m agentic_team_workflow
+cat report.txt | python -m graphyte_ai
 # Or just run and paste text when prompted:
-python -m agentic_team_workflow
+python -m graphyte_ai
 ```
 
 ### Generating the Workflow Graph
@@ -149,14 +149,14 @@ This writes the definition to `workflow.gv`. Render it with Graphviz as needed, 
 dot -Tpng workflow.gv -o workflow.png
 ```
 
-*(Note: Assumes the main execution script is within a package structure like `agentic_team_workflow` as shown in the provided file structure. Adjust the command if your entry point is different.)*
+*(Note: Assumes the main execution script is within a package structure like `graphyte_ai` as shown in the provided file structure. Adjust the command if your entry point is different.)*
 
 ### Configuration
 
 * **LLM Models:** Configure the specific LLM models used by each agent via environment variables (e.g., `DOMAIN_IDENTIFIER_MODEL`, `RELATIONSHIP_IDENTIFIER_MODEL`). See `.env.example`.
 * **API Keys:** Provide necessary API keys in the `.env` file.
 * **Output Directories:** Output JSON files for each step are saved in the `outputs/` directory by default.
-* **(Advanced):** Modify agent prompts and schemas in the `src/agentic_team_workflow/agents.py` and `src/agentic_team_workflow/schemas.py` files for domain-specific tuning.
+* **(Advanced):** Modify agent prompts and schemas in the `agents.py` and `schemas.py` files for domain-specific tuning.
 * **(Advanced):** Configure target Knowledge Graph connection details for the final integration step (implementation specific).
 
 ## Use Cases

@@ -6,28 +6,28 @@ from pathlib import Path
 
 # Import components from the workflow package
 try:
-    from agentic_team_workflow.utils import (
+    from utils import (
         parse_arguments,
         read_input_from_file,
         read_input_from_directory,
         prompt_user_for_input,
         setup_logging,
-        MAX_INPUT_CONTENT_LENGTH,
     )
-    from agentic_team_workflow.orchestrator import (
-        run_combined_workflow,
-        generate_workflow_visualization,
-    )  # Added import
-    from agentic_team_workflow.config import PYMUPDF_AVAILABLE  # For initial logging
+    from orchestrator import run_combined_workflow
+    from steps import generate_workflow_visualization
+    from config import (
+        PYMUPDF_AVAILABLE,
+        MAX_INPUT_CONTENT_LENGTH,
+    )  # For initial logging
 except ImportError as e:
     print(
-        "FATAL ERROR: Could not import necessary components from 'agentic_team_workflow'. Ensure the package is installed correctly and accessible."
+        "FATAL ERROR: Could not import necessary components from 'graphyte_ai'. Ensure the package is installed correctly and accessible."
     )
     print(f"Import Error: {e}")
     # Try to provide a hint if it's a module not found related to the package itself
-    if "agentic_team_workflow" in str(e):
+    if "graphyte_ai" in str(e):
         print(
-            "Hint: Make sure you are running this script from the 'your_project_root' directory or that 'agentic_team_workflow' is in your Python path."
+            "Hint: Make sure you are running this script from the project root directory or that 'graphyte_ai' is in your Python path."
         )
     sys.exit(1)
 
