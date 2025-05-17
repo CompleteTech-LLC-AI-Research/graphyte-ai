@@ -274,6 +274,25 @@ class OntologyInstanceSchema(BaseModel):
     analysis_summary: Optional[str] = Field(None, description="Optional summary of the ontology instance extraction process.")
 
 
+# --- Schema for Step 5c: Event Instance Extraction ---
+
+class EventInstanceDetail(BaseModel):
+    """Represents a specific event mention extracted from the text."""
+    event_type: str = Field(description="The event type as classified in previous steps.")
+    text_span: str = Field(description="Exact text of the event mention.")
+    start_char: Optional[int] = Field(None, description="Start character index of the mention in the full text (0-based).")
+    end_char: Optional[int] = Field(None, description="End character index of the mention in the full text (exclusive).")
+
+
+class EventInstanceSchema(BaseModel):
+    """Schema defining extracted event instances within the document."""
+    primary_domain: str = Field(description="The primary domain context for the extraction.")
+    analyzed_sub_domains: List[str] = Field(description="Sub-domains used as context during extraction.")
+    analyzed_event_types: List[str] = Field(description="Event types considered when extracting instances.")
+    identified_instances: List[EventInstanceDetail] = Field(description="List of extracted event mentions with type and text span.")
+    analysis_summary: Optional[str] = Field(None, description="Optional summary of the event instance extraction process.")
+
+
 # --- Schemas for Step 5 (Relationship Identification) ---
 
 # Nested schema for a specific identified relationship between entities
