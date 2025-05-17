@@ -9,11 +9,16 @@ from pydantic import ValidationError
 from agentic_team import RunConfig, RunResult, TResponseInputItem
 
 from ..agents import event_instance_extractor_agent
-from ..config import EVENT_INSTANCE_MODEL, EVENT_INSTANCE_OUTPUT_DIR, EVENT_INSTANCE_OUTPUT_FILENAME
+from ..config import (
+    EVENT_INSTANCE_MODEL,
+    EVENT_INSTANCE_OUTPUT_DIR,
+    EVENT_INSTANCE_OUTPUT_FILENAME,
+)
 from ..schemas import EventInstanceSchema, SubDomainSchema, TopicSchema, EventSchema
 from ..utils import direct_save_json_output, run_agent_with_retry
 
 logger = logging.getLogger(__name__)
+
 
 async def identify_event_instances(
     content: str,
@@ -39,7 +44,9 @@ async def identify_event_instances(
     logger.info(
         f"--- Running Step 5c: Event Instance Extraction (Agent: {event_instance_extractor_agent.name}) ---"
     )
-    print(f"\n--- Running Step 5c: Event Instance Extraction using model: {EVENT_INSTANCE_MODEL} ---")
+    print(
+        f"\n--- Running Step 5c: Event Instance Extraction using model: {EVENT_INSTANCE_MODEL} ---"
+    )
 
     step5c_metadata_for_trace = {
         "workflow_step": "5c_event_instance_extraction",
@@ -47,10 +54,14 @@ async def identify_event_instances(
         "actual_agent": str(event_instance_extractor_agent.name),
         "primary_domain_input": primary_domain,
         "sub_domains_analyzed_count": str(len(sub_domain_data.identified_sub_domains)),
-        "topic_context_count": str(sum(len(t.identified_topics) for t in topic_data.sub_domain_topic_map)),
+        "topic_context_count": str(
+            sum(len(t.identified_topics) for t in topic_data.sub_domain_topic_map)
+        ),
         "event_type_count": str(len(event_data.identified_events)),
     }
-    step5c_run_config = RunConfig(trace_metadata={k: str(v) for k, v in step5c_metadata_for_trace.items()})
+    step5c_run_config = RunConfig(
+        trace_metadata={k: str(v) for k, v in step5c_metadata_for_trace.items()}
+    )
     step5c_result: Optional[RunResult] = None
     instance_data: Optional[EventInstanceSchema] = None
 
@@ -68,7 +79,10 @@ async def identify_event_instances(
                 f"Provide the event type, exact text span and character offsets. Output ONLY using the required EventInstanceSchema."
             ),
         },
-        {"role": "user", "content": f"--- Full Text Start ---\n{content}\n--- Full Text End ---"},
+        {
+            "role": "user",
+            "content": f"--- Full Text Start ---\n{content}\n--- Full Text End ---",
+        },
     ]
 
     try:
@@ -86,7 +100,9 @@ async def identify_event_instances(
                 try:
                     instance_data = EventInstanceSchema.model_validate(potential_output)
                 except ValidationError as e:
-                    logger.warning(f"Step 5c dict output failed EventInstanceSchema validation: {e}")
+                    logger.warning(
+                        f"Step 5c dict output failed EventInstanceSchema validation: {e}"
+                    )
             else:
                 logger.warning(
                     f"Step 5c final_output was not EventInstanceSchema or dict (type: {type(potential_output)})."
@@ -96,7 +112,9 @@ async def identify_event_instances(
                 if instance_data.primary_domain != primary_domain:
                     instance_data.primary_domain = primary_domain
                 if not set(instance_data.analyzed_sub_domains):
-                    instance_data.analyzed_sub_domains = [sd.sub_domain for sd in sub_domain_data.identified_sub_domains]
+                    instance_data.analyzed_sub_domains = [
+                        sd.sub_domain for sd in sub_domain_data.identified_sub_domains
+                    ]
                 logger.info(
                     f"Step 5c Result (Structured Instances):\n{instance_data.model_dump_json(indent=2)}"
                 )
@@ -107,7 +125,9 @@ async def identify_event_instances(
                     "primary_domain": instance_data.primary_domain,
                     "analyzed_sub_domains": instance_data.analyzed_sub_domains,
                     "analyzed_event_types": instance_data.analyzed_event_types,
-                    "identified_instances": [item.model_dump() for item in instance_data.identified_instances],
+                    "identified_instances": [
+                        item.model_dump() for item in instance_data.identified_instances
+                    ],
                     "analysis_summary": instance_data.analysis_summary,
                     "analysis_details": {
                         "source_text_length": len(content),
@@ -130,26 +150,36 @@ async def identify_event_instances(
                 print(f"  - {save_result}")
                 logger.info(f"Result of saving event instance output: {save_result}")
             elif instance_data and not instance_data.identified_instances:
-                logger.warning("Step 5c completed but identified_instances list is empty.")
+                logger.warning(
+                    "Step 5c completed but identified_instances list is empty."
+                )
                 print("\nStep 5c completed, but no event instances were identified.")
             else:
-                logger.error("Step 5c FAILED: Could not extract valid EventInstanceSchema output.")
+                logger.error(
+                    "Step 5c FAILED: Could not extract valid EventInstanceSchema output."
+                )
                 print("\nError: Failed to extract event instances in Step 5c.")
                 instance_data = None
         else:
             logger.error("Step 5c FAILED: Runner.run did not return a result.")
-            print("\nError: Failed to get a result from the event instance extraction step.")
+            print(
+                "\nError: Failed to get a result from the event instance extraction step."
+            )
             instance_data = None
 
     except (ValidationError, TypeError) as e:
         logger.exception(
-            f"Validation or Type error during Step 5c agent run. Error: {e}", extra={"trace_id": overall_trace_id or 'N/A'}
+            f"Validation or Type error during Step 5c agent run. Error: {e}",
+            extra={"trace_id": overall_trace_id or "N/A"},
         )
         print("\nError: A data validation or type issue occurred during Step 5c.")
         print(f"Error details: {e}")
         instance_data = None
     except Exception as e:
-        logger.exception("An unexpected error occurred during Step 5c.", extra={"trace_id": overall_trace_id or 'N/A'})
+        logger.exception(
+            "An unexpected error occurred during Step 5c.",
+            extra={"trace_id": overall_trace_id or "N/A"},
+        )
         print(f"\nAn unexpected error occurred during Step 5c: {type(e).__name__}: {e}")
         instance_data = None
 

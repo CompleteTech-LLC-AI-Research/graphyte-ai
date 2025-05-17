@@ -48,15 +48,33 @@ def aggregate_extracted_instances(
 
     aggregated = ExtractedInstancesSchema(
         primary_domain=primary_domain,
-        analyzed_sub_domains=[sd.sub_domain for sd in sub_domain_data.identified_sub_domains],
-        entity_instances=entity_instances.identified_instances if entity_instances else [],
-        ontology_instances=ontology_instances.identified_instances if ontology_instances else [],
+        analyzed_sub_domains=[
+            sd.sub_domain for sd in sub_domain_data.identified_sub_domains
+        ],
+        entity_instances=(
+            entity_instances.identified_instances if entity_instances else []
+        ),
+        ontology_instances=(
+            ontology_instances.identified_instances if ontology_instances else []
+        ),
         event_instances=event_instances.identified_instances if event_instances else [],
-        statement_instances=statement_instances.identified_instances if statement_instances else [],
-        evidence_instances=evidence_instances.identified_instances if evidence_instances else [],
-        measurement_instances=measurement_instances.identified_instances if measurement_instances else [],
-        modality_instances=modality_instances.identified_instances if modality_instances else [],
-        relationship_instances=relationship_instances.identified_instances if relationship_instances else [],
+        statement_instances=(
+            statement_instances.identified_instances if statement_instances else []
+        ),
+        evidence_instances=(
+            evidence_instances.identified_instances if evidence_instances else []
+        ),
+        measurement_instances=(
+            measurement_instances.identified_instances if measurement_instances else []
+        ),
+        modality_instances=(
+            modality_instances.identified_instances if modality_instances else []
+        ),
+        relationship_instances=(
+            relationship_instances.identified_instances
+            if relationship_instances
+            else []
+        ),
         analysis_summary=(
             "Aggregated instance results from Steps 5a-5g and relationship instances."
         ),
@@ -77,9 +95,13 @@ def aggregate_extracted_instances(
         "event_instances": [i.model_dump() for i in aggregated.event_instances],
         "statement_instances": [i.model_dump() for i in aggregated.statement_instances],
         "evidence_instances": [i.model_dump() for i in aggregated.evidence_instances],
-        "measurement_instances": [i.model_dump() for i in aggregated.measurement_instances],
+        "measurement_instances": [
+            i.model_dump() for i in aggregated.measurement_instances
+        ],
         "modality_instances": [i.model_dump() for i in aggregated.modality_instances],
-        "relationship_instances": [i.model_dump() for i in aggregated.relationship_instances],
+        "relationship_instances": [
+            i.model_dump() for i in aggregated.relationship_instances
+        ],
         "analysis_summary": aggregated.analysis_summary,
         "analysis_details": {
             "timestamp_utc": datetime.now(timezone.utc).isoformat(),
