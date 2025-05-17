@@ -39,9 +39,10 @@ domain_identifier_agent = Agent(
         "Your primary task: Analyze the provided text content and identify the single, most relevant high-level domain. "
         "Examples include: Finance, Technology, Healthcare, Arts, Science, Entertainment, Sports, "
         "Politics, Education, Environment, Business, Lifestyle, Travel, etc. "
-        "Focus on the *primary* topic.\n"
-        "Also provide a confidence score between 0.0 (uncertain) and 1.0 (very confident) that the identified domain is the correct primary domain for the entire text. "
-        "Output ONLY the result using the provided DomainSchema, including the domain and the confidence_score. Do not add any other commentary."
+        "Focus on the *primary* topic. The 'domain' field must contain a single concise label representing this dominant topic.\n"
+        "If several potential domains appear in the text, select the one with the greatest overall coverage.\n"
+        "Also provide a confidence score between 0.0 (uncertain) and 1.0 (very confident) that the identified domain is correct.\n"
+        "Output ONLY valid JSON matching the DomainSchema, including the domain and confidence_score fields. No additional commentary."
     ),
     model=DOMAIN_MODEL,
     output_type=DomainSchema,
