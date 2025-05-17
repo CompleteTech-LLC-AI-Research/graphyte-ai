@@ -17,7 +17,7 @@ from .schemas import (
     ModalityTypeSchema, EntityInstanceSchema, StatementInstanceSchema,
     EvidenceInstanceSchema, MeasurementInstanceSchema, ModalityInstanceSchema,
     SingleEntityTypeRelationshipSchema, RelationshipInstanceSchema,
-    OntologyInstanceSchema, EventInstanceSchema
+    OntologyInstanceSchema, EventInstanceSchema, ConfidenceScoreSchema
 )
 from .config import (
     DOMAIN_MODEL, SUB_DOMAIN_MODEL, TOPIC_MODEL,
@@ -27,7 +27,8 @@ from .config import (
     EVENT_INSTANCE_MODEL, STATEMENT_INSTANCE_MODEL, EVIDENCE_INSTANCE_MODEL, MEASUREMENT_INSTANCE_MODEL,
     MODALITY_INSTANCE_MODEL,
     RELATIONSHIP_MODEL,
-    RELATIONSHIP_INSTANCE_MODEL
+    RELATIONSHIP_INSTANCE_MODEL,
+    DEFAULT_MODEL
 )
 
 # --- Agent 1: Domain Identifier ---
@@ -238,6 +239,19 @@ base_scoring_agent = Agent(
     handoffs=[],
 )
 
+# --- Confidence Score Agent ---
+# Specialized clone of the base scoring agent used to assess
+# confidence in a domain classification or relationship instance.
+confidence_score_agent = base_scoring_agent.clone(
+    name="ConfidenceScoreAgent",
+    instructions=base_scoring_instructions_template.format(
+        item_description="domain or relationship instance",
+        score_type="confidence score "
+    ),
+    model=DEFAULT_MODEL,
+    output_type=ConfidenceScoreSchema,
+)
+
 
 # --- Agent 5: Entity Instance Extractor ---
 # Clone of base_instance_extractor_agent specialized for entity mentions.
@@ -404,6 +418,7 @@ all_agents = {
     "evidence_instance_extractor": evidence_instance_extractor_agent,
     "measurement_instance_extractor": measurement_instance_extractor_agent,
     "modality_instance_extractor": modality_instance_extractor_agent,
+    "confidence_score": confidence_score_agent,
     "relationship_identifier": relationship_type_identifier_agent,
     "relationship_instance_extractor": relationship_extractor_agent,
     # Note: Base agent is not typically included here unless used directly

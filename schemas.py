@@ -15,6 +15,14 @@ class DomainSchema(BaseModel):
         description="The confidence level (0.0 to 1.0) that the identified domain is the correct primary domain for the entire text."
     )
 
+# Simple schema used when only a confidence score is needed
+class ConfidenceScoreSchema(BaseModel):
+    """Represents just a confidence score for a prior analysis."""
+
+    confidence_score: float = Field(
+        description="Confidence level (0.0 to 1.0) expressing certainty in the related analysis."
+    )
+
 # Nested schema for a sub-domain and its relevance score
 class SubDomainWithScore(BaseModel):
     """Represents a single identified sub-domain and its relevance score."""
