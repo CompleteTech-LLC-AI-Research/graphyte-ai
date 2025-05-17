@@ -18,7 +18,6 @@ from ..schemas import (
     RelationshipInstanceSchema,
     SubDomainSchema,
     RelationshipSchema,
-    ExtractedInstancesSchema,
 )
 from ..utils import direct_save_json_output, run_agent_with_retry
 
@@ -29,13 +28,12 @@ async def identify_relationship_instances(
     content: str,
     primary_domain: str,
     sub_domain_data: SubDomainSchema,
-    instance_data: ExtractedInstancesSchema,
     relationship_type_data: RelationshipSchema,
     overall_trace_id: Optional[str] = None,
 ) -> Optional[RelationshipInstanceSchema]:
     """Extract relationship instances using prior type results and instances."""
 
-    if not (primary_domain and sub_domain_data and instance_data and relationship_type_data):
+    if not (primary_domain and sub_domain_data and relationship_type_data):
         logger.info("Skipping Step 6b because prerequisites were not identified.")
         return None
 

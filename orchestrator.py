@@ -317,10 +317,9 @@ async def run_combined_workflow(content: str) -> None:
                 content,
                 primary_domain,
                 sub_domain_data,
-                aggregated_instance_data,
                 relationship_data,
                 overall_trace_id,
-            ) if primary_domain and sub_domain_data and aggregated_instance_data and relationship_data else None
+            ) if primary_domain and sub_domain_data and relationship_data else None
 
 
             # Log completion status of individual steps (optional)
