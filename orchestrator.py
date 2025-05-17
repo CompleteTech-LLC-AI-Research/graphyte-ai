@@ -292,19 +292,6 @@ async def run_combined_workflow(content: str) -> None:
                 content, primary_domain, sub_domain_data, topic_data, modality_data, overall_trace_id
             ) if primary_domain and sub_domain_data and topic_data and modality_data else None
 
-            # === Aggregate Extracted Instances (Steps 5a-5g) ===
-            aggregated_instance_data = aggregate_extracted_instances(
-                primary_domain,
-                sub_domain_data,
-                instance_data,
-                ontology_instance_data,
-                event_instance_data,
-                statement_instance_data,
-                evidence_instance_data,
-                measurement_instance_data,
-                modality_instance_data,
-                overall_trace_id,
-            )
 
             # === Step 6: Identify Relationships in PARALLEL for each Entity Type (Based on Context) ===
             # Note: This step currently only uses entity_data. If relationships involving other types were needed,
@@ -320,6 +307,21 @@ async def run_combined_workflow(content: str) -> None:
                 relationship_data,
                 overall_trace_id,
             ) if primary_domain and sub_domain_data and relationship_data else None
+
+            # === Aggregate Extracted Instances (Steps 5a-5g + Relationships) ===
+            aggregated_instance_data = aggregate_extracted_instances(
+                primary_domain,
+                sub_domain_data,
+                instance_data,
+                ontology_instance_data,
+                event_instance_data,
+                statement_instance_data,
+                evidence_instance_data,
+                measurement_instance_data,
+                modality_instance_data,
+                relationship_instance_data,
+                overall_trace_id,
+            )
 
 
             # Log completion status of individual steps (optional)
@@ -339,10 +341,18 @@ async def run_combined_workflow(content: str) -> None:
             logger.info(f"Step 5d (Statement Instances) Result: {'Success' if statement_instance_data else 'Failed/Skipped'}")
             logger.info(f"Step 5e (Evidence Instances) Result: {'Success' if evidence_instance_data else 'Failed/Skipped'}")
             logger.info(f"Step 5f (Measurement Instances) Result: {'Success' if measurement_instance_data else 'Failed/Skipped'}")
-            logger.info(f"Step 5g (Modality Instances) Result: {'Success' if modality_instance_data else 'Failed/Skipped'}")
-            logger.info(f"Aggregated Instances Result: {'Success' if aggregated_instance_data else 'Failed/Skipped'}")
-            logger.info(f"Step 6 (Relationships) Result: {'Success' if relationship_data else 'Failed/Skipped'}")
-            logger.info(f"Step 6b (Relationship Instances) Result: {'Success' if relationship_instance_data else 'Failed/Skipped'}")
+            logger.info(
+                f"Step 5g (Modality Instances) Result: {'Success' if modality_instance_data else 'Failed/Skipped'}"
+            )
+            logger.info(
+                f"Step 6 (Relationships) Result: {'Success' if relationship_data else 'Failed/Skipped'}"
+            )
+            logger.info(
+                f"Step 6b (Relationship Instances) Result: {'Success' if relationship_instance_data else 'Failed/Skipped'}"
+            )
+            logger.info(
+                f"Aggregated Instances Result: {'Success' if aggregated_instance_data else 'Failed/Skipped'}"
+            )
 
 
     except Exception as e:
