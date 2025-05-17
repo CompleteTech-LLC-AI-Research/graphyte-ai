@@ -10,9 +10,8 @@ import importlib.util
 try:
     from dotenv import load_dotenv
 
-    # Try loading from parent's parent first (common project structure)
-    # Assuming this file is in agentic_team_workflow, parent is project_root
-    dotenv_path_project_root = Path(__file__).resolve().parent.parent / ".env"
+    # Try loading from the project root
+    dotenv_path_project_root = Path(__file__).resolve().parent / ".env"
     if dotenv_path_project_root.exists():
         load_dotenv(dotenv_path=dotenv_path_project_root)
         print(f"Loaded environment variables from: {dotenv_path_project_root}")
@@ -44,7 +43,7 @@ except ImportError:
     sys.exit(1)
 
 # --- Constants ---
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent
 LOGS_DIR = PROJECT_ROOT / "logs"
 OUTPUTS_DIR_BASE = PROJECT_ROOT / "outputs"
 DOMAIN_OUTPUT_DIR = OUTPUTS_DIR_BASE / "01_domain_identifier"
