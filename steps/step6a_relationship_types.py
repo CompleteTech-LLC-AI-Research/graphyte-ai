@@ -129,7 +129,7 @@ async def identify_relationship_types(
             else current_entity_type
         )
         step6a_iter_metadata_for_trace = {
-            "workflow_step": f"5_relationship_id_batch_{index+1}",
+            "workflow_step": f"6a_relationship_id_batch_{index+1}",
             "agent_name": f"Relationship ID ({display_entity_type})",
             "actual_agent": str(relationship_type_identifier_agent.name),
             "primary_domain_input": primary_domain,
