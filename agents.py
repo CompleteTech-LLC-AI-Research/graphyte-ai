@@ -18,7 +18,7 @@ from .schemas import (
     EvidenceInstanceSchema, MeasurementInstanceSchema, ModalityInstanceSchema,
     SingleEntityTypeRelationshipSchema, RelationshipInstanceSchema,
     OntologyInstanceSchema, EventInstanceSchema, ConfidenceScoreSchema,
-    RelevanceScoreSchema
+    RelevanceScoreSchema, ClarityScoreSchema
 )
 from .config import (
     DOMAIN_MODEL, SUB_DOMAIN_MODEL, TOPIC_MODEL,
@@ -269,6 +269,16 @@ relevance_score_agent = base_scoring_agent.clone(
     output_type=RelevanceScoreSchema,
 )
 
+# --- Clarity Score Agent ---
+# Clone of the base scoring agent used to assess clarity of text, relationships, or entities.
+clarity_score_agent = base_scoring_agent.clone(
+    name="ClarityScoreAgent",
+    instructions=base_scoring_instructions_template.format(
+        item_description="text, relationship, or entity",
+        score_type="clarity score "
+    ),
+)
+
 
 # --- Agent 5: Entity Instance Extractor ---
 # Clone of base_instance_extractor_agent specialized for entity mentions.
@@ -437,6 +447,7 @@ all_agents = {
     "modality_instance_extractor": modality_instance_extractor_agent,
     "confidence_score": confidence_score_agent,
     "relevance_score": relevance_score_agent,
+    "clarity_score": clarity_score_agent,
     "relationship_identifier": relationship_type_identifier_agent,
     "relationship_instance_extractor": relationship_extractor_agent,
     # Note: Base agent is not typically included here unless used directly
