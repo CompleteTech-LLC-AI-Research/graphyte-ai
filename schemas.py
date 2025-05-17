@@ -404,3 +404,36 @@ class RelationshipSchema(BaseModel):
         description="A list containing the relationship analysis results for each entity type focus."
     )
     analysis_summary: Optional[str] = Field(None, description="Optional summary of the relationship identification process across all analyzed entity types.")
+
+
+# --- Aggregated Extracted Instances Schema ---
+class ExtractedInstancesSchema(BaseModel):
+    """Aggregates all instance extraction outputs from Step 5."""
+
+    primary_domain: str = Field(description="Overall primary domain context for the extracted instances.")
+    analyzed_sub_domains: List[str] = Field(description="Sub-domains considered during instance extraction.")
+
+    entity_instances: List[EntityInstanceDetail] = Field(
+        default_factory=list, description="List of extracted entity mentions across the document."
+    )
+    ontology_instances: List[OntologyInstanceDetail] = Field(
+        default_factory=list, description="List of extracted ontology concept mentions."
+    )
+    event_instances: List[EventInstanceDetail] = Field(
+        default_factory=list, description="List of extracted event mentions."
+    )
+    statement_instances: List[StatementInstanceDetail] = Field(
+        default_factory=list, description="List of extracted statement mentions."
+    )
+    evidence_instances: List[EvidenceInstanceDetail] = Field(
+        default_factory=list, description="List of extracted evidence mentions."
+    )
+    measurement_instances: List[MeasurementInstanceDetail] = Field(
+        default_factory=list, description="List of extracted measurement mentions."
+    )
+    modality_instances: List[ModalityInstanceDetail] = Field(
+        default_factory=list, description="List of extracted modality mentions."
+    )
+    analysis_summary: Optional[str] = Field(
+        None, description="Optional summary describing the aggregated instance data."
+    )
