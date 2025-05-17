@@ -14,14 +14,16 @@ from .schemas import (
     DomainSchema, SubDomainSchema, SingleSubDomainTopicSchema,
     EntityTypeSchema, OntologyTypeSchema, EventSchema,
     StatementTypeSchema, EvidenceTypeSchema, MeasurementTypeSchema,
-    ModalityTypeSchema, EntityInstanceSchema, SingleEntityTypeRelationshipSchema,
+    ModalityTypeSchema, EntityInstanceSchema, StatementInstanceSchema,
+    SingleEntityTypeRelationshipSchema,
     OntologyInstanceSchema, EventInstanceSchema
 )
 from .config import (
     DOMAIN_MODEL, SUB_DOMAIN_MODEL, TOPIC_MODEL,
     ENTITY_TYPE_MODEL, ONTOLOGY_TYPE_MODEL, EVENT_TYPE_MODEL,
     STATEMENT_TYPE_MODEL, EVIDENCE_TYPE_MODEL, MEASUREMENT_TYPE_MODEL,
-    MODALITY_TYPE_MODEL, ENTITY_INSTANCE_MODEL, ONTOLOGY_INSTANCE_MODEL, EVENT_INSTANCE_MODEL, RELATIONSHIP_MODEL
+    MODALITY_TYPE_MODEL, ENTITY_INSTANCE_MODEL, ONTOLOGY_INSTANCE_MODEL,
+    EVENT_INSTANCE_MODEL, STATEMENT_INSTANCE_MODEL, RELATIONSHIP_MODEL
 )
 
 # --- Agent 1: Domain Identifier ---
@@ -244,6 +246,22 @@ event_instance_extractor_agent = Agent(
 )
 
 
+# --- Agent 5d: Statement Instance Extractor ---
+statement_instance_extractor_agent = Agent(
+    name="StatementInstanceExtractorAgent",
+    instructions=(
+        "Extract specific statement snippets from the provided text. "
+        "Use the context of domain, sub-domains, topics and identified statement types to guide relevance. "
+        "For each snippet provide the statement type, the exact text span and character offsets. "
+        "Output ONLY using the provided StatementInstanceSchema."
+    ),
+    model=STATEMENT_INSTANCE_MODEL,
+    output_type=StatementInstanceSchema,
+    tools=[],
+    handoffs=[],
+)
+
+
 # --- Agent 6: Relationship Identifier (for one entity type) ---
 relationship_type_identifier_agent = Agent(
     name="RelationshipTypeIdentifierAgent",
@@ -278,6 +296,7 @@ all_agents = {
     "entity_instance_extractor": entity_instance_extractor_agent,
     "ontology_instance_extractor": ontology_instance_extractor_agent,
     "event_instance_extractor": event_instance_extractor_agent,
+    "statement_instance_extractor": statement_instance_extractor_agent,
     "relationship_identifier": relationship_type_identifier_agent,
     # Note: Base agent is not typically included here unless used directly
 }
