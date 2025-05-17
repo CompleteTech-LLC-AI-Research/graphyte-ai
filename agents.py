@@ -79,6 +79,61 @@ topic_identifier_agent = Agent(
 )
 
 
+# --- Base Agent for Scoring ---
+# Template agent used for calculating confidence or relevance scores.
+base_scoring_instructions_template = (
+    "Evaluate the provided {item_description} and assign a numeric {score_type} between 0.0 and 1.0. "
+    "Use any available context to inform your assessment. "
+    "Output ONLY the result using the provided schema structure."
+)
+
+base_scoring_agent = Agent(
+    name="BaseScoringAgent",  # Generic name, overridden in clones
+    instructions=base_scoring_instructions_template,
+    tools=[],
+    handoffs=[],
+)
+
+# --- Confidence Score Agent ---
+# Specialized clone of the base scoring agent used to assess
+# confidence in a domain classification or relationship instance.
+confidence_score_agent = base_scoring_agent.clone(
+    name="ConfidenceScoreAgent",
+    instructions=base_scoring_instructions_template.format(
+        item_description="domain or relationship instance",
+        score_type="confidence score "
+    ),
+    model=DEFAULT_MODEL,
+    output_type=ConfidenceScoreSchema,
+)
+
+# --- Relevance Score Agent ---
+# Clone of the base scoring agent used to judge relevance of items like
+# sub-domains, topics, types, or relationship types.
+relevance_score_agent = base_scoring_agent.clone(
+    name="RelevanceScoreAgent",
+    instructions=base_scoring_instructions_template.format(
+        item_description=(
+            "sub-domain, topic, entity/ontology/event/statement/evidence/"
+            "measurement/modality type, or relationship type"
+        ),
+        score_type="relevance score "
+    ),
+    model=DEFAULT_MODEL,
+    output_type=RelevanceScoreSchema,
+)
+
+# --- Clarity Score Agent ---
+# Clone of the base scoring agent used to assess clarity of text, relationships, or entities.
+clarity_score_agent = base_scoring_agent.clone(
+    name="ClarityScoreAgent",
+    instructions=base_scoring_instructions_template.format(
+        item_description="text, relationship, or entity",
+        score_type="clarity score "
+    ),
+)
+
+
 # --- Base Agent for Type Identification (Agents 4a-4g) ---
 # This base agent provides a template for identifying various concept types.
 # It will be cloned and specialized for each specific type.
@@ -89,6 +144,7 @@ base_type_identifier_instructions_template = (
     "Use this context to assess which {concept_type_singular}s are most relevant to the overall subject matter.\n"
     "For EACH identified {concept_type_singular}, provide:\n"
     "1. The classified {concept_type_singular}.\n"
+    "Leverage the confidence_score_agent, relevance_score_agent, and clarity_score_agent tools to score each candidate before finalizing your list.\n"
     "Provide an overall analysis summary if applicable.\n"
     "Output ONLY the result using the provided schema structure. Ensure the {list_field_name} field contains a list of items, each with '{item_field_name}'. Include the 'primary_domain' and 'analyzed_sub_domains' fields from the context in your output schema."
 )
@@ -97,7 +153,7 @@ base_type_identifier_agent = Agent(
     name="BaseTypeIdentifierAgent", # Generic name, will be overridden
     instructions=base_type_identifier_instructions_template, # Will be formatted in clones
     # No default model or output_type, must be specified in clones
-    tools=[],
+    tools=[confidence_score_agent, relevance_score_agent, clarity_score_agent],
     handoffs=[],
 )
 
@@ -219,61 +275,6 @@ base_instance_extractor_agent = Agent(
     instructions=base_instance_extractor_instructions_template,  # Formatted in clones
     tools=[],
     handoffs=[],
-)
-
-
-# --- Base Agent for Scoring ---
-# Template agent used for calculating confidence or relevance scores.
-base_scoring_instructions_template = (
-    "Evaluate the provided {item_description} and assign a numeric {score_type} between 0.0 and 1.0. "
-    "Use any available context to inform your assessment. "
-    "Output ONLY the result using the provided schema structure."
-)
-
-base_scoring_agent = Agent(
-    name="BaseScoringAgent",  # Generic name, overridden in clones
-    instructions=base_scoring_instructions_template,
-    tools=[],
-    handoffs=[],
-)
-
-# --- Confidence Score Agent ---
-# Specialized clone of the base scoring agent used to assess
-# confidence in a domain classification or relationship instance.
-confidence_score_agent = base_scoring_agent.clone(
-    name="ConfidenceScoreAgent",
-    instructions=base_scoring_instructions_template.format(
-        item_description="domain or relationship instance",
-        score_type="confidence score "
-    ),
-    model=DEFAULT_MODEL,
-    output_type=ConfidenceScoreSchema,
-)
-
-# --- Relevance Score Agent ---
-# Clone of the base scoring agent used to judge relevance of items like
-# sub-domains, topics, types, or relationship types.
-relevance_score_agent = base_scoring_agent.clone(
-    name="RelevanceScoreAgent",
-    instructions=base_scoring_instructions_template.format(
-        item_description=(
-            "sub-domain, topic, entity/ontology/event/statement/evidence/"
-            "measurement/modality type, or relationship type"
-        ),
-        score_type="relevance score "
-    ),
-    model=DEFAULT_MODEL,
-    output_type=RelevanceScoreSchema,
-)
-
-# --- Clarity Score Agent ---
-# Clone of the base scoring agent used to assess clarity of text, relationships, or entities.
-clarity_score_agent = base_scoring_agent.clone(
-    name="ClarityScoreAgent",
-    instructions=base_scoring_instructions_template.format(
-        item_description="text, relationship, or entity",
-        score_type="clarity score "
-    ),
 )
 
 
