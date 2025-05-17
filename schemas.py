@@ -1,6 +1,9 @@
 # File: /Users/completetech/Desktop/python-agent-sdk/src/agentic_team_workflow/schemas.py
-from typing import List, Optional
+from typing import List, Optional, TYPE_CHECKING
 from pydantic import BaseModel, Field
+
+if TYPE_CHECKING:  # For type hints without causing circular imports
+    from .schemas import RelationshipInstanceDetail
 
 # --- Schemas for Existing Agents (1-3) ---
 
@@ -443,6 +446,9 @@ class ExtractedInstancesSchema(BaseModel):
     )
     modality_instances: List[ModalityInstanceDetail] = Field(
         default_factory=list, description="List of extracted modality mentions."
+    )
+    relationship_instances: List[RelationshipInstanceDetail] = Field(
+        default_factory=list, description="List of extracted relationship instances."
     )
     analysis_summary: Optional[str] = Field(
         None, description="Optional summary describing the aggregated instance data."
