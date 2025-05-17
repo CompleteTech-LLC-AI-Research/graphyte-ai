@@ -34,6 +34,18 @@ class RelevanceScoreSchema(BaseModel):
         )
     )
 
+# Simple schema used when only a clarity score is needed
+class ClarityScoreSchema(BaseModel):
+    """Represents how clear a provided item is."""
+
+    clarity_score: float = Field(
+        description="Clarity level (0.0 to 1.0) indicating how understandable the item is."
+    )
+    item_id: Optional[str] = Field(
+        None,
+        description="Optional identifier for the evaluated item."
+    )
+
 # Nested schema for a sub-domain and its relevance score
 class SubDomainWithScore(BaseModel):
     """Represents a single identified sub-domain and its relevance score."""
