@@ -17,7 +17,7 @@ from ..utils import direct_save_json_output, run_agent_with_retry
 logger = logging.getLogger(__name__)
 
 async def identify_subdomains(content: str, primary_domain: str, overall_trace_id: Optional[str] = None) -> Optional[SubDomainSchema]:
-    """Identify the sub-domains (with relevance scores) from the input content.
+    """Identify the sub-domains from the input content.
     
     Args:
         content: The text content to analyze
@@ -46,7 +46,7 @@ async def identify_subdomains(content: str, primary_domain: str, overall_trace_i
     sub_domain_data: Optional[SubDomainSchema] = None
 
     step2_input_list: List[TResponseInputItem] = [
-        {"role": "user", "content": f"The primary domain of the following text is '{primary_domain}'. Please identify the specific sub-domains within the text related to this primary domain, providing a relevance score (0.0-1.0) for each, and a brief analysis summary."},
+        {"role": "user", "content": f"The primary domain of the following text is '{primary_domain}'. Please identify the specific sub-domains within the text related to this primary domain and provide a brief analysis summary."},
         {"role": "user", "content": f"--- Full Text Start ---\n{content}\n--- Full Text End ---"}
     ]
 
@@ -83,15 +83,15 @@ async def identify_subdomains(content: str, primary_domain: str, overall_trace_i
                 elif not sub_domain_data.primary_domain:
                     sub_domain_data.primary_domain = primary_domain # Ensure primary domain is set
 
-                sub_domains_with_scores = sub_domain_data.identified_sub_domains
+                sub_domains_items = sub_domain_data.identified_sub_domains
                 sub_domains_list = [
-                    item.sub_domain.strip() for item in sub_domains_with_scores if item.sub_domain and item.sub_domain.strip()
+                    item.sub_domain.strip() for item in sub_domains_items if item.sub_domain and item.sub_domain.strip()
                 ]
 
-                log_items = [f"'{item.sub_domain}' (Score: {item.relevance_score:.2f})" for item in sub_domains_with_scores]
+                log_items = [f"'{item.sub_domain}'" for item in sub_domains_items]
                 logger.info(f"Step 2 Result: Identified Sub-Domains = [{', '.join(log_items)}]")
-                logger.info(f"Step 2 Result (Structured Sub-Domains with Scores):\n{sub_domain_data.model_dump_json(indent=2)}")
-                print("\n--- Sub-Domains Identified (Structured Output from Step 2 with Relevance) ---")
+                logger.info(f"Step 2 Result (Structured Sub-Domains):\n{sub_domain_data.model_dump_json(indent=2)}")
+                print("\n--- Sub-Domains Identified (Structured Output from Step 2) ---")
                 print(sub_domain_data.model_dump_json(indent=2))
 
                 if not sub_domains_list:
@@ -99,11 +99,11 @@ async def identify_subdomains(content: str, primary_domain: str, overall_trace_i
                     print("\nStep 2 completed, but no specific non-empty sub-domain names were identified. Cannot proceed further.")
                     sub_domain_data = None
                 else:
-                    logger.info("Saving sub-domain identifier output (with scores) to file...")
-                    print("\nSaving sub-domain output file (with scores)...")
+                    logger.info("Saving sub-domain identifier output to file...")
+                    print("\nSaving sub-domain output file...")
                     sub_domain_output_content = {
                         "primary_domain": sub_domain_data.primary_domain,
-                        "identified_sub_domains": [item.model_dump() for item in sub_domains_with_scores],
+                        "identified_sub_domains": [item.model_dump() for item in sub_domains_items],
                         "analysis_summary": sub_domain_data.analysis_summary,
                         "analysis_details": {
                             "source_text_length": len(content),

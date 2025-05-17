@@ -23,7 +23,7 @@ async def identify_topics(
     sub_domain_data: SubDomainSchema, 
     overall_trace_id: Optional[str] = None
 ) -> Optional[TopicSchema]:
-    """Identify topics (with relevance scores) for each sub-domain from the input content.
+    """Identify topics for each sub-domain from the input content.
     
     Args:
         content: The text content to analyze
@@ -78,7 +78,7 @@ async def identify_topics(
         step3_iter_run_config = RunConfig(trace_metadata={k: str(v) for k, v in step3_iter_metadata_for_trace.items()})
 
         step3_iter_input_list: List[TResponseInputItem] = [
-            {"role": "user", "content": f"The primary domain is '{primary_domain}'. Focus ONLY on the sub-domain: '{current_sub_domain}'. Based ONLY on the following text, identify specific topics mentioned within the text relevant ONLY to this sub-domain ('{current_sub_domain}'). For each topic, provide a relevance score between 0.0 and 1.0. Output using the required SingleSubDomainTopicSchema."},
+            {"role": "user", "content": f"The primary domain is '{primary_domain}'. Focus ONLY on the sub-domain: '{current_sub_domain}'. Based ONLY on the following text, identify specific topics mentioned within the text relevant ONLY to this sub-domain ('{current_sub_domain}'). Output using the required SingleSubDomainTopicSchema."},
             {"role": "user", "content": f"--- Full Text Start ---\n{content}\n--- Full Text End ---"}
         ]
 
@@ -144,12 +144,12 @@ async def identify_topics(
                         logger.warning(f"Sub-domain mismatch in output for '{current_sub_domain}'. Output had '{single_topic_data.sub_domain}'. Correcting to requested sub-domain.")
                         single_topic_data.sub_domain = current_sub_domain # Overwrite with the requested sub-domain
 
-                    topics_with_scores = [f"'{item.topic}' (Score: {item.relevance_score:.2f})" for item in single_topic_data.identified_topics]
-                    logger.info(f"Step 3 Result for '{current_sub_domain}': Identified Topics = [{', '.join(topics_with_scores)}]")
+                    topic_names = [f"'{item.topic}'" for item in single_topic_data.identified_topics]
+                    logger.info(f"Step 3 Result for '{current_sub_domain}': Identified Topics = [{', '.join(topic_names)}]")
                     print(f"\n  --- Topics for Sub-Domain: '{current_sub_domain}' ---")
-                    if topics_with_scores:
+                    if topic_names:
                         for item in single_topic_data.identified_topics:
-                            print(f"     - {item.topic} (Score: {item.relevance_score:.2f})")
+                            print(f"     - {item.topic}")
                     else:
                         print("     - (No specific topics identified for this sub-domain)")
                     # Add the successfully processed result to the list
@@ -183,7 +183,7 @@ async def identify_topics(
     final_topic_data = TopicSchema(
         primary_domain=primary_domain, # Use the confirmed primary domain from Step 1
         sub_domain_topic_map=aggregated_topic_results,
-        analysis_summary=f"Generated topics with relevance scores in parallel for {len(aggregated_topic_results)} sub-domains (out of {len(sub_domains_being_processed)} attempted)." # Use processed count
+        analysis_summary=f"Generated topics in parallel for {len(aggregated_topic_results)} sub-domains (out of {len(sub_domains_being_processed)} attempted)." # Use processed count
     )
 
     logger.info(f"Final Aggregated Topics (Structured):\n{final_topic_data.model_dump_json(indent=2)}")
@@ -199,7 +199,7 @@ async def identify_topics(
             "primary_domain_analyzed": primary_domain,
             "sub_domains_attempted": sub_domains_being_processed, # List of subdomains attempted
             "sub_domains_successfully_processed": [item.sub_domain for item in aggregated_topic_results],
-            "sub_domain_input_source": "List extracted from Step 2 output (SubDomainSchema with scores)",
+            "sub_domain_input_source": "List extracted from Step 2 output (SubDomainSchema)",
             "execution_mode": "Parallel (asyncio.gather)",
             "model_used_per_topic_call": TOPIC_MODEL,
             "agent_name_per_topic_call": topic_identifier_agent.name,

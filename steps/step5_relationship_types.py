@@ -28,7 +28,7 @@ async def identify_relationship_types(
     entity_data: EntityTypeSchema,
     overall_trace_id: Optional[str] = None
 ) -> Optional[RelationshipSchema]:
-    """Identify relationship types (with relevance scores) for each entity type focus.
+    """Identify relationship types for each entity type focus.
     
     Args:
         content: The text content to analyze
@@ -77,12 +77,12 @@ async def identify_relationship_types(
         f"Overall Context:\n"
         f"- Primary Domain: {primary_domain}\n"
         f"- Identified Sub-Domains: {', '.join(sd.sub_domain for sd in sub_domain_data.identified_sub_domains)}\n"
-        f"- Identified Entity Types (with relevance scores): {', '.join(f'{et.entity_type} ({et.relevance_score:.1f})' for et in entity_data.identified_entities)}\n"
+        f"- Identified Entity Types: {', '.join(et.entity_type for et in entity_data.identified_entities)}\n"
         f"- Relevant Topics Found:\n"
     )
     topic_summary_lines = []
     for topic_map in topic_data.sub_domain_topic_map:
-        top_topics = [f"{t.topic} ({t.relevance_score:.1f})" for t in sorted(topic_map.identified_topics, key=lambda x: x.relevance_score, reverse=True)[:3]] # Top 3 topics per sub-domain
+        top_topics = [t.topic for t in topic_map.identified_topics[:3]]  # Top 3 topics per sub-domain
         if top_topics:
              topic_summary_lines.append(f"  - For '{topic_map.sub_domain}': {', '.join(top_topics)}{'...' if len(topic_map.identified_topics) > 3 else ''}")
     if not topic_summary_lines:
@@ -184,7 +184,7 @@ async def identify_relationship_types(
                     print(f"\n  --- Relationships involving Focus Type: '{current_entity_type}' ---")
                     if relation_details:
                         for rel in relation_details:
-                             print(f"     - {rel.relationship_type} (Score: {rel.relevance_score:.2f})")
+                             print(f"     - {rel.relationship_type}")
                     else:
                         print("     - (No specific relationships identified for this focus type)")
 

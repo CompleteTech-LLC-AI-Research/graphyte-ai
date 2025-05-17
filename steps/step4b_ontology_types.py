@@ -23,7 +23,7 @@ async def identify_ontology_types(
     topic_data: TopicSchema,
     overall_trace_id: Optional[str] = None
 ) -> Optional[OntologyTypeSchema]:
-    """Identify ontology types (with relevance scores) based on domain, sub-domains, and topics.
+    """Identify ontology types based on domain, sub-domains, and topics.
     
     Args:
         content: The text content to analyze
@@ -72,7 +72,7 @@ async def identify_ontology_types(
             f"Analyze the following text to identify relevant ontology types or concepts, potentially referencing standard ontologies "
             f"(like Schema.org, FIBO, domain-specific ones) where applicable. "
             f"Use the provided context:\n{context_summary_for_prompt}\n\n"
-            f"Identify ontology types/concepts relevant to this overall context and provide a relevance score (0.0-1.0) for each. "
+            f"Identify ontology types/concepts relevant to this overall context. "
             f"Output ONLY using the required OntologyTypeSchema, including the primary_domain and analyzed_sub_domains list in the output."
         )},
         {"role": "user", "content": f"--- Full Text Start ---\n{content}\n--- Full Text End ---"}
@@ -110,15 +110,15 @@ async def identify_ontology_types(
                     logger.warning(f"Analyzed sub-domains in Step 4b output {ontology_data.analyzed_sub_domains} differs from Step 2 input { [sd.sub_domain for sd in sub_domain_data.identified_sub_domains]}. Using Step 4b's list.")
 
                 # Log and print results
-                ontology_log_items = [f"{item.ontology_type} (Score: {item.relevance_score:.2f})" for item in ontology_data.identified_ontology_types]
+                ontology_log_items = [item.ontology_type for item in ontology_data.identified_ontology_types]
                 logger.info(f"Step 4b Result: Identified Ontology Types = [{', '.join(ontology_log_items)}]")
-                logger.info(f"Step 4b Result (Structured Ontology Types with Scores):\n{ontology_data.model_dump_json(indent=2)}")
-                print("\n--- Ontology Types Identified (Structured Output from Step 4b with Relevance) ---")
+                logger.info(f"Step 4b Result (Structured Ontology Types):\n{ontology_data.model_dump_json(indent=2)}")
+                print("\n--- Ontology Types Identified (Structured Output from Step 4b) ---")
                 print(ontology_data.model_dump_json(indent=2))
 
                 # Save results
-                logger.info("Saving ontology type identifier output (with scores) to file...")
-                print("\nSaving ontology type output file (with scores)...")
+                logger.info("Saving ontology type identifier output to file...")
+                print("\nSaving ontology type output file...")
                 ontology_type_output_content = {
                     "primary_domain": ontology_data.primary_domain,
                     "analyzed_sub_domains": ontology_data.analyzed_sub_domains, # Use agent's output list
