@@ -202,6 +202,7 @@ The workflow progresses through several key phases:
 
 3.  **Instance Extraction (Step 5 - Parallel):**
     * Extracts specific **Instances** or mentions...
+    * Aggregates these results into a unified `ExtractedInstances` node for later steps.
 
 4.  **Relationship Identification (Step 6 - Parallel):**
     * Identifies potential **Relationships**...
@@ -236,6 +237,7 @@ The workflow progresses through several key phases, as depicted in the diagram:
 
 3.  **Instance Extraction (Step 5 - Parallel):**
     * Extracts specific **Instances** or mentions from the text that correspond to the types identified in Step 4. This step also runs in parallel, with dedicated agents extracting instances for each type category (e.g., Entity Instances, Event Instances, Evidence Instances, etc.).
+    * All instance outputs are combined into an `ExtractedInstances` data node to streamline later schema alignment.
 
 4.  **Relationship Identification (Step 6 - Parallel):**
     * Identifies potential **Relationships** between the extracted instances (primarily focusing on entity instances), using the full context including identified types and instances. This step runs in parallel, focusing on one entity type at a time.
