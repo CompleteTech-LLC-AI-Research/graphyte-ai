@@ -20,9 +20,9 @@ from .step5d_statement_instances import identify_statement_instances
 from .step5e_evidence_instances import identify_evidence_instances
 from .step5f_measurement_instances import identify_measurement_instances
 from .step5g_modality_instances import identify_modality_instances
-from .step5_aggregate_instances import aggregate_extracted_instances
-from .step5_relationship_types import identify_relationship_types
-from .step6_relationship_instances import identify_relationship_instances
+from .step6c_aggregate_instances import aggregate_extracted_instances
+from .step6a_relationship_types import identify_relationship_types
+from .step6b_relationship_instances import identify_relationship_instances
 from .visualization import generate_workflow_visualization
 
 __all__ = [

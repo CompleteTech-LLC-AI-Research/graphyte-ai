@@ -38,7 +38,7 @@ def aggregate_extracted_instances(
     relationship_instances: Optional[RelationshipInstanceSchema] = None,
     overall_trace_id: Optional[str] = None,
 ) -> Optional[ExtractedInstancesSchema]:
-    """Combine individual instance outputs from Steps 5a–5g and relationship instances."""
+    """Combine instance outputs from Steps 5a–5g and Step 6b relationship instances."""
 
     if not primary_domain or not sub_domain_data:
         logger.warning(
@@ -76,7 +76,7 @@ def aggregate_extracted_instances(
             else []
         ),
         analysis_summary=(
-            "Aggregated instance results from Steps 5a-5g and relationship instances."
+            "Aggregated instance results from Steps 5a-5g and Step 6b relationship instances."
         ),
     )
 
