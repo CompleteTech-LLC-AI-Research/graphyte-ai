@@ -20,6 +20,7 @@ from .step5f_measurement_instances import identify_measurement_instances
 from .step5g_modality_instances import identify_modality_instances
 from .step5_aggregate_instances import aggregate_extracted_instances
 from .step5_relationship_types import identify_relationship_types
+from .step6_relationship_instances import identify_relationship_instances
 from .visualization import generate_workflow_visualization
 
 __all__ = [
@@ -42,5 +43,6 @@ __all__ = [
     "identify_modality_instances",
     "aggregate_extracted_instances",
     "identify_relationship_types",
+    "identify_relationship_instances",
     "generate_workflow_visualization",
 ]

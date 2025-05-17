@@ -206,6 +206,7 @@ The workflow progresses through several key phases:
 
 4.  **Relationship Identification (Step 6 - Parallel):**
     * Identifies potential **Relationships**...
+    * Extracts specific subject-object pairs as **Relationship Instances** using the detected types.
 
 5.  **Knowledge Enrichment & Verification (Steps 7-9 - KARMA Inspired):**
     * **Schema Alignment (Step 7):** Aligns the extracted instances...
@@ -241,6 +242,7 @@ The workflow progresses through several key phases, as depicted in the diagram:
 
 4.  **Relationship Identification (Step 6 - Parallel):**
     * Identifies potential **Relationships** between the extracted instances (primarily focusing on entity instances), using the full context including identified types and instances. This step runs in parallel, focusing on one entity type at a time.
+    * Extracts specific subject-object pairs as **Relationship Instances** for downstream enrichment.
 
 5.  **Knowledge Enrichment & Verification (Steps 7-9 - KARMA Inspired):**
     * **Schema Alignment (Step 7):** Aligns the extracted instances and relationships against an existing target knowledge schema or graph.

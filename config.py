@@ -56,6 +56,7 @@ MEASUREMENT_INSTANCE_OUTPUT_DIR = OUTPUTS_DIR_BASE / "05f_measurement_instance_e
 MODALITY_INSTANCE_OUTPUT_DIR = OUTPUTS_DIR_BASE / "05g_modality_instance_extractor"
 AGGREGATED_INSTANCE_OUTPUT_DIR = OUTPUTS_DIR_BASE / "05h_aggregated_instances"
 RELATIONSHIP_OUTPUT_DIR = OUTPUTS_DIR_BASE / "06_relationship_identifier"
+RELATIONSHIP_INSTANCE_OUTPUT_DIR = OUTPUTS_DIR_BASE / "06b_relationship_instance_extractor"
 DOMAIN_OUTPUT_FILENAME = "domain_identifier_output.json"
 SUB_DOMAIN_OUTPUT_FILENAME = "sub_domain_identifier_output.json"
 TOPIC_OUTPUT_FILENAME = "topic_identifier_output.json"
@@ -75,6 +76,7 @@ MEASUREMENT_INSTANCE_OUTPUT_FILENAME = "measurement_instance_extractor_output.js
 MODALITY_INSTANCE_OUTPUT_FILENAME = "modality_instance_extractor_output.json"
 AGGREGATED_INSTANCE_OUTPUT_FILENAME = "aggregated_instance_output.json"
 RELATIONSHIP_OUTPUT_FILENAME = "relationship_identifier_output.json"
+RELATIONSHIP_INSTANCE_OUTPUT_FILENAME = "relationship_instance_extractor_output.json"
 VISUALIZATION_OUTPUT_DIR = OUTPUTS_DIR_BASE / "00_visualization"
 VISUALIZATION_FILENAME = "agent_workflow_graph.gv"
 
@@ -129,6 +131,7 @@ EVIDENCE_INSTANCE_MODEL = os.getenv("EVIDENCE_INSTANCE_EXTRACTOR_MODEL", DEFAULT
 MEASUREMENT_INSTANCE_MODEL = os.getenv("MEASUREMENT_INSTANCE_EXTRACTOR_MODEL", DEFAULT_MODEL)
 MODALITY_INSTANCE_MODEL = os.getenv("MODALITY_INSTANCE_EXTRACTOR_MODEL", DEFAULT_MODEL)
 RELATIONSHIP_MODEL = os.getenv("RELATIONSHIP_IDENTIFIER_MODEL", DEFAULT_MODEL)
+RELATIONSHIP_INSTANCE_MODEL = os.getenv("RELATIONSHIP_INSTANCE_EXTRACTOR_MODEL", DEFAULT_MODEL)
 # Load OpenAI API Key from environment variable
 API_KEY = os.getenv("OPENAI_API_KEY")
 # Load optional base URL for tracing platform

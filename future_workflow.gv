@@ -41,6 +41,7 @@ digraph DocumentAnalysisWorkflow {
     Data_ModalityTypes [label="ModalityTypeSchema (4g)"];
     Data_ExtractedInstances [label="Extracted Instances (5)\n(Entities, Events, Evidence,\nMeasurements, Modalities, etc.)", fillcolor="#E0FFFF"]; // LightCyan for extracted data
     Data_Relationships [label="RelationshipSchema (6)\n(Aggregated)"];
+    Data_RelationshipInstances [label="RelationshipInstanceSchema (6b)"];
 
     // New Data Nodes for KARMA-inspired steps
     Data_ExistingSchemaGraph [label="Existing\nKnowledge Schema/Graph", shape=cylinder, fillcolor="#B0C4DE"]; // LightSteelBlue cylinder
@@ -91,6 +92,7 @@ digraph DocumentAnalysisWorkflow {
         style=dashed; bgcolor="#E0FFE0"; // Honeydew
         node [shape=box, style=filled, fillcolor="#90EE90"]; // LightGreen
         Agent6_Rel [label="RelationshipType\nIdentifierAgent"]; // Node label, keep 'label'
+        Agent6b_RelInst [label="RelationshipInstance\nExtractorAgent"]; // Node label
     }
 
      // Subgraph for Step 7 (Schema Alignment)
@@ -191,6 +193,11 @@ digraph DocumentAnalysisWorkflow {
     Start -> Agent6_Rel [xlabel=" content", style=dashed, constraint=false]; // USE xlabel
     Agent6_Rel -> Data_Relationships [xlabel=" output (Aggregated)"]; // USE xlabel
 
+    Data_Relationships -> Agent6b_RelInst [xlabel=" relationship types"]; // USE xlabel
+    Data_ExtractedInstances -> Agent6b_RelInst [xlabel=" instances", style=dashed, constraint=false]; // USE xlabel
+    Start -> Agent6b_RelInst [xlabel=" content", style=dashed, constraint=false]; // USE xlabel
+    Agent6b_RelInst -> Data_RelationshipInstances [xlabel=" output (Instances)"]; // USE xlabel
+
     // Step 7 (Schema Alignment)
     Data_ExtractedInstances -> Agent7_SAA [xlabel=" extracted instances"]; // USE xlabel
     Data_Relationships -> Agent7_SAA [xlabel=" identified relationships"]; // USE xlabel
@@ -223,6 +230,7 @@ digraph DocumentAnalysisWorkflow {
     Data_ModalityTypes -> End [style=dashed, constraint=false, color=gray];
     Data_ExtractedInstances -> End [style=dashed, constraint=false, color=gray];
     Data_Relationships -> End [style=dashed, constraint=false, color=gray];
+    Data_RelationshipInstances -> End [style=dashed, constraint=false, color=gray];
 
 
      // --- Visual Rank Alignment Constraints ---
