@@ -1,4 +1,3 @@
-# File: /Users/completetech/Desktop/python-agent-sdk/src/agentic_team_workflow/steps/step4e_evidence_types.py
 """Step 4e: Evidence type identification functionality."""
 
 import logging

@@ -1,4 +1,3 @@
-# File: /Users/completetech/Desktop/python-agent-sdk/src/agentic_team_workflow/agents.py
 # NOTE: Using 'agentic_team' as the alias for the SDK import
 from typing import Any
 

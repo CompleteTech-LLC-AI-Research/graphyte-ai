@@ -1,4 +1,3 @@
-# File: /Users/completetech/Desktop/python-agent-sdk/src/agentic_team_workflow/steps/step4f_measurement_types.py
 """Step 4f: Measurement type identification functionality."""
 
 import logging

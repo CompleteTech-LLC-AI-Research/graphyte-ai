@@ -1,4 +1,3 @@
-# File: /Users/completetech/Desktop/python-agent-sdk/src/agentic_team_workflow/steps/step4g_modality_types.py
 """Step 4g: Modality type identification functionality."""
 
 import logging
