@@ -39,7 +39,7 @@ digraph DocumentAnalysisWorkflow {
     Data_EvidenceTypes [label="EvidenceTypeSchema (4e)"];
     Data_MeasurementTypes [label="MeasurementTypeSchema (4f)"];
     Data_ModalityTypes [label="ModalityTypeSchema (4g)"];
-    Data_ExtractedInstances [label="Extracted Instances (5)\n(Entities, Events, Evidence,\nMeasurements, Modalities, etc.)", fillcolor="#E0FFFF"]; // LightCyan for extracted data
+    Data_ExtractedInstances [label="Aggregated Instances\n(Post Step 6b)", fillcolor="#E0FFFF"]; // LightCyan for aggregated data
     Data_Relationships [label="RelationshipSchema (6)\n(Aggregated)"];
     Data_RelationshipInstances [label="RelationshipInstanceSchema (6b)"];
 
@@ -148,7 +148,7 @@ digraph DocumentAnalysisWorkflow {
     Data_Topics -> Agent4g [xlabel=" context"]; Start -> Agent4g [xlabel=" content", style=dashed, constraint=false]; // USE xlabel (x2)
     Agent4g -> Data_ModalityTypes [xlabel=" identified types"]; // USE xlabel
 
-    // Step 5 (Instance Extraction - Parallel) -> Aggregated Instances
+    // Step 5 (Instance Extraction - Parallel) -> Aggregated Instances (finalized after Step 6b)
     // Takes Type Schemas from Step 4 + Context + Content
     Data_EntityTypes -> Agent5a [xlabel=" entity types"]; // USE xlabel
     Data_Topics -> Agent5a [xlabel=" context", style=dashed, constraint=false]; // USE xlabel
@@ -197,6 +197,9 @@ digraph DocumentAnalysisWorkflow {
     Data_ExtractedInstances -> Agent6b_RelInst [xlabel=" instances", style=dashed, constraint=false]; // USE xlabel
     Start -> Agent6b_RelInst [xlabel=" content", style=dashed, constraint=false]; // USE xlabel
     Agent6b_RelInst -> Data_RelationshipInstances [xlabel=" output (Instances)"]; // USE xlabel
+
+    // Aggregation now occurs after relationship instance extraction
+    Data_RelationshipInstances -> Data_ExtractedInstances [xlabel=" relationship instances", style=dashed, constraint=false];
 
     // Step 7 (Schema Alignment)
     Data_ExtractedInstances -> Agent7_SAA [xlabel=" extracted instances"]; // USE xlabel
