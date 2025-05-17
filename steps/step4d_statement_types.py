@@ -1,4 +1,3 @@
-# File: /Users/completetech/Desktop/python-agent-sdk/src/agentic_team_workflow/steps/step4d_statement_types.py
 """Step 4d: Statement type identification functionality."""
 
 import logging

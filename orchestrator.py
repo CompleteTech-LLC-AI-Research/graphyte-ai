@@ -1,4 +1,3 @@
-# File: /Users/completetech/Desktop/python-agent-sdk/src/agentic_team_workflow/orchestrator.py
 """Orchestrator module for the agentic team workflow.
 
 This module coordinates the workflow between different agent steps and handles tracing.

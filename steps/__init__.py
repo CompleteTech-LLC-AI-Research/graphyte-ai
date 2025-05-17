@@ -1,4 +1,3 @@
-# File: /Users/completetech/Desktop/python-agent-sdk/src/agentic_team_workflow/steps/__init__.py
 """Agent workflow step modules for agentic_team_workflow."""
 
 from .step1_domain import identify_domain

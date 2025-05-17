@@ -1,4 +1,3 @@
-# File: /Users/completetech/Desktop/python-agent-sdk/src/agentic_team_workflow/schemas.py
 from typing import List, Optional
 from pydantic import BaseModel, Field
 
