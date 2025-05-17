@@ -406,6 +406,26 @@ class RelationshipSchema(BaseModel):
     analysis_summary: Optional[str] = Field(None, description="Optional summary of the relationship identification process across all analyzed entity types.")
 
 
+# --- Schema for Step 6: Relationship Instance Extraction ---
+class RelationshipInstanceDetail(BaseModel):
+    """Represents a specific relationship instance between two entities."""
+
+    subject: str = Field(description="The text span or identifier of the subject entity.")
+    relationship_type: str = Field(description="The type of relationship linking the subject and object.")
+    object: str = Field(description="The text span or identifier of the object entity.")
+    relevance_score: float = Field(description="Confidence score (0.0 to 1.0) that the relationship instance is correctly identified.")
+    snippet: Optional[str] = Field(None, description="Optional text snippet supporting this relationship instance.")
+
+
+class RelationshipInstanceSchema(BaseModel):
+    """Schema defining extracted relationship instances within the document."""
+
+    primary_domain: str = Field(description="The primary domain context for the extraction.")
+    analyzed_sub_domains: List[str] = Field(description="Sub-domains used as context during extraction.")
+    identified_instances: List[RelationshipInstanceDetail] = Field(description="List of extracted relationship instances between specific entities.")
+    analysis_summary: Optional[str] = Field(None, description="Optional summary of the relationship instance extraction process.")
+
+
 # --- Aggregated Extracted Instances Schema ---
 class ExtractedInstancesSchema(BaseModel):
     """Aggregates all instance extraction outputs from Step 5."""

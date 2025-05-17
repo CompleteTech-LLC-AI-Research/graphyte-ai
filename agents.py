@@ -16,7 +16,7 @@ from .schemas import (
     StatementTypeSchema, EvidenceTypeSchema, MeasurementTypeSchema,
     ModalityTypeSchema, EntityInstanceSchema, StatementInstanceSchema,
     EvidenceInstanceSchema, MeasurementInstanceSchema, ModalityInstanceSchema,
-    SingleEntityTypeRelationshipSchema,
+    SingleEntityTypeRelationshipSchema, RelationshipInstanceSchema,
     OntologyInstanceSchema, EventInstanceSchema
 )
 from .config import (
@@ -26,7 +26,8 @@ from .config import (
     MODALITY_TYPE_MODEL, ENTITY_INSTANCE_MODEL, ONTOLOGY_INSTANCE_MODEL,
     EVENT_INSTANCE_MODEL, STATEMENT_INSTANCE_MODEL, EVIDENCE_INSTANCE_MODEL, MEASUREMENT_INSTANCE_MODEL,
     MODALITY_INSTANCE_MODEL,
-    RELATIONSHIP_MODEL
+    RELATIONSHIP_MODEL,
+    RELATIONSHIP_INSTANCE_MODEL
 )
 
 # --- Agent 1: Domain Identifier ---
@@ -332,6 +333,21 @@ relationship_type_identifier_agent = Agent(
     handoffs=[],
 )
 
+# --- Agent 6b: Relationship Instance Extractor ---
+relationship_extractor_agent = Agent(
+    name="RelationshipInstanceExtractorAgent",
+    instructions=(
+        "Extract specific subject-object relationships from the provided text. "
+        "Use the identified relationship types and extracted entity instances as context. "
+        "For each relationship instance, provide the subject, relationship type, object, relevance score, and optional snippet. "
+        "Output ONLY using the provided RelationshipInstanceSchema."
+    ),
+    model=RELATIONSHIP_INSTANCE_MODEL,
+    output_type=RelationshipInstanceSchema,
+    tools=[],
+    handoffs=[],
+)
+
 # You can optionally create a list or dict to easily access all agents
 all_agents = {
     "domain_identifier": domain_identifier_agent,
@@ -352,5 +368,6 @@ all_agents = {
     "measurement_instance_extractor": measurement_instance_extractor_agent,
     "modality_instance_extractor": modality_instance_extractor_agent,
     "relationship_identifier": relationship_type_identifier_agent,
+    "relationship_instance_extractor": relationship_extractor_agent,
     # Note: Base agent is not typically included here unless used directly
 }

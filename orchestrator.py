@@ -26,12 +26,12 @@ except ImportError:
 # Import local configuration
 from .config import (
     DOMAIN_MODEL, SUB_DOMAIN_MODEL, TOPIC_MODEL,
-    ENTITY_TYPE_MODEL, ONTOLOGY_TYPE_MODEL, EVENT_TYPE_MODEL, STATEMENT_TYPE_MODEL, EVIDENCE_TYPE_MODEL, MEASUREMENT_TYPE_MODEL, MODALITY_TYPE_MODEL, ENTITY_INSTANCE_MODEL, ONTOLOGY_INSTANCE_MODEL, EVENT_INSTANCE_MODEL, STATEMENT_INSTANCE_MODEL, EVIDENCE_INSTANCE_MODEL, MEASUREMENT_INSTANCE_MODEL, MODALITY_INSTANCE_MODEL, RELATIONSHIP_MODEL,
+    ENTITY_TYPE_MODEL, ONTOLOGY_TYPE_MODEL, EVENT_TYPE_MODEL, STATEMENT_TYPE_MODEL, EVIDENCE_TYPE_MODEL, MEASUREMENT_TYPE_MODEL, MODALITY_TYPE_MODEL, ENTITY_INSTANCE_MODEL, ONTOLOGY_INSTANCE_MODEL, EVENT_INSTANCE_MODEL, STATEMENT_INSTANCE_MODEL, EVIDENCE_INSTANCE_MODEL, MEASUREMENT_INSTANCE_MODEL, MODALITY_INSTANCE_MODEL, RELATIONSHIP_MODEL, RELATIONSHIP_INSTANCE_MODEL,
     AGENT_TRACE_BASE_URL
 )
 from .schemas import (
     EntityTypeSchema, OntologyTypeSchema, EventSchema, StatementTypeSchema, EvidenceTypeSchema,
-    MeasurementTypeSchema, ModalityTypeSchema, EntityInstanceSchema, OntologyInstanceSchema, EventInstanceSchema, StatementInstanceSchema, EvidenceInstanceSchema, MeasurementInstanceSchema, ModalityInstanceSchema, RelationshipSchema
+    MeasurementTypeSchema, ModalityTypeSchema, EntityInstanceSchema, OntologyInstanceSchema, EventInstanceSchema, StatementInstanceSchema, EvidenceInstanceSchema, MeasurementInstanceSchema, ModalityInstanceSchema, RelationshipSchema, RelationshipInstanceSchema
 )
 
 # Import steps
@@ -55,6 +55,7 @@ from .steps import (
     identify_modality_instances,
     aggregate_extracted_instances,
     identify_relationship_types,
+    identify_relationship_instances,
     generate_workflow_visualization
 )
 
@@ -89,6 +90,7 @@ async def run_combined_workflow(content: str) -> None:
     modality_instance_data = None
     aggregated_instance_data = None
     relationship_data = None
+    relationship_instance_data = None
     primary_domain = None
 
     # Metadata for the single overall trace
@@ -114,6 +116,7 @@ async def run_combined_workflow(content: str) -> None:
         "measurement_instance_model": MEASUREMENT_INSTANCE_MODEL,
         "modality_instance_model": MODALITY_INSTANCE_MODEL,
         "relationship_model": RELATIONSHIP_MODEL,
+        "relationship_instance_model": RELATIONSHIP_INSTANCE_MODEL,
     }
 
     # Start the overall trace for the entire workflow
@@ -310,6 +313,15 @@ async def run_combined_workflow(content: str) -> None:
                 content, primary_domain, sub_domain_data, topic_data, entity_data, overall_trace_id
             ) if primary_domain and sub_domain_data and topic_data and entity_data else None
 
+            relationship_instance_data = await identify_relationship_instances(
+                content,
+                primary_domain,
+                sub_domain_data,
+                aggregated_instance_data,
+                relationship_data,
+                overall_trace_id,
+            ) if primary_domain and sub_domain_data and aggregated_instance_data and relationship_data else None
+
 
             # Log completion status of individual steps (optional)
             logger.info(f"Step 1 (Domain) Result: {'Success' if domain_data else 'Failed/Skipped'}")
@@ -331,6 +343,7 @@ async def run_combined_workflow(content: str) -> None:
             logger.info(f"Step 5g (Modality Instances) Result: {'Success' if modality_instance_data else 'Failed/Skipped'}")
             logger.info(f"Aggregated Instances Result: {'Success' if aggregated_instance_data else 'Failed/Skipped'}")
             logger.info(f"Step 6 (Relationships) Result: {'Success' if relationship_data else 'Failed/Skipped'}")
+            logger.info(f"Step 6b (Relationship Instances) Result: {'Success' if relationship_instance_data else 'Failed/Skipped'}")
 
 
     except Exception as e:
