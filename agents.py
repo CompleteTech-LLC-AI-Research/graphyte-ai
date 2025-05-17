@@ -15,13 +15,13 @@ from .schemas import (
     EntityTypeSchema, OntologyTypeSchema, EventSchema,
     StatementTypeSchema, EvidenceTypeSchema, MeasurementTypeSchema,
     ModalityTypeSchema, EntityInstanceSchema, SingleEntityTypeRelationshipSchema,
-    OntologyInstanceSchema
+    OntologyInstanceSchema, EventInstanceSchema
 )
 from .config import (
     DOMAIN_MODEL, SUB_DOMAIN_MODEL, TOPIC_MODEL,
     ENTITY_TYPE_MODEL, ONTOLOGY_TYPE_MODEL, EVENT_TYPE_MODEL,
     STATEMENT_TYPE_MODEL, EVIDENCE_TYPE_MODEL, MEASUREMENT_TYPE_MODEL,
-    MODALITY_TYPE_MODEL, ENTITY_INSTANCE_MODEL, ONTOLOGY_INSTANCE_MODEL, RELATIONSHIP_MODEL
+    MODALITY_TYPE_MODEL, ENTITY_INSTANCE_MODEL, ONTOLOGY_INSTANCE_MODEL, EVENT_INSTANCE_MODEL, RELATIONSHIP_MODEL
 )
 
 # --- Agent 1: Domain Identifier ---
@@ -228,6 +228,22 @@ ontology_instance_extractor_agent = Agent(
 )
 
 
+# --- Agent 5c: Event Instance Extractor ---
+event_instance_extractor_agent = Agent(
+    name="EventInstanceExtractorAgent",
+    instructions=(
+        "Extract specific event mentions from the provided text. "
+        "Use the context of domain, sub-domains, topics and identified event types to guide relevance. "
+        "For each mention provide the event type, the exact text span and character offsets. "
+        "Output ONLY using the provided EventInstanceSchema."
+    ),
+    model=EVENT_INSTANCE_MODEL,
+    output_type=EventInstanceSchema,
+    tools=[],
+    handoffs=[],
+)
+
+
 # --- Agent 6: Relationship Identifier (for one entity type) ---
 relationship_type_identifier_agent = Agent(
     name="RelationshipTypeIdentifierAgent",
@@ -261,6 +277,7 @@ all_agents = {
     "modality_type_identifier": modality_type_identifier_agent,
     "entity_instance_extractor": entity_instance_extractor_agent,
     "ontology_instance_extractor": ontology_instance_extractor_agent,
+    "event_instance_extractor": event_instance_extractor_agent,
     "relationship_identifier": relationship_type_identifier_agent,
     # Note: Base agent is not typically included here unless used directly
 }
