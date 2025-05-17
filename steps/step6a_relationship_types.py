@@ -1,4 +1,4 @@
-"""Step 5: Relationship type identification functionality."""
+"""Step 6a: Relationship type identification functionality."""
 
 import asyncio
 import logging
@@ -49,19 +49,19 @@ async def identify_relationship_types(
         A RelationshipSchema object if successful, None otherwise
     """
     if not primary_domain or not sub_domain_data or not topic_data or not entity_data:
-        logger.info("Skipping Step 5 because prerequisites were not identified.")
+        logger.info("Skipping Step 6a because prerequisites were not identified.")
         if not primary_domain:
-            print("Skipping Step 5 as primary domain was not identified.")
+            print("Skipping Step 6a as primary domain was not identified.")
         elif not sub_domain_data:
-            print("Skipping Step 5 as sub-domain identification failed.")
+            print("Skipping Step 6a as sub-domain identification failed.")
         elif not topic_data:
-            print("Skipping Step 5 as topic identification failed.")
+            print("Skipping Step 6a as topic identification failed.")
         elif not entity_data:
-            print("Skipping Step 5 as entity type identification failed.")
+            print("Skipping Step 6a as entity type identification failed.")
         return None
 
     # Extract unique entity types identified in Step 4a
-    entity_types_list_for_step5 = sorted(
+    entity_types_list_for_step6a = sorted(
         list(
             set(
                 item.entity_type.strip()
@@ -71,9 +71,9 @@ async def identify_relationship_types(
         )
     )
 
-    if not entity_types_list_for_step5:
+    if not entity_types_list_for_step6a:
         logger.warning(
-            "Step 4a identified an entity list, but it's empty after filtering/stripping. Skipping Step 5."
+            "Step 4a identified an entity list, but it's empty after filtering/stripping. Skipping Step 6a."
         )
         print(
             "\nStep 4a completed, but no specific non-empty entity types were identified. Cannot proceed to relationship analysis."
@@ -81,10 +81,10 @@ async def identify_relationship_types(
         return None
 
     logger.info(
-        f"--- Starting Step 5: PARALLEL Relationship ID (Agent: {relationship_type_identifier_agent.name}) for {len(entity_types_list_for_step5)} Entity Type(s) ---"
+        f"--- Starting Step 6a: PARALLEL Relationship ID (Agent: {relationship_type_identifier_agent.name}) for {len(entity_types_list_for_step6a)} Entity Type(s) ---"
     )
     print(
-        f"\n--- Running Step 5: PARALLEL Relationship ID using model: {RELATIONSHIP_MODEL} ---"
+        f"\n--- Running Step 6a: PARALLEL Relationship ID using model: {RELATIONSHIP_MODEL} ---"
     )
 
     relationship_tasks = []
@@ -118,9 +118,9 @@ async def identify_relationship_types(
     context_summary_for_relation_prompt += "\n".join(topic_summary_lines)
 
     # --- Prepare tasks for parallel execution ---
-    for index, current_entity_type in enumerate(entity_types_list_for_step5):
+    for index, current_entity_type in enumerate(entity_types_list_for_step6a):
         logger.debug(
-            f"Preparing task for Step 5 ({index+1}/{len(entity_types_list_for_step5)}): Entity Type Focus '{current_entity_type}'"
+            f"Preparing task for Step 6a ({index+1}/{len(entity_types_list_for_step6a)}): Entity Type Focus '{current_entity_type}'"
         )
 
         display_entity_type = (
@@ -128,25 +128,27 @@ async def identify_relationship_types(
             if len(current_entity_type) > 28
             else current_entity_type
         )
-        step5_iter_metadata_for_trace = {
+        step6a_iter_metadata_for_trace = {
             "workflow_step": f"5_relationship_id_batch_{index+1}",
             "agent_name": f"Relationship ID ({display_entity_type})",
             "actual_agent": str(relationship_type_identifier_agent.name),
             "primary_domain_input": primary_domain,
             "entity_type_focus": current_entity_type,
             "batch_index": str(index + 1),
-            "batch_size": str(len(entity_types_list_for_step5)),
+            "batch_size": str(len(entity_types_list_for_step6a)),
             "context_subdomain_count": str(len(sub_domain_data.identified_sub_domains)),
             "context_topic_count": str(
                 sum(len(t.identified_topics) for t in topic_data.sub_domain_topic_map)
             ),
             "context_entity_type_count": str(len(entity_data.identified_entities)),
         }
-        step5_iter_run_config = RunConfig(
-            trace_metadata={k: str(v) for k, v in step5_iter_metadata_for_trace.items()}
+        step6a_iter_run_config = RunConfig(
+            trace_metadata={
+                k: str(v) for k, v in step6a_iter_metadata_for_trace.items()
+            }
         )
 
-        step5_iter_input_list: List[TResponseInputItem] = [
+        step6a_iter_input_list: List[TResponseInputItem] = [
             {
                 "role": "user",
                 "content": (
@@ -166,8 +168,8 @@ async def identify_relationship_types(
         task = asyncio.create_task(
             run_agent_with_retry(
                 agent=relationship_type_identifier_agent,
-                input_data=step5_iter_input_list,
-                config=step5_iter_run_config,
+                input_data=step6a_iter_input_list,
+                config=step6a_iter_run_config,
             ),
             name=f"RelTask_{current_entity_type[:20]}",
         )
@@ -177,12 +179,12 @@ async def identify_relationship_types(
     # --- Execute tasks in parallel ---
     if (
         not relationship_tasks
-    ):  # Should not happen if entity_types_list_for_step5 was populated, but safeguard
+    ):  # Should not happen if entity_types_list_for_step6a was populated, but safeguard
         logger.warning(
-            "No relationship identification tasks were prepared in Step 5. Skipping."
+            "No relationship identification tasks were prepared in Step 6a. Skipping."
         )
         print(
-            "No relationship identification tasks prepared. Skipping Step 5 execution."
+            "No relationship identification tasks prepared. Skipping Step 6a execution."
         )
         return None
 
@@ -192,32 +194,34 @@ async def identify_relationship_types(
     print(
         f"Running relationship identification for {len(relationship_tasks)} entity types concurrently..."
     )
-    step5_results_list = await asyncio.gather(
+    step6a_results_list = await asyncio.gather(
         *relationship_tasks, return_exceptions=True
     )
     logger.info("Parallel relationship identification tasks completed.")
     print("Parallel relationship identification runs finished. Processing results...")
 
     # --- Process results from parallel execution ---
-    for index, step5_iter_result_or_exc in enumerate(step5_results_list):
+    for index, step6a_iter_result_or_exc in enumerate(step6a_results_list):
         current_entity_type = entity_types_being_processed[index]
 
         try:
             # Handle exceptions from gather
-            if isinstance(step5_iter_result_or_exc, Exception):
+            if isinstance(step6a_iter_result_or_exc, Exception):
                 logger.error(
-                    f"Step 5 task for focus '{current_entity_type}' failed with exception: {step5_iter_result_or_exc}",
-                    exc_info=step5_iter_result_or_exc,
+                    f"Step 6a task for focus '{current_entity_type}' failed with exception: {step6a_iter_result_or_exc}",
+                    exc_info=step6a_iter_result_or_exc,
                 )
                 print(
-                    f"  - Error processing relationships for focus '{current_entity_type}': {type(step5_iter_result_or_exc).__name__}: {step5_iter_result_or_exc}"
+                    f"  - Error processing relationships for focus '{current_entity_type}': {type(step6a_iter_result_or_exc).__name__}: {step6a_iter_result_or_exc}"
                 )
                 continue
 
             # Process successful result
-            step5_iter_result: Optional[RunResult] = step5_iter_result_or_exc
-            if step5_iter_result:
-                potential_output_iter = getattr(step5_iter_result, "final_output", None)
+            step6a_iter_result: Optional[RunResult] = step6a_iter_result_or_exc
+            if step6a_iter_result:
+                potential_output_iter = getattr(
+                    step6a_iter_result, "final_output", None
+                )
                 single_relation_data: Optional[SingleEntityTypeRelationshipSchema] = (
                     None
                 )
@@ -262,7 +266,7 @@ async def identify_relationship_types(
                     # Log and print details for this focus type
                     relation_details = single_relation_data.identified_relationships
                     logger.info(
-                        f"Step 5 Result for focus '{current_entity_type}': Found {len(relation_details)} relationships."
+                        f"Step 6a Result for focus '{current_entity_type}': Found {len(relation_details)} relationships."
                     )
                     print(
                         f"\n  --- Relationships involving Focus Type: '{current_entity_type}' ---"
@@ -286,7 +290,7 @@ async def identify_relationship_types(
                     )
             else:
                 logger.error(
-                    f"Step 5 task for focus '{current_entity_type}' returned no result object."
+                    f"Step 6a task for focus '{current_entity_type}' returned no result object."
                 )
                 print(
                     f"  - Error: Failed to get result object for relationship focus '{current_entity_type}'."
@@ -314,10 +318,10 @@ async def identify_relationship_types(
     # === After Parallel Runs: Aggregate and Save Final Relationship Output ===
     if not aggregated_relationship_results:
         logger.warning(
-            "Step 5 (Parallel Relationship ID) completed, but no relationship results were successfully aggregated. Final relationship file not saved."
+            "Step 6a (Parallel Relationship ID) completed, but no relationship results were successfully aggregated. Final relationship file not saved."
         )
         print(
-            "\nStep 5 (Parallel) completed, but no relationship results were successfully aggregated. Final relationship file not saved."
+            "\nStep 6a (Parallel) completed, but no relationship results were successfully aggregated. Final relationship file not saved."
         )
         return None
 
@@ -343,7 +347,7 @@ async def identify_relationship_types(
         f"Final Aggregated Relationships (Structured):\n{relationship_data.model_dump_json(indent=2)}"
     )
     print(
-        "\n--- Final Aggregated Relationships (Structured Output from Step 5 Parallel Runs) ---"
+        "\n--- Final Aggregated Relationships (Structured Output from Step 6a Parallel Runs) ---"
     )
     print(relationship_data.model_dump_json(indent=2))
 
@@ -376,19 +380,19 @@ async def identify_relationship_types(
         },
         "trace_information": {
             "trace_id": overall_trace_id or "N/A",
-            "notes": f"Aggregated from PARALLEL calls to {relationship_type_identifier_agent.name} in Step 5 of workflow.",
+            "notes": f"Aggregated from PARALLEL calls to {relationship_type_identifier_agent.name} in Step 6a of workflow.",
         },
     }
-    save_result_step5_final = direct_save_json_output(
+    save_result_step6a_final = direct_save_json_output(
         RELATIONSHIP_OUTPUT_DIR,
         RELATIONSHIP_OUTPUT_FILENAME,
         relationship_output_content,
         overall_trace_id,
     )
     print("\nSaving final aggregated relationship output file...")
-    print(f"  - {save_result_step5_final}")
+    print(f"  - {save_result_step6a_final}")
     logger.info(
-        f"Result of saving final aggregated relationship output: {save_result_step5_final}"
+        f"Result of saving final aggregated relationship output: {save_result_step6a_final}"
     )
 
     return relationship_data

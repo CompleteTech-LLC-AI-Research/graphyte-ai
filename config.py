@@ -67,7 +67,7 @@ MEASUREMENT_INSTANCE_OUTPUT_DIR = (
     OUTPUTS_DIR_BASE / "05f_measurement_instance_extractor"
 )
 MODALITY_INSTANCE_OUTPUT_DIR = OUTPUTS_DIR_BASE / "05g_modality_instance_extractor"
-AGGREGATED_INSTANCE_OUTPUT_DIR = OUTPUTS_DIR_BASE / "05h_aggregated_instances"
+AGGREGATED_INSTANCE_OUTPUT_DIR = OUTPUTS_DIR_BASE / "06c_aggregated_instances"
 RELATIONSHIP_OUTPUT_DIR = OUTPUTS_DIR_BASE / "06_relationship_identifier"
 RELATIONSHIP_INSTANCE_OUTPUT_DIR = (
     OUTPUTS_DIR_BASE / "06b_relationship_instance_extractor"
