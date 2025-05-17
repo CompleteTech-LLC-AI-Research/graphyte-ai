@@ -135,6 +135,20 @@ cat report.txt | python -m agentic_team_workflow
 python -m agentic_team_workflow
 ```
 
+### Generating the Workflow Graph
+
+Use the helper script to create a Graphviz description of the planned agent workflow:
+
+```bash
+python scripts/generate_workflow_graph.py
+```
+
+This writes the definition to `workflow.gv`. Render it with Graphviz as needed, for example:
+
+```bash
+dot -Tpng workflow.gv -o workflow.png
+```
+
 *(Note: Assumes the main execution script is within a package structure like `agentic_team_workflow` as shown in the provided file structure. Adjust the command if your entry point is different.)*
 
 ### Configuration
