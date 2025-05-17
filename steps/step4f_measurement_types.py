@@ -29,7 +29,7 @@ async def identify_measurement_types(
     topic_data: TopicSchema,
     overall_trace_id: Optional[str] = None
 ) -> Optional[MeasurementTypeSchema]:
-    """Identify measurement types (with relevance scores) based on domain, sub-domains, and topics.
+    """Identify measurement types based on domain, sub-domains, and topics.
 
     Args:
         content: The text content to analyze
@@ -78,7 +78,7 @@ async def identify_measurement_types(
         {"role": "user", "content": (
             f"Analyze the following text to identify key MEASUREMENT types (e.g., Financial Metric, Physical Quantity, Performance Indicator, Survey Result, Count, Ratio, Percentage). "
             f"Use the provided context:\n{context_summary_for_prompt}\n\n"
-            f"Identify measurement types relevant to this overall context and provide a relevance score (0.0-1.0) for each. "
+            f"Identify measurement types relevant to this overall context. "
             f"Output ONLY using the required MeasurementTypeSchema, including the primary_domain and analyzed_sub_domains list in the output."
         )},
         {"role": "user", "content": f"--- Full Text Start ---\n{content}\n--- Full Text End ---"}
@@ -114,15 +114,15 @@ async def identify_measurement_types(
                     logger.warning(f"Analyzed sub-domains in Step 4f output {measurement_data.analyzed_sub_domains} differs from Step 2 input { [sd.sub_domain for sd in sub_domain_data.identified_sub_domains]}. Using Step 4f's list.")
 
                 # Log and print results
-                measurement_log_items = [f"{item.measurement_type} (Score: {item.relevance_score:.2f})" for item in measurement_data.identified_measurements]
+                measurement_log_items = [item.measurement_type for item in measurement_data.identified_measurements]
                 logger.info(f"Step 4f Result: Identified Measurement Types = [{', '.join(measurement_log_items)}]")
-                logger.info(f"Step 4f Result (Structured Measurements with Scores):\n{measurement_data.model_dump_json(indent=2)}")
-                print("\n--- Measurement Types Identified (Structured Output from Step 4f with Relevance) ---")
+                logger.info(f"Step 4f Result (Structured Measurements):\n{measurement_data.model_dump_json(indent=2)}")
+                print("\n--- Measurement Types Identified (Structured Output from Step 4f) ---")
                 print(measurement_data.model_dump_json(indent=2))
 
                 # Save results
-                logger.info("Saving measurement type identifier output (with scores) to file...")
-                print("\nSaving measurement type output file (with scores)...")
+                logger.info("Saving measurement type identifier output to file...")
+                print("\nSaving measurement type output file...")
                 measurement_type_output_content = {
                     "primary_domain": measurement_data.primary_domain,
                     "analyzed_sub_domains": measurement_data.analyzed_sub_domains,

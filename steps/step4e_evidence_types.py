@@ -29,7 +29,7 @@ async def identify_evidence_types(
     topic_data: TopicSchema,
     overall_trace_id: Optional[str] = None
 ) -> Optional[EvidenceTypeSchema]:
-    """Identify evidence types (with relevance scores) based on domain, sub-domains, and topics.
+    """Identify evidence types based on domain, sub-domains, and topics.
 
     Args:
         content: The text content to analyze
@@ -78,7 +78,7 @@ async def identify_evidence_types(
         {"role": "user", "content": (
             f"Analyze the following text to identify key EVIDENCE types (e.g., Testimony, Document, Statistic, Anecdote, Expert Opinion). "
             f"Use the provided context:\n{context_summary_for_prompt}\n\n"
-            f"Identify evidence types relevant to this overall context and provide a relevance score (0.0-1.0) for each. "
+            f"Identify evidence types relevant to this overall context. "
             f"Output ONLY using the required EvidenceTypeSchema, including the primary_domain and analyzed_sub_domains list in the output."
         )},
         {"role": "user", "content": f"--- Full Text Start ---\n{content}\n--- Full Text End ---"}
@@ -114,15 +114,15 @@ async def identify_evidence_types(
                     logger.warning(f"Analyzed sub-domains in Step 4e output {evidence_data.analyzed_sub_domains} differs from Step 2 input { [sd.sub_domain for sd in sub_domain_data.identified_sub_domains]}. Using Step 4e's list.")
 
                 # Log and print results
-                evidence_log_items = [f"{item.evidence_type} (Score: {item.relevance_score:.2f})" for item in evidence_data.identified_evidence]
+                evidence_log_items = [item.evidence_type for item in evidence_data.identified_evidence]
                 logger.info(f"Step 4e Result: Identified Evidence Types = [{', '.join(evidence_log_items)}]")
-                logger.info(f"Step 4e Result (Structured Evidence with Scores):\n{evidence_data.model_dump_json(indent=2)}")
-                print("\n--- Evidence Types Identified (Structured Output from Step 4e with Relevance) ---")
+                logger.info(f"Step 4e Result (Structured Evidence):\n{evidence_data.model_dump_json(indent=2)}")
+                print("\n--- Evidence Types Identified (Structured Output from Step 4e) ---")
                 print(evidence_data.model_dump_json(indent=2))
 
                 # Save results
-                logger.info("Saving evidence type identifier output (with scores) to file...")
-                print("\nSaving evidence type output file (with scores)...")
+                logger.info("Saving evidence type identifier output to file...")
+                print("\nSaving evidence type output file...")
                 evidence_type_output_content = {
                     "primary_domain": evidence_data.primary_domain,
                     "analyzed_sub_domains": evidence_data.analyzed_sub_domains,

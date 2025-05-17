@@ -17,7 +17,7 @@ from ..utils import direct_save_json_output, run_agent_with_retry
 logger = logging.getLogger(__name__)
 
 async def identify_domain(content: str, overall_trace_id: Optional[str] = None) -> Optional[DomainSchema]:
-    """Identify the primary domain (with confidence) from the input content.
+    """Identify the primary domain from the input content.
     
     Args:
         content: The text content to analyze
@@ -61,16 +61,14 @@ async def identify_domain(content: str, overall_trace_id: Optional[str] = None) 
 
         if domain_data and domain_data.domain:
             primary_domain = domain_data.domain.strip()
-            domain_confidence = domain_data.confidence_score
             if primary_domain:
-                logger.info(f"Step 1 Result: Primary Domain Identified = {primary_domain} (Confidence: {domain_confidence:.2f})")
-                print(f"Step 1 Result: Primary Domain Identified = {primary_domain} (Confidence: {domain_confidence:.2f})")
+                logger.info(f"Step 1 Result: Primary Domain Identified = {primary_domain}")
+                print(f"Step 1 Result: Primary Domain Identified = {primary_domain}")
 
-                logger.info("Saving primary domain identifier output (with confidence) to file...")
-                print("\nSaving primary domain output file (with confidence)...")
+                logger.info("Saving primary domain identifier output to file...")
+                print("\nSaving primary domain output file...")
                 domain_output_content: Dict[str, Any] = {
                     "identified_primary_domain": primary_domain,
-                    "confidence_score": domain_confidence,
                     "analysis_details": {
                         "source_text_length": len(content),
                         "model_used": DOMAIN_MODEL,

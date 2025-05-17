@@ -23,7 +23,7 @@ async def identify_entity_types(
     topic_data: TopicSchema,
     overall_trace_id: Optional[str] = None
 ) -> Optional[EntityTypeSchema]:
-    """Identify entity types (with relevance scores) based on domain, sub-domains, and topics.
+    """Identify entity types based on domain, sub-domains, and topics.
     
     Args:
         content: The text content to analyze
@@ -74,7 +74,7 @@ async def identify_entity_types(
             f"Analyze the following text to identify key entity types (e.g., PERSON, ORGANIZATION, LOCATION, DATE, "
             f"MONEY, PRODUCT, EVENT, TECHNOLOGY, SCIENTIFIC_CONCEPT, ECONOMIC_INDICATOR). "
             f"Use the provided context:\n{context_summary_for_prompt}\n\n"
-            f"Identify entity types relevant to this overall context and provide a relevance score (0.0-1.0) for each. "
+            f"Identify entity types relevant to this overall context. "
             f"Output ONLY using the required EntityTypeSchema, including the primary_domain and analyzed_sub_domains list in the output."
         )},
         {"role": "user", "content": f"--- Full Text Start ---\n{content}\n--- Full Text End ---"}
@@ -114,15 +114,15 @@ async def identify_entity_types(
                     # entity_data.analyzed_sub_domains = [sd.sub_domain for sd in sub_domain_data.identified_sub_domains]
 
                 # Log and print results
-                entity_log_items = [f"{item.entity_type} (Score: {item.relevance_score:.2f})" for item in entity_data.identified_entities]
+                entity_log_items = [item.entity_type for item in entity_data.identified_entities]
                 logger.info(f"Step 4a Result: Identified Entity Types = [{', '.join(entity_log_items)}]")
-                logger.info(f"Step 4a Result (Structured Entities with Scores):\n{entity_data.model_dump_json(indent=2)}")
-                print("\n--- Entity Types Identified (Structured Output from Step 4a with Relevance) ---")
+                logger.info(f"Step 4a Result (Structured Entities):\n{entity_data.model_dump_json(indent=2)}")
+                print("\n--- Entity Types Identified (Structured Output from Step 4a) ---")
                 print(entity_data.model_dump_json(indent=2))
 
                 # Save results
-                logger.info("Saving entity type identifier output (with scores) to file...")
-                print("\nSaving entity type output file (with scores)...")
+                logger.info("Saving entity type identifier output to file...")
+                print("\nSaving entity type output file...")
                 entity_type_output_content = {
                     "primary_domain": entity_data.primary_domain,
                     "analyzed_sub_domains": entity_data.analyzed_sub_domains, # Use agent's output list
