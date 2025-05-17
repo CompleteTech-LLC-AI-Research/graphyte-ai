@@ -26,12 +26,12 @@ except ImportError:
 # Import local configuration
 from .config import (
     DOMAIN_MODEL, SUB_DOMAIN_MODEL, TOPIC_MODEL,
-    ENTITY_TYPE_MODEL, ONTOLOGY_TYPE_MODEL, EVENT_TYPE_MODEL, STATEMENT_TYPE_MODEL, EVIDENCE_TYPE_MODEL, MEASUREMENT_TYPE_MODEL, MODALITY_TYPE_MODEL, ENTITY_INSTANCE_MODEL, ONTOLOGY_INSTANCE_MODEL, EVENT_INSTANCE_MODEL, STATEMENT_INSTANCE_MODEL, RELATIONSHIP_MODEL,
+    ENTITY_TYPE_MODEL, ONTOLOGY_TYPE_MODEL, EVENT_TYPE_MODEL, STATEMENT_TYPE_MODEL, EVIDENCE_TYPE_MODEL, MEASUREMENT_TYPE_MODEL, MODALITY_TYPE_MODEL, ENTITY_INSTANCE_MODEL, ONTOLOGY_INSTANCE_MODEL, EVENT_INSTANCE_MODEL, STATEMENT_INSTANCE_MODEL, EVIDENCE_INSTANCE_MODEL, RELATIONSHIP_MODEL,
     AGENT_TRACE_BASE_URL
 )
 from .schemas import (
     EntityTypeSchema, OntologyTypeSchema, EventSchema, StatementTypeSchema, EvidenceTypeSchema,
-    MeasurementTypeSchema, ModalityTypeSchema, EntityInstanceSchema, OntologyInstanceSchema, EventInstanceSchema, RelationshipSchema
+    MeasurementTypeSchema, ModalityTypeSchema, EntityInstanceSchema, OntologyInstanceSchema, EventInstanceSchema, StatementInstanceSchema, EvidenceInstanceSchema, RelationshipSchema
 )
 
 # Import steps
@@ -50,6 +50,7 @@ from .steps import (
     identify_ontology_instances,
     identify_event_instances,
     identify_statement_instances,
+    identify_evidence_instances,
     identify_relationship_types,
     generate_workflow_visualization
 )
@@ -80,6 +81,7 @@ async def run_combined_workflow(content: str) -> None:
     ontology_instance_data = None
     event_instance_data = None
     statement_instance_data = None
+    evidence_instance_data = None
     relationship_data = None
     primary_domain = None
 
@@ -102,6 +104,7 @@ async def run_combined_workflow(content: str) -> None:
         "ontology_instance_model": ONTOLOGY_INSTANCE_MODEL,
         "event_instance_model": EVENT_INSTANCE_MODEL,
         "statement_instance_model": STATEMENT_INSTANCE_MODEL,
+        "evidence_instance_model": EVIDENCE_INSTANCE_MODEL,
         "relationship_model": RELATIONSHIP_MODEL,
     }
 
@@ -263,6 +266,11 @@ async def run_combined_workflow(content: str) -> None:
                 content, primary_domain, sub_domain_data, topic_data, statement_data, overall_trace_id
             ) if primary_domain and sub_domain_data and topic_data and statement_data else None
 
+            # === Step 5e: Extract Evidence Instances ===
+            evidence_instance_data = await identify_evidence_instances(
+                content, primary_domain, sub_domain_data, topic_data, evidence_data, overall_trace_id
+            ) if primary_domain and sub_domain_data and topic_data and evidence_data else None
+
             # === Step 6: Identify Relationships in PARALLEL for each Entity Type (Based on Context) ===
             # Note: This step currently only uses entity_data. If relationships involving other types were needed,
             # the step would require modification to accept and use that data.
@@ -286,6 +294,7 @@ async def run_combined_workflow(content: str) -> None:
             logger.info(f"Step 5b (Ontology Instances) Result: {'Success' if ontology_instance_data else 'Failed/Skipped'}")
             logger.info(f"Step 5c (Event Instances) Result: {'Success' if event_instance_data else 'Failed/Skipped'}")
             logger.info(f"Step 5d (Statement Instances) Result: {'Success' if statement_instance_data else 'Failed/Skipped'}")
+            logger.info(f"Step 5e (Evidence Instances) Result: {'Success' if evidence_instance_data else 'Failed/Skipped'}")
             logger.info(f"Step 6 (Relationships) Result: {'Success' if relationship_data else 'Failed/Skipped'}")
 
 

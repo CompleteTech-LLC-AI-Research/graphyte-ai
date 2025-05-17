@@ -312,6 +312,25 @@ class StatementInstanceSchema(BaseModel):
     analysis_summary: Optional[str] = Field(None, description="Optional summary of the statement instance extraction process.")
 
 
+# --- Schema for Step 5e: Evidence Instance Extraction ---
+
+class EvidenceInstanceDetail(BaseModel):
+    """Represents a specific evidence mention extracted from the text."""
+    evidence_type: str = Field(description="The evidence type as classified in previous steps.")
+    text_span: str = Field(description="Exact text of the evidence mention.")
+    start_char: Optional[int] = Field(None, description="Start character index of the mention in the full text (0-based).")
+    end_char: Optional[int] = Field(None, description="End character index of the mention in the full text (exclusive).")
+
+
+class EvidenceInstanceSchema(BaseModel):
+    """Schema defining extracted evidence instances within the document."""
+    primary_domain: str = Field(description="The primary domain context for the extraction.")
+    analyzed_sub_domains: List[str] = Field(description="Sub-domains used as context during extraction.")
+    analyzed_evidence_types: List[str] = Field(description="Evidence types considered when extracting instances.")
+    identified_instances: List[EvidenceInstanceDetail] = Field(description="List of extracted evidence mentions with type and text span.")
+    analysis_summary: Optional[str] = Field(None, description="Optional summary of the evidence instance extraction process.")
+
+
 # --- Schemas for Step 5 (Relationship Identification) ---
 
 # Nested schema for a specific identified relationship between entities
