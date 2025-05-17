@@ -6,14 +6,11 @@ from pydantic import BaseModel, Field
 
 # Schema for primary domain output (Agent 1)
 class DomainSchema(BaseModel):
-    """Schema defining the expected output: the primary domain and confidence."""
+    """Schema defining the expected output: the primary domain."""
     domain: str = Field(description=(
         "The single, most relevant high-level domain identified in the text "
         "(e.g., Technology, Finance, Healthcare, Arts, Science, Entertainment, Sports, Politics)."
     ))
-    confidence_score: float = Field(
-        description="The confidence level (0.0 to 1.0) that the identified domain is the correct primary domain for the entire text."
-    )
 
 # Simple schema used when only a confidence score is needed
 class ConfidenceScoreSchema(BaseModel):
@@ -46,60 +43,50 @@ class ClarityScoreSchema(BaseModel):
         description="Optional identifier for the evaluated item."
     )
 
-# Nested schema for a sub-domain and its relevance score
-class SubDomainWithScore(BaseModel):
-    """Represents a single identified sub-domain and its relevance score."""
+# Nested schema for a sub-domain
+class SubDomainDetail(BaseModel):
+    """Represents a single identified sub-domain."""
     sub_domain: str = Field(description="The specific sub-domain identified within the text.")
-    relevance_score: float = Field(
-        description="The relevance of this sub-domain to the primary domain, as a score between 0.0 (not relevant) and 1.0 (highly relevant)."
-    )
 
 # Schema for sub-domain analysis output (Agent 2)
 class SubDomainSchema(BaseModel):
-    """Schema defining the expected output for sub-domain analysis, including relevance scores."""
+    """Schema defining the expected output for sub-domain analysis."""
     primary_domain: str = Field(description="The primary domain that was provided as input.")
-    identified_sub_domains: List[SubDomainWithScore] = Field(
-        description="A list of specific sub-domains identified within the text related to the primary domain, each with a relevance score. Should not be empty if analysis was possible."
+    identified_sub_domains: List[SubDomainDetail] = Field(
+        description="A list of specific sub-domains identified within the text related to the primary domain. Should not be empty if analysis was possible."
     )
     analysis_summary: Optional[str] = Field(None, description="A brief summary or commentary on the sub-domain analysis.")
 
-# Nested schema for a topic and its relevance score
-class TopicWithScore(BaseModel):
-    """Represents a single identified topic and its relevance score."""
+# Nested schema for a topic
+class TopicDetail(BaseModel):
+    """Represents a single identified topic."""
     topic: str = Field(description="The specific topic identified within the text.")
-    relevance_score: float = Field(
-        description="The relevance of this topic to the specified sub-domain, as a score between 0.0 (not relevant) and 1.0 (highly relevant)."
-    )
 
 # Schema for the output of the *single* topic identification agent call (Agent 3)
 class SingleSubDomainTopicSchema(BaseModel):
-    """Represents topics and their relevance scores identified for a single sub-domain."""
+    """Represents topics identified for a single sub-domain."""
     sub_domain: str = Field(description="The sub-domain being analyzed.")
-    identified_topics: List[TopicWithScore] = Field(
-        description="A list of specific topics identified within the text related to this sub-domain, each with a relevance score."
+    identified_topics: List[TopicDetail] = Field(
+        description="A list of specific topics identified within the text related to this sub-domain."
     )
 
 # Schema for the final, aggregated topic output (used for saving)
 class TopicSchema(BaseModel):
     """Schema defining the final aggregated output for topic identification analysis."""
     primary_domain: str = Field(description="The overall primary domain provided.")
-    sub_domain_topic_map: List[SingleSubDomainTopicSchema] = Field(description="A list mapping each analyzed sub-domain to its identified topics and their scores.")
+    sub_domain_topic_map: List[SingleSubDomainTopicSchema] = Field(description="A list mapping each analyzed sub-domain to its identified topics.")
     analysis_summary: Optional[str] = Field(None, description="Optional summary of the topic identification process across all sub-domains (can be generated or left null).")
 
 
 # --- Schemas for Step 4 Agents (4a, 4b, 4c, 4d, 4e, 4f, 4g) ---
 
-# Nested schema for an entity type and relevance score (Agent 4a)
-class EntityWithTypeScore(BaseModel):
-    """Represents an entity type and its relevance score."""
+# Nested schema for an entity type (Agent 4a)
+class EntityTypeDetail(BaseModel):
+    """Represents an entity type."""
     entity_type: str = Field(description=(
         "The classified type of the entity (e.g., PERSON, ORGANIZATION, LOCATION, "
         "DATE, MONEY, PRODUCT, TECHNOLOGY, SCIENTIFIC_CONCEPT, ECONOMIC_INDICATOR)." # Removed EVENT as it's now separate
     ))
-    relevance_score: float = Field(
-        description="The relevance score (0.0 to 1.0) of this entity type to the overall context "
-                    "(document, domain, sub-domains, topics)."
-    )
 
 # Schema for entity type analysis output (Agent 4a)
 class EntityTypeSchema(BaseModel):
@@ -108,22 +95,18 @@ class EntityTypeSchema(BaseModel):
     analyzed_sub_domains: List[str] = Field(
         description="The list of sub-domains used as context during entity identification."
     )
-    identified_entities: List[EntityWithTypeScore] = Field(
-        description="A list of specific entity types identified within the text, relevant to the provided context, each with a relevance score."
+    identified_entities: List[EntityTypeDetail] = Field(
+        description="A list of specific entity types identified within the text, relevant to the provided context."
     )
     analysis_summary: Optional[str] = Field(None, description="A brief summary or commentary on the entity identification analysis.")
 
 
-# Nested schema for an ontology type/concept and relevance score (Agent 4b)
-class OntologyTypeWithScore(BaseModel):
-    """Represents an ontology type/concept and its relevance score."""
+# Nested schema for an ontology type/concept (Agent 4b)
+class OntologyTypeDetail(BaseModel):
+    """Represents an ontology type or concept."""
     ontology_type: str = Field(description=(
         "The identified ontology type or concept (e.g., Schema.org:Person, FIBO:FinancialInstrument, GO:biological_process)."
     ))
-    relevance_score: float = Field(
-        description="The relevance score (0.0 to 1.0) of this ontology type to the overall context "
-                    "(document, domain, sub-domains, topics)."
-    )
 
 # Schema for ontology type analysis output (Agent 4b)
 class OntologyTypeSchema(BaseModel):
@@ -132,24 +115,20 @@ class OntologyTypeSchema(BaseModel):
     analyzed_sub_domains: List[str] = Field(
         description="The list of sub-domains used as context during ontology identification."
     )
-    identified_ontology_types: List[OntologyTypeWithScore] = Field(
-        description="A list of specific ontology types/concepts identified within the text, relevant to the provided context, each with a relevance score."
+    identified_ontology_types: List[OntologyTypeDetail] = Field(
+        description="A list of specific ontology types or concepts identified within the text, relevant to the provided context."
     )
     analysis_summary: Optional[str] = Field(None, description="A brief summary or commentary on the ontology identification analysis.")
 
 
-# Nested schema for an event type and relevance score (Agent 4c)
+# Nested schema for an event type (Agent 4c)
 class EventDetail(BaseModel):
-    """Represents an identified event type and its relevance score."""
+    """Represents an identified event type."""
     event_type: str = Field(description=(
         "The classified type of the event identified (e.g., Meeting, Acquisition, Conference, Product Launch, Election, Natural Disaster)."
     ))
     # Optional: Add description if needed, like 'Brief description of the event instance'
     # description: Optional[str] = Field(None, description="A brief description or name of the specific event instance.")
-    relevance_score: float = Field(
-        description="The relevance score (0.0 to 1.0) of this event type to the overall context "
-                    "(document, domain, sub-domains, topics)."
-    )
 
 # Schema for event type analysis output (Agent 4c)
 class EventSchema(BaseModel):
@@ -159,23 +138,19 @@ class EventSchema(BaseModel):
         description="The list of sub-domains used as context during event identification."
     )
     identified_events: List[EventDetail] = Field(
-        description="A list of specific event types identified within the text, relevant to the provided context, each with a relevance score."
+        description="A list of specific event types identified within the text, relevant to the provided context."
     )
     analysis_summary: Optional[str] = Field(None, description="A brief summary or commentary on the event identification analysis.")
 
 
-# Nested schema for a statement type and relevance score (Agent 4d)
+# Nested schema for a statement type (Agent 4d)
 class StatementDetail(BaseModel):
-    """Represents an identified statement type and its relevance score."""
+    """Represents an identified statement type."""
     statement_type: str = Field(description=(
         "The classified type of the statement identified (e.g., Fact, Claim, Opinion, Question, Instruction, Hypothesis, Prediction)."
     ))
     # Optional: Add a snippet of the text classified
     # supporting_text: Optional[str] = Field(None, description="The text snippet classified as this statement type.")
-    relevance_score: float = Field(
-        description="The relevance score (0.0 to 1.0) of this statement type to the overall context "
-                    "(document, domain, sub-domains, topics)."
-    )
 
 # Schema for statement type analysis output (Agent 4d)
 class StatementTypeSchema(BaseModel):
@@ -185,21 +160,17 @@ class StatementTypeSchema(BaseModel):
         description="The list of sub-domains used as context during statement identification."
     )
     identified_statements: List[StatementDetail] = Field(
-        description="A list of specific statement types identified within the text, relevant to the provided context, each with a relevance score."
+        description="A list of specific statement types identified within the text, relevant to the provided context."
     )
     analysis_summary: Optional[str] = Field(None, description="A brief summary or commentary on the statement identification analysis.")
 
 
-# Nested schema for an evidence type and relevance score (Agent 4e)
+# Nested schema for an evidence type (Agent 4e)
 class EvidenceDetail(BaseModel):
-    """Represents an identified evidence type and its relevance score."""
+    """Represents an identified evidence type."""
     evidence_type: str = Field(description=(
         "The classified type of evidence identified (e.g., Testimony, Document, Statistic, Anecdote, Expert Opinion, Observation, Example)."
     ))
-    relevance_score: float = Field(
-        description="The relevance score (0.0 to 1.0) of this evidence type to the overall context "
-                    "(document, domain, sub-domains, topics)."
-    )
 
 # Schema for evidence type analysis output (Agent 4e)
 class EvidenceTypeSchema(BaseModel):
@@ -209,24 +180,20 @@ class EvidenceTypeSchema(BaseModel):
         description="The list of sub-domains used as context during evidence identification."
     )
     identified_evidence: List[EvidenceDetail] = Field(
-        description="A list of specific evidence types identified within the text, relevant to the provided context, each with a relevance score."
+        description="A list of specific evidence types identified within the text, relevant to the provided context."
     )
     analysis_summary: Optional[str] = Field(None, description="A brief summary or commentary on the evidence identification analysis.")
 
 
-# Nested schema for a measurement type and relevance score (Agent 4f)
+# Nested schema for a measurement type (Agent 4f)
 class MeasurementDetail(BaseModel):
-    """Represents an identified measurement type and its relevance score."""
+    """Represents an identified measurement type."""
     measurement_type: str = Field(description=(
         "The classified type of measurement identified (e.g., Financial Metric, Physical Quantity, Performance Indicator, Survey Result, Count, Ratio, Percentage)."
     ))
     # Optional: Add unit or value if needed
     # unit: Optional[str] = Field(None, description="The unit of the measurement, if applicable.")
     # value: Optional[str] = Field(None, description="The actual value mentioned, if relevant.")
-    relevance_score: float = Field(
-        description="The relevance score (0.0 to 1.0) of this measurement type to the overall context "
-                    "(document, domain, sub-domains, topics)."
-    )
 
 # Schema for measurement type analysis output (Agent 4f)
 class MeasurementTypeSchema(BaseModel):
@@ -236,23 +203,19 @@ class MeasurementTypeSchema(BaseModel):
         description="The list of sub-domains used as context during measurement identification."
     )
     identified_measurements: List[MeasurementDetail] = Field(
-        description="A list of specific measurement types identified within the text, relevant to the provided context, each with a relevance score."
+        description="A list of specific measurement types identified within the text, relevant to the provided context."
     )
     analysis_summary: Optional[str] = Field(None, description="A brief summary or commentary on the measurement identification analysis.")
 
 
-# Nested schema for a modality type and relevance score (Agent 4g - NEW)
+# Nested schema for a modality type (Agent 4g - NEW)
 class ModalityDetail(BaseModel):
-    """Represents an identified modality type and its relevance score."""
+    """Represents an identified modality type."""
     modality_type: str = Field(description=(
         "The classified type of modality identified (e.g., Text, Image, Video, Audio, Table, Chart, Code Snippet, Mathematical Formula)."
     ))
     # Optional: Add count or description if needed
     # count: Optional[int] = Field(None, description="Number of times this modality is represented, if applicable.")
-    relevance_score: float = Field(
-        description="The relevance score (0.0 to 1.0) of this modality type to the overall context "
-                    "(document, domain, sub-domains, topics)."
-    )
 
 # Schema for modality type analysis output (Agent 4g - NEW)
 class ModalityTypeSchema(BaseModel):
@@ -262,7 +225,7 @@ class ModalityTypeSchema(BaseModel):
         description="The list of sub-domains used as context during modality identification."
     )
     identified_modalities: List[ModalityDetail] = Field(
-        description="A list of specific modality types identified within the text, relevant to the provided context, each with a relevance score."
+        description="A list of specific modality types identified within the text, relevant to the provided context."
     )
     analysis_summary: Optional[str] = Field(None, description="A brief summary or commentary on the modality identification analysis.")
 
@@ -406,9 +369,6 @@ class ModalityInstanceSchema(BaseModel):
 class RelationshipDetail(BaseModel):
     """Represents a single identified relationship between two entities."""
     relationship_type: str = Field(description="The nature of the relationship identified (e.g., WORKS_FOR, LOCATED_IN, ACQUIRED, PARTNERS_WITH, COMPETES_WITH).")
-    relevance_score: float = Field(
-        description="The relevance or confidence score (0.0 to 1.0) for this specific relationship based on the text and context."
-    )
     # Optional: Add a field for the sentence/snippet supporting the relationship
     # supporting_text: Optional[str] = Field(None, description="The text snippet that supports this relationship finding.")
 
@@ -444,7 +404,6 @@ class RelationshipInstanceDetail(BaseModel):
     subject: str = Field(description="The text span or identifier of the subject entity.")
     relationship_type: str = Field(description="The type of relationship linking the subject and object.")
     object: str = Field(description="The text span or identifier of the object entity.")
-    relevance_score: float = Field(description="Confidence score (0.0 to 1.0) that the relationship instance is correctly identified.")
     snippet: Optional[str] = Field(None, description="Optional text snippet supporting this relationship instance.")
 
 
