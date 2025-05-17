@@ -255,6 +255,25 @@ class EntityInstanceSchema(BaseModel):
     analysis_summary: Optional[str] = Field(None, description="Optional summary of the entity instance extraction process.")
 
 
+# --- Schema for Step 5b: Ontology Instance Extraction ---
+
+class OntologyInstanceDetail(BaseModel):
+    """Represents a specific ontology concept mention extracted from the text."""
+    ontology_type: str = Field(description="The ontology type or concept as classified in previous steps.")
+    text_span: str = Field(description="Exact text of the ontology concept mention.")
+    start_char: Optional[int] = Field(None, description="Start character index of the mention in the full text (0-based).")
+    end_char: Optional[int] = Field(None, description="End character index of the mention in the full text (exclusive).")
+
+
+class OntologyInstanceSchema(BaseModel):
+    """Schema defining extracted ontology instances within the document."""
+    primary_domain: str = Field(description="The primary domain context for the extraction.")
+    analyzed_sub_domains: List[str] = Field(description="Sub-domains used as context during extraction.")
+    analyzed_ontology_types: List[str] = Field(description="Ontology types considered when extracting instances.")
+    identified_instances: List[OntologyInstanceDetail] = Field(description="List of extracted ontology concept mentions with type and text span.")
+    analysis_summary: Optional[str] = Field(None, description="Optional summary of the ontology instance extraction process.")
+
+
 # --- Schemas for Step 5 (Relationship Identification) ---
 
 # Nested schema for a specific identified relationship between entities
