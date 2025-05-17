@@ -102,6 +102,31 @@ base_type_identifier_agent = Agent(
 )
 
 
+# --- Base Agent for Instance Extraction (Agents 5a-5g) ---
+# This base agent provides a template for extracting specific concept instances
+# from text. It mirrors the placeholder style of the type identifier template
+# so specialized extractors can format it with their own parameters.
+
+base_instance_extractor_instructions_template = (
+    "Extract specific {concept_description} from the provided text. "
+    "Use context of domain, sub-domains, topics and {type_list_name} identified "
+    "earlier to guide relevance.\n"
+    "For EACH mention provide:\n"
+    "1. The corresponding {type_field}.\n"
+    "2. The exact text span of the mention and its character offsets.\n"
+    "Output ONLY using the provided schema structure. Ensure the {list_field_name} "
+    "field contains a list of items with the correct fields."
+)
+
+base_instance_extractor_agent = Agent(
+    name="BaseInstanceExtractorAgent",  # Generic; overridden in clones
+    instructions=base_instance_extractor_instructions_template,  # Formatted in clones
+    # No default model or output_type; set these in specific clones
+    tools=[],
+    handoffs=[],
+)
+
+
 # --- Agent 4a: Entity Type Identifier ---
 entity_type_identifier_agent = base_type_identifier_agent.clone(
     name="EntityTypeIdentifierAgent",
