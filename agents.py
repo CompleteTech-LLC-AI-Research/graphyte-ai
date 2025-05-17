@@ -15,7 +15,7 @@ from .schemas import (
     EntityTypeSchema, OntologyTypeSchema, EventSchema,
     StatementTypeSchema, EvidenceTypeSchema, MeasurementTypeSchema,
     ModalityTypeSchema, EntityInstanceSchema, StatementInstanceSchema,
-    EvidenceInstanceSchema, MeasurementInstanceSchema,
+    EvidenceInstanceSchema, MeasurementInstanceSchema, ModalityInstanceSchema,
     SingleEntityTypeRelationshipSchema,
     OntologyInstanceSchema, EventInstanceSchema
 )
@@ -25,6 +25,7 @@ from .config import (
     STATEMENT_TYPE_MODEL, EVIDENCE_TYPE_MODEL, MEASUREMENT_TYPE_MODEL,
     MODALITY_TYPE_MODEL, ENTITY_INSTANCE_MODEL, ONTOLOGY_INSTANCE_MODEL,
     EVENT_INSTANCE_MODEL, STATEMENT_INSTANCE_MODEL, EVIDENCE_INSTANCE_MODEL, MEASUREMENT_INSTANCE_MODEL,
+    MODALITY_INSTANCE_MODEL,
     RELATIONSHIP_MODEL
 )
 
@@ -296,6 +297,22 @@ measurement_instance_extractor_agent = Agent(
 )
 
 
+# --- Agent 5g: Modality Instance Extractor ---
+modality_instance_extractor_agent = Agent(
+    name="ModalityInstanceExtractorAgent",
+    instructions=(
+        "Extract specific modality references from the provided text. "
+        "Use the context of domain, sub-domains, topics and identified modality types to guide relevance. "
+        "For each mention provide the modality type, the exact text span and character offsets. "
+        "Output ONLY using the provided ModalityInstanceSchema."
+    ),
+    model=MODALITY_INSTANCE_MODEL,
+    output_type=ModalityInstanceSchema,
+    tools=[],
+    handoffs=[],
+)
+
+
 # --- Agent 6: Relationship Identifier (for one entity type) ---
 relationship_type_identifier_agent = Agent(
     name="RelationshipTypeIdentifierAgent",
@@ -333,6 +350,7 @@ all_agents = {
     "statement_instance_extractor": statement_instance_extractor_agent,
     "evidence_instance_extractor": evidence_instance_extractor_agent,
     "measurement_instance_extractor": measurement_instance_extractor_agent,
+    "modality_instance_extractor": modality_instance_extractor_agent,
     "relationship_identifier": relationship_type_identifier_agent,
     # Note: Base agent is not typically included here unless used directly
 }

@@ -350,6 +350,25 @@ class MeasurementInstanceSchema(BaseModel):
     analysis_summary: Optional[str] = Field(None, description="Optional summary of the measurement instance extraction process.")
 
 
+# --- Schema for Step 5g: Modality Instance Extraction ---
+
+class ModalityInstanceDetail(BaseModel):
+    """Represents a specific modality mention extracted from the text."""
+    modality_type: str = Field(description="The modality type as classified in previous steps.")
+    text_span: str = Field(description="Exact text of the modality mention or reference.")
+    start_char: Optional[int] = Field(None, description="Start character index of the mention in the full text (0-based).")
+    end_char: Optional[int] = Field(None, description="End character index of the mention in the full text (exclusive).")
+
+
+class ModalityInstanceSchema(BaseModel):
+    """Schema defining extracted modality instances within the document."""
+    primary_domain: str = Field(description="The primary domain context for the extraction.")
+    analyzed_sub_domains: List[str] = Field(description="Sub-domains used as context during extraction.")
+    analyzed_modality_types: List[str] = Field(description="Modality types considered when extracting instances.")
+    identified_instances: List[ModalityInstanceDetail] = Field(description="List of extracted modality mentions with type and text span.")
+    analysis_summary: Optional[str] = Field(None, description="Optional summary of the modality instance extraction process.")
+
+
 # --- Schemas for Step 5 (Relationship Identification) ---
 
 # Nested schema for a specific identified relationship between entities
