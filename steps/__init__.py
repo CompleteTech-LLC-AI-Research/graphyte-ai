@@ -14,6 +14,7 @@ from .step4g_modality_types import identify_modality_types # Added import for ne
 from .step5_entity_instances import identify_entity_instances
 from .step5b_ontology_instances import identify_ontology_instances
 from .step5c_event_instances import identify_event_instances
+from .step5d_statement_instances import identify_statement_instances
 from .step5_relationship_types import identify_relationship_types
 from .visualization import generate_workflow_visualization
 
@@ -31,6 +32,7 @@ __all__ = [
     "identify_entity_instances",
     "identify_ontology_instances",
     "identify_event_instances",
+    "identify_statement_instances",
     "identify_relationship_types",
     "generate_workflow_visualization",
 ]
