@@ -23,6 +23,17 @@ class ConfidenceScoreSchema(BaseModel):
         description="Confidence level (0.0 to 1.0) expressing certainty in the related analysis."
     )
 
+# Simple schema used when only a relevance score is needed
+class RelevanceScoreSchema(BaseModel):
+    """Represents just a relevance score for a particular item."""
+
+    relevance_score: float = Field(
+        description=(
+            "Relevance level (0.0 to 1.0) expressing how strongly the item relates "
+            "to the provided context."
+        )
+    )
+
 # Nested schema for a sub-domain and its relevance score
 class SubDomainWithScore(BaseModel):
     """Represents a single identified sub-domain and its relevance score."""
