@@ -1,4 +1,4 @@
-"""Aggregate outputs of Step 5 instance extraction agents."""
+"""Aggregate outputs of instance extraction agents including relationships."""
 
 import logging
 from datetime import datetime, timezone
@@ -14,6 +14,7 @@ from ..schemas import (
     EvidenceInstanceSchema,
     MeasurementInstanceSchema,
     ModalityInstanceSchema,
+    RelationshipInstanceSchema,
 )
 from ..config import (
     AGGREGATED_INSTANCE_OUTPUT_DIR,
@@ -34,9 +35,10 @@ def aggregate_extracted_instances(
     evidence_instances: Optional[EvidenceInstanceSchema] = None,
     measurement_instances: Optional[MeasurementInstanceSchema] = None,
     modality_instances: Optional[ModalityInstanceSchema] = None,
+    relationship_instances: Optional[RelationshipInstanceSchema] = None,
     overall_trace_id: Optional[str] = None,
 ) -> Optional[ExtractedInstancesSchema]:
-    """Combine individual instance outputs from Steps 5a–5g."""
+    """Combine individual instance outputs from Steps 5a–5g and relationship instances."""
 
     if not primary_domain or not sub_domain_data:
         logger.warning(
@@ -54,8 +56,9 @@ def aggregate_extracted_instances(
         evidence_instances=evidence_instances.identified_instances if evidence_instances else [],
         measurement_instances=measurement_instances.identified_instances if measurement_instances else [],
         modality_instances=modality_instances.identified_instances if modality_instances else [],
+        relationship_instances=relationship_instances.identified_instances if relationship_instances else [],
         analysis_summary=(
-            "Aggregated instance results from Steps 5a-5g."
+            "Aggregated instance results from Steps 5a-5g and relationship instances."
         ),
     )
 
@@ -76,6 +79,7 @@ def aggregate_extracted_instances(
         "evidence_instances": [i.model_dump() for i in aggregated.evidence_instances],
         "measurement_instances": [i.model_dump() for i in aggregated.measurement_instances],
         "modality_instances": [i.model_dump() for i in aggregated.modality_instances],
+        "relationship_instances": [i.model_dump() for i in aggregated.relationship_instances],
         "analysis_summary": aggregated.analysis_summary,
         "analysis_details": {
             "timestamp_utc": datetime.now(timezone.utc).isoformat(),
