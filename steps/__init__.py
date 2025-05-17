@@ -12,6 +12,7 @@ from .step4e_evidence_types import identify_evidence_types
 from .step4f_measurement_types import identify_measurement_types
 from .step4g_modality_types import identify_modality_types # Added import for new step (4g)
 from .step5_entity_instances import identify_entity_instances
+from .step5b_ontology_instances import identify_ontology_instances
 from .step5_relationship_types import identify_relationship_types
 from .visualization import generate_workflow_visualization
 
@@ -27,6 +28,7 @@ __all__ = [
     "identify_measurement_types",
     "identify_modality_types", # Added export for new step (4g)
     "identify_entity_instances",
+    "identify_ontology_instances",
     "identify_relationship_types",
     "generate_workflow_visualization",
 ]
