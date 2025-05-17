@@ -223,6 +223,22 @@ base_instance_extractor_agent = Agent(
 )
 
 
+# --- Base Agent for Scoring ---
+# Template agent used for calculating confidence or relevance scores.
+base_scoring_instructions_template = (
+    "Evaluate the provided {item_description} and assign a numeric {score_type} between 0.0 and 1.0. "
+    "Use any available context to inform your assessment. "
+    "Output ONLY the result using the provided schema structure."
+)
+
+base_scoring_agent = Agent(
+    name="BaseScoringAgent",  # Generic name, overridden in clones
+    instructions=base_scoring_instructions_template,
+    tools=[],
+    handoffs=[],
+)
+
+
 # --- Agent 5: Entity Instance Extractor ---
 # Clone of base_instance_extractor_agent specialized for entity mentions.
 entity_instance_extractor_agent = base_instance_extractor_agent.clone(
