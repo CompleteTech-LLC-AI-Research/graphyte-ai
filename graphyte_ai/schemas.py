@@ -922,7 +922,11 @@ class RelationshipSchema(BaseModel):
 
 # --- Schema for Step 6: Relationship Instance Extraction ---
 class RelationshipInstanceDetail(BaseModel):
-    """Represents a specific relationship instance between two entities with optional scoring information."""
+    """Represents a specific relationship instance between two entities.
+
+    Optional scoring fields ``confidence_score``, ``relevance_score`` and
+    ``clarity_score`` may be provided to rate the extracted instance.
+    """
 
     subject: str = Field(
         description="The text span or identifier of the subject entity."
