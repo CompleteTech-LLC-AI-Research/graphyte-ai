@@ -56,53 +56,6 @@ from .config import (
     DEFAULT_MODEL,
 )
 
-# --- Agent 1: Domain Identifier ---
-domain_identifier_agent = Agent(
-    name="DomainIdentifierAgent",
-    instructions=(
-        "Your primary task: Analyze the provided text content and identify the single, most relevant high-level domain. "
-        "Examples include: Finance, Technology, Healthcare, Arts, Science, Entertainment, Sports, "
-        "Politics, Education, Environment, Business, Lifestyle, Travel, etc. "
-        "Focus on the *primary* topic. The 'domain' field must contain a single concise label representing this dominant topic.\n"
-        "If several potential domains appear in the text, select the one with the greatest overall coverage.\n"
-        "Output ONLY valid JSON matching the DomainSchema. No additional commentary."
-    ),
-    model=DOMAIN_MODEL,
-    output_type=DomainSchema,
-    tools=[],
-    handoffs=[],
-)
-
-# --- Agent 2: Sub-Domain Identifier ---
-sub_domain_identifier_agent = Agent(
-    name="SubDomainIdentifierAgent",
-    instructions=(
-        "You are given text content and its primary domain. Your task is to identify specific sub-domains "
-        "within the text related to the primary domain. "
-        "Also provide a brief overall analysis summary.\n"
-        "Output ONLY the result using the provided SubDomainSchema. Ensure the identified_sub_domains field contains a list of items, each with a sub_domain string."
-    ),
-    model=SUB_DOMAIN_MODEL,
-    tools=[],
-    handoffs=[],
-    output_type=SubDomainSchema,
-)
-
-# --- Agent 3: Topic Identifier (for one sub-domain) ---
-topic_identifier_agent = Agent(
-    name="TopicIdentifierAgent",
-    instructions=(
-        "You are provided with text, its primary domain, and ONE specific sub-domain. "
-        "Your task: Analyze the *full text* and identify specific, relevant topics mentioned within the text that fall under the provided single sub-domain. "
-        "Output the results ONLY using the provided SingleSubDomainTopicSchema, including the topic string for each item in the identified_topics list."
-    ),
-    model=TOPIC_MODEL,
-    tools=[],
-    handoffs=[],
-    output_type=SingleSubDomainTopicSchema,
-)
-
-
 # --- Base Agent for Scoring ---
 # Template agent used for calculating confidence or relevance scores.
 base_scoring_instructions_template = (
@@ -158,6 +111,94 @@ clarity_score_agent = base_scoring_agent.clone(
     output_type=ClarityScoreSchema,
 )
 
+# --- Agent 1: Domain Identifier ---
+domain_identifier_agent = Agent(
+    name="DomainIdentifierAgent",
+    instructions=(
+        "Your primary task: Analyze the provided text content and identify the single, most relevant high-level domain. "
+        "Examples include: Finance, Technology, Healthcare, Arts, Science, Entertainment, Sports, "
+        "Politics, Education, Environment, Business, Lifestyle, Travel, etc. "
+        "Focus on the *primary* topic. The 'domain' field must contain a single concise label representing this dominant topic.\n"
+        "If several potential domains appear in the text, select the one with the greatest overall coverage.\n"
+        "Use the confidence_score, relevance_score, and clarity_score tools to assign scores for the result.\n"
+        "Output ONLY valid JSON matching the DomainSchema and include confidence_score, relevance_score, and clarity_score fields."
+    ),
+    model=DOMAIN_MODEL,
+    output_type=DomainSchema,
+    tools=[
+        confidence_score_agent.as_tool(
+            tool_name="confidence_score",
+            tool_description="Evaluate confidence between 0.0 and 1.0",
+        ),
+        relevance_score_agent.as_tool(
+            tool_name="relevance_score",
+            tool_description="Judge relevance between 0.0 and 1.0",
+        ),
+        clarity_score_agent.as_tool(
+            tool_name="clarity_score",
+            tool_description="Assess clarity between 0.0 and 1.0",
+        ),
+    ],
+    handoffs=[],
+)
+
+# --- Agent 2: Sub-Domain Identifier ---
+sub_domain_identifier_agent = Agent(
+    name="SubDomainIdentifierAgent",
+    instructions=(
+        "You are given text content and its primary domain. Your task is to identify specific sub-domains "
+        "within the text related to the primary domain. "
+        "Also provide a brief overall analysis summary.\n"
+        "Use the confidence_score, relevance_score, and clarity_score tools to score each identified sub-domain.\n"
+        "Output ONLY the result using the provided SubDomainSchema. Ensure the identified_sub_domains field contains a list of items each with sub_domain, confidence_score, relevance_score, and clarity_score."
+    ),
+    model=SUB_DOMAIN_MODEL,
+    tools=[
+        confidence_score_agent.as_tool(
+            tool_name="confidence_score",
+            tool_description="Evaluate confidence between 0.0 and 1.0",
+        ),
+        relevance_score_agent.as_tool(
+            tool_name="relevance_score",
+            tool_description="Judge relevance between 0.0 and 1.0",
+        ),
+        clarity_score_agent.as_tool(
+            tool_name="clarity_score",
+            tool_description="Assess clarity between 0.0 and 1.0",
+        ),
+    ],
+    handoffs=[],
+    output_type=SubDomainSchema,
+)
+
+# --- Agent 3: Topic Identifier (for one sub-domain) ---
+topic_identifier_agent = Agent(
+    name="TopicIdentifierAgent",
+    instructions=(
+        "You are provided with text, its primary domain, and ONE specific sub-domain. "
+        "Your task: Analyze the *full text* and identify specific, relevant topics mentioned within the text that fall under the provided single sub-domain. "
+        "Use the confidence_score, relevance_score, and clarity_score tools to score each identified topic.\n"
+        "Output the results ONLY using the provided SingleSubDomainTopicSchema, including the topic string for each item in the identified_topics list along with confidence_score, relevance_score, and clarity_score."
+    ),
+    model=TOPIC_MODEL,
+    tools=[
+        confidence_score_agent.as_tool(
+            tool_name="confidence_score",
+            tool_description="Evaluate confidence between 0.0 and 1.0",
+        ),
+        relevance_score_agent.as_tool(
+            tool_name="relevance_score",
+            tool_description="Judge relevance between 0.0 and 1.0",
+        ),
+        clarity_score_agent.as_tool(
+            tool_name="clarity_score",
+            tool_description="Assess clarity between 0.0 and 1.0",
+        ),
+    ],
+    handoffs=[],
+    output_type=SingleSubDomainTopicSchema,
+)
+
 
 # --- Base Agent for Type Identification (Agents 4a-4g) ---
 # This base agent provides a template for identifying various concept types.
@@ -170,6 +211,7 @@ base_type_identifier_instructions_template = (
     "For EACH identified {concept_type_singular}, provide:\n"
     "1. The classified {concept_type_singular}.\n"
     "Leverage the confidence_score_agent, relevance_score_agent, and clarity_score_agent tools to score each candidate before finalizing your list.\n"
+    "Include confidence_score, relevance_score, and clarity_score for each returned item.\n"
     "Provide an overall analysis summary if applicable.\n"
     "Output ONLY the result using the provided schema structure. Ensure the {list_field_name} field contains a list of items, each with '{item_field_name}'. Include the 'primary_domain' and 'analyzed_sub_domains' fields from the context in your output schema."
 )
