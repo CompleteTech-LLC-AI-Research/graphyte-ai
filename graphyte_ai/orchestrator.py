@@ -123,25 +123,25 @@ async def run_combined_workflow(content: str) -> None:
     # Metadata for the single overall trace
     overall_trace_metadata = {
         "workflow_name": "Document Analysis",
-        "input_content_length": str(len(content)),
-        "start_timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        #"input_content_length": str(len(content)),
+        #"start_timestamp_utc": datetime.now(timezone.utc).isoformat(),
         "domain_model": DOMAIN_MODEL,
         "sub_domain_model": SUB_DOMAIN_MODEL,
         "topic_model": TOPIC_MODEL,
         "entity_type_model": ENTITY_TYPE_MODEL,
-        "ontology_type_model": ONTOLOGY_TYPE_MODEL,
+        #"ontology_type_model": ONTOLOGY_TYPE_MODEL,
         "event_type_model": EVENT_TYPE_MODEL,
         "statement_type_model": STATEMENT_TYPE_MODEL,
         "evidence_type_model": EVIDENCE_TYPE_MODEL,
         "measurement_type_model": MEASUREMENT_TYPE_MODEL,
-        "modality_type_model": MODALITY_TYPE_MODEL,  # Added modality model (4g)
+        #"modality_type_model": MODALITY_TYPE_MODEL,  # Added modality model (4g)
         "entity_instance_model": ENTITY_INSTANCE_MODEL,
-        "ontology_instance_model": ONTOLOGY_INSTANCE_MODEL,
+        #"ontology_instance_model": ONTOLOGY_INSTANCE_MODEL,
         "event_instance_model": EVENT_INSTANCE_MODEL,
         "statement_instance_model": STATEMENT_INSTANCE_MODEL,
         "evidence_instance_model": EVIDENCE_INSTANCE_MODEL,
         "measurement_instance_model": MEASUREMENT_INSTANCE_MODEL,
-        "modality_instance_model": MODALITY_INSTANCE_MODEL,
+        #"modality_instance_model": MODALITY_INSTANCE_MODEL,
         "relationship_model": RELATIONSHIP_MODEL,
         "relationship_instance_model": RELATIONSHIP_INSTANCE_MODEL,
     }
