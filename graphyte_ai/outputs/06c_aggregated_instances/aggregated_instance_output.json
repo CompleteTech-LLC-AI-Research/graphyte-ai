@@ -1,0 +1,26 @@
+{
+  "primary_domain": "Science",
+  "analyzed_sub_domains": [
+    "Artificial Intelligence",
+    "Cognitive Science",
+    "Neuroscience",
+    "Psychology",
+    "Computer Science"
+  ],
+  "entity_instances": [],
+  "ontology_instances": [],
+  "event_instances": [],
+  "statement_instances": [],
+  "evidence_instances": [],
+  "measurement_instances": [],
+  "modality_instances": [],
+  "relationship_instances": [],
+  "analysis_summary": "Aggregated instance results from Steps 5a-5g and Step 6b relationship instances.",
+  "analysis_details": {
+    "timestamp_utc": "2025-05-18T02:30:42.234029+00:00"
+  },
+  "trace_information": {
+    "trace_id": "trace_6448b34d87934264a31740792238c3bf",
+    "notes": "Aggregated from instance extraction steps"
+  }
+}
