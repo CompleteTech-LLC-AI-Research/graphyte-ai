@@ -8,7 +8,7 @@ from pydantic import ValidationError
 
 from agents import RunConfig, RunResult, TResponseInputItem  # type: ignore[attr-defined]
 
-from ..agents import relationship_extractor_agent
+from ..workflow_agents import relationship_extractor_agent
 from ..config import (
     RELATIONSHIP_INSTANCE_MODEL,
     RELATIONSHIP_INSTANCE_OUTPUT_DIR,

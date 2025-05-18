@@ -3,7 +3,7 @@
 __all__ = [
     "main",
     "orchestrator",
-    "agents",
+    "workflow_agents",
     "steps",
     "config",
     "schemas",

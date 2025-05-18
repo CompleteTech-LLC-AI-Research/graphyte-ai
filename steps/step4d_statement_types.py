@@ -13,7 +13,7 @@ except ImportError:
     print("Error: 'agents' SDK library not found or incomplete for step 4d.")
     raise
 
-from ..agents import statement_type_identifier_agent  # Import the new agent
+from ..workflow_agents import statement_type_identifier_agent  # Import the new agent
 from ..config import (
     STATEMENT_TYPE_MODEL,
     STATEMENT_TYPE_OUTPUT_DIR,

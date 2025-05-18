@@ -8,7 +8,7 @@ from pydantic import ValidationError
 
 from agents import RunConfig, RunResult  # type: ignore[attr-defined]
 
-from ..agents import domain_identifier_agent
+from ..workflow_agents import domain_identifier_agent
 from ..config import DOMAIN_MODEL, DOMAIN_OUTPUT_DIR, DOMAIN_OUTPUT_FILENAME
 from ..schemas import DomainSchema
 from ..utils import direct_save_json_output, run_agent_with_retry

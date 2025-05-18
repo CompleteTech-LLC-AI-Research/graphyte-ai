@@ -157,7 +157,7 @@ dot -Tpng outputs/00_visualization/agent_workflow_graph.gv -o workflow.png
 * **LLM Models:** Configure the specific LLM models used by each agent via environment variables (e.g., `DOMAIN_IDENTIFIER_MODEL`, `RELATIONSHIP_IDENTIFIER_MODEL`). See `.env.example`.
 * **API Keys:** Provide necessary API keys in the `.env` file.
 * **Output Directories:** Output JSON files for each step are saved in the `outputs/` directory by default.
-* **(Advanced):** Modify agent prompts and schemas in the `agents.py` and `schemas.py` files for domain-specific tuning.
+* **(Advanced):** Modify agent prompts and schemas in the `workflow_agents.py` and `schemas.py` files for domain-specific tuning.
 * **(Advanced):** Configure target Knowledge Graph connection details for the final integration step (implementation specific).
 
 ## Use Cases

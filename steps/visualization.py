@@ -3,7 +3,7 @@
 import logging
 import sys
 
-from ..agents import domain_identifier_agent
+from ..workflow_agents import domain_identifier_agent
 from ..config import VISUALIZATION_OUTPUT_DIR, VISUALIZATION_FILENAME
 
 logger = logging.getLogger(__name__)
