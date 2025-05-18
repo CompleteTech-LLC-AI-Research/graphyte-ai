@@ -1,5 +1,8 @@
 {
-  "identified_primary_domain": "Science",
+  "domain": "Science",
+  "confidence_score": null,
+  "relevance_score": null,
+  "clarity_score": null,
   "analysis_details": {
     "source_text_length": 66691,
     "model_used": "gpt-4o-mini",
