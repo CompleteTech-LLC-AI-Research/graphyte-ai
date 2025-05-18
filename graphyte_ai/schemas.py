@@ -345,6 +345,18 @@ class EntityInstanceDetail(BaseModel):
         None,
         description="End character index of the mention in the full text (exclusive).",
     )
+    confidence_score: Optional[float] = Field(
+        None,
+        description="Optional confidence score (0.0 to 1.0) for this entity instance.",
+    )
+    relevance_score: Optional[float] = Field(
+        None,
+        description="Optional relevance score (0.0 to 1.0) for this entity instance.",
+    )
+    clarity_score: Optional[float] = Field(
+        None,
+        description="Optional clarity score (0.0 to 1.0) for this entity instance.",
+    )
 
 
 class EntityInstanceSchema(BaseModel):
@@ -384,6 +396,18 @@ class OntologyInstanceDetail(BaseModel):
     end_char: Optional[int] = Field(
         None,
         description="End character index of the mention in the full text (exclusive).",
+    )
+    confidence_score: Optional[float] = Field(
+        None,
+        description="Optional confidence score (0.0 to 1.0) for this ontology instance.",
+    )
+    relevance_score: Optional[float] = Field(
+        None,
+        description="Optional relevance score (0.0 to 1.0) for this ontology instance.",
+    )
+    clarity_score: Optional[float] = Field(
+        None,
+        description="Optional clarity score (0.0 to 1.0) for this ontology instance.",
     )
 
 
@@ -425,6 +449,18 @@ class EventInstanceDetail(BaseModel):
     end_char: Optional[int] = Field(
         None,
         description="End character index of the mention in the full text (exclusive).",
+    )
+    confidence_score: Optional[float] = Field(
+        None,
+        description="Optional confidence score (0.0 to 1.0) for this event instance.",
+    )
+    relevance_score: Optional[float] = Field(
+        None,
+        description="Optional relevance score (0.0 to 1.0) for this event instance.",
+    )
+    clarity_score: Optional[float] = Field(
+        None,
+        description="Optional clarity score (0.0 to 1.0) for this event instance.",
     )
 
 
@@ -468,6 +504,18 @@ class StatementInstanceDetail(BaseModel):
         None,
         description="End character index of the statement in the full text (exclusive).",
     )
+    confidence_score: Optional[float] = Field(
+        None,
+        description="Optional confidence score (0.0 to 1.0) for this statement instance.",
+    )
+    relevance_score: Optional[float] = Field(
+        None,
+        description="Optional relevance score (0.0 to 1.0) for this statement instance.",
+    )
+    clarity_score: Optional[float] = Field(
+        None,
+        description="Optional clarity score (0.0 to 1.0) for this statement instance.",
+    )
 
 
 class StatementInstanceSchema(BaseModel):
@@ -509,6 +557,18 @@ class EvidenceInstanceDetail(BaseModel):
         None,
         description="End character index of the mention in the full text (exclusive).",
     )
+    confidence_score: Optional[float] = Field(
+        None,
+        description="Optional confidence score (0.0 to 1.0) for this evidence instance.",
+    )
+    relevance_score: Optional[float] = Field(
+        None,
+        description="Optional relevance score (0.0 to 1.0) for this evidence instance.",
+    )
+    clarity_score: Optional[float] = Field(
+        None,
+        description="Optional clarity score (0.0 to 1.0) for this evidence instance.",
+    )
 
 
 class EvidenceInstanceSchema(BaseModel):
@@ -549,6 +609,18 @@ class MeasurementInstanceDetail(BaseModel):
     end_char: Optional[int] = Field(
         None,
         description="End character index of the mention in the full text (exclusive).",
+    )
+    confidence_score: Optional[float] = Field(
+        None,
+        description="Optional confidence score (0.0 to 1.0) for this measurement instance.",
+    )
+    relevance_score: Optional[float] = Field(
+        None,
+        description="Optional relevance score (0.0 to 1.0) for this measurement instance.",
+    )
+    clarity_score: Optional[float] = Field(
+        None,
+        description="Optional clarity score (0.0 to 1.0) for this measurement instance.",
     )
 
 
@@ -593,6 +665,18 @@ class ModalityInstanceDetail(BaseModel):
         None,
         description="End character index of the mention in the full text (exclusive).",
     )
+    confidence_score: Optional[float] = Field(
+        None,
+        description="Optional confidence score (0.0 to 1.0) for this modality instance.",
+    )
+    relevance_score: Optional[float] = Field(
+        None,
+        description="Optional relevance score (0.0 to 1.0) for this modality instance.",
+    )
+    clarity_score: Optional[float] = Field(
+        None,
+        description="Optional clarity score (0.0 to 1.0) for this modality instance.",
+    )
 
 
 class ModalityInstanceSchema(BaseModel):
@@ -625,6 +709,10 @@ class RelationshipDetail(BaseModel):
 
     relationship_type: str = Field(
         description="The nature of the relationship identified (e.g., WORKS_FOR, LOCATED_IN, ACQUIRED, PARTNERS_WITH, COMPETES_WITH)."
+    )
+    relevance_score: Optional[float] = Field(
+        None,
+        description="Optional relevance score (0.0 to 1.0) for identifying this relationship type.",
     )
     # Optional: Add a field for the sentence/snippet supporting the relationship
     # supporting_text: Optional[str] = Field(None, description="The text snippet that supports this relationship finding.")
@@ -678,6 +766,18 @@ class RelationshipInstanceDetail(BaseModel):
     object: str = Field(description="The text span or identifier of the object entity.")
     snippet: Optional[str] = Field(
         None, description="Optional text snippet supporting this relationship instance."
+    )
+    confidence_score: Optional[float] = Field(
+        None,
+        description="Optional confidence score (0.0 to 1.0) for this relationship instance.",
+    )
+    relevance_score: Optional[float] = Field(
+        None,
+        description="Optional relevance score (0.0 to 1.0) for this relationship instance.",
+    )
+    clarity_score: Optional[float] = Field(
+        None,
+        description="Optional clarity score (0.0 to 1.0) for this relationship instance.",
     )
 
 
