@@ -53,7 +53,7 @@ from .config import (  # noqa: E402
 from .schemas import (  # noqa: E402
     EntityTypeSchema,
     OntologyTypeSchema,
-    EventSchema,
+    EventTypeSchema,
     StatementTypeSchema,
     EvidenceTypeSchema,
     MeasurementTypeSchema,
@@ -314,7 +314,7 @@ async def run_combined_workflow(content: str) -> None:
                     )
                     event_data = None
                 elif (
-                    isinstance(potential_event_data, EventSchema)
+                    isinstance(potential_event_data, EventTypeSchema)
                     or potential_event_data is None
                 ):
                     event_data = potential_event_data

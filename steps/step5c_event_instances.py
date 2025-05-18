@@ -14,7 +14,7 @@ from ..config import (
     EVENT_INSTANCE_OUTPUT_DIR,
     EVENT_INSTANCE_OUTPUT_FILENAME,
 )
-from ..schemas import EventInstanceSchema, SubDomainSchema, TopicSchema, EventSchema
+from ..schemas import EventInstanceSchema, SubDomainSchema, TopicSchema, EventTypeSchema
 from ..utils import direct_save_json_output, run_agent_with_retry
 
 logger = logging.getLogger(__name__)
@@ -25,7 +25,7 @@ async def identify_event_instances(
     primary_domain: str,
     sub_domain_data: SubDomainSchema,
     topic_data: TopicSchema,
-    event_data: EventSchema,
+    event_data: EventTypeSchema,
     overall_trace_id: Optional[str] = None,
 ) -> Optional[EventInstanceSchema]:
     """Extract specific event mentions from the text based on context."""
