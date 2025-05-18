@@ -13,7 +13,7 @@ except ImportError:
     print("Error: 'agents' SDK library not found or incomplete for step 4e.")
     raise
 
-from ..agents import evidence_type_identifier_agent  # Import the new agent
+from ..workflow_agents import evidence_type_identifier_agent  # Import the new agent
 from ..config import (
     EVIDENCE_TYPE_MODEL,
     EVIDENCE_TYPE_OUTPUT_DIR,

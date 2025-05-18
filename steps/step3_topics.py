@@ -9,7 +9,7 @@ from pydantic import ValidationError
 
 from agents import RunConfig, RunResult, TResponseInputItem  # type: ignore[attr-defined]
 
-from ..agents import topic_identifier_agent
+from ..workflow_agents import topic_identifier_agent
 from ..config import TOPIC_MODEL, TOPIC_OUTPUT_DIR, TOPIC_OUTPUT_FILENAME
 from ..schemas import TopicSchema, SingleSubDomainTopicSchema, SubDomainSchema
 from ..utils import direct_save_json_output, run_agent_with_retry

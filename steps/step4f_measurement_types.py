@@ -13,7 +13,7 @@ except ImportError:
     print("Error: 'agents' SDK library not found or incomplete for step 4f.")
     raise
 
-from ..agents import measurement_type_identifier_agent  # Import the new agent
+from ..workflow_agents import measurement_type_identifier_agent  # Import the new agent
 from ..config import (
     MEASUREMENT_TYPE_MODEL,
     MEASUREMENT_TYPE_OUTPUT_DIR,

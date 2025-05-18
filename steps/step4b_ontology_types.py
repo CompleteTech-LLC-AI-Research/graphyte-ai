@@ -8,7 +8,7 @@ from pydantic import ValidationError
 
 from agents import RunConfig, RunResult, TResponseInputItem  # type: ignore[attr-defined]
 
-from ..agents import ontology_type_identifier_agent
+from ..workflow_agents import ontology_type_identifier_agent
 from ..config import (
     ONTOLOGY_TYPE_MODEL,
     ONTOLOGY_TYPE_OUTPUT_DIR,

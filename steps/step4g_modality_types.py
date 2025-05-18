@@ -13,7 +13,7 @@ except ImportError:
     print("Error: 'agents' SDK library not found or incomplete for step 4g.")
     raise
 
-from ..agents import modality_type_identifier_agent  # Import the new agent
+from ..workflow_agents import modality_type_identifier_agent  # Import the new agent
 from ..config import (
     MODALITY_TYPE_MODEL,
     MODALITY_TYPE_OUTPUT_DIR,

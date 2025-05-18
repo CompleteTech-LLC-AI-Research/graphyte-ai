@@ -8,7 +8,7 @@ from pydantic import ValidationError
 
 from agents import RunConfig, RunResult, TResponseInputItem  # type: ignore[attr-defined]
 
-from ..agents import modality_instance_extractor_agent
+from ..workflow_agents import modality_instance_extractor_agent
 from ..config import (
     MODALITY_INSTANCE_MODEL,
     MODALITY_INSTANCE_OUTPUT_DIR,
