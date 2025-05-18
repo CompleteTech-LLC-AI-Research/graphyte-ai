@@ -26,8 +26,8 @@ logger = logging.getLogger(__name__)
 
 
 def aggregate_extracted_instances(
-    primary_domain: str,
-    sub_domain_data: SubDomainSchema,
+    primary_domain: Optional[str],
+    sub_domain_data: Optional[SubDomainSchema],
     entity_instances: Optional[EntityInstanceSchema] = None,
     ontology_instances: Optional[OntologyInstanceSchema] = None,
     event_instances: Optional[EventInstanceSchema] = None,
