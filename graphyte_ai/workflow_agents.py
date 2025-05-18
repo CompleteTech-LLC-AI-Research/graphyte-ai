@@ -296,7 +296,20 @@ base_instance_extractor_instructions_template = (
 base_instance_extractor_agent = Agent(
     name="BaseInstanceExtractorAgent",  # Generic name, overridden in clones
     instructions=base_instance_extractor_instructions_template,  # Formatted in clones
-    tools=[confidence_score_agent, relevance_score_agent, clarity_score_agent],
+    tools=[
+        confidence_score_agent.as_tool(
+            tool_name="confidence_score",
+            tool_description="Evaluate confidence between 0.0 and 1.0",
+        ),
+        relevance_score_agent.as_tool(
+            tool_name="relevance_score",
+            tool_description="Judge relevance between 0.0 and 1.0",
+        ),
+        clarity_score_agent.as_tool(
+            tool_name="clarity_score",
+            tool_description="Assess clarity between 0.0 and 1.0",
+        ),
+    ],
     handoffs=[],
 )
 
