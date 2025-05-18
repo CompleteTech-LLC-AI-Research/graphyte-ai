@@ -6,7 +6,7 @@ from typing import Dict, Any, Optional
 
 from pydantic import ValidationError
 
-from agentic_team import RunConfig, RunResult
+from agents import RunConfig, RunResult  # type: ignore[attr-defined]
 
 from ..agents import domain_identifier_agent
 from ..config import DOMAIN_MODEL, DOMAIN_OUTPUT_DIR, DOMAIN_OUTPUT_FILENAME

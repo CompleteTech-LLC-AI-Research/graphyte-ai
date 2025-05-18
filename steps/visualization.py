@@ -23,16 +23,16 @@ except ImportError:
     # Define a dummy draw_graph if not available to avoid NameError later
     def draw_graph(*args, **kwargs):
         logger.error(
-            "Visualization requested, but 'agentic_team[viz]' extras not installed, Graphviz is missing, or import failed (expected 'agents.extensions.visualization')."
+            "Visualization requested, but 'agents[viz]' extras not installed, Graphviz is missing, or import failed (expected 'agents.extensions.visualization')."
         )
         print(
-            "ERROR: Visualization generation failed. Please install 'agentic_team[viz]' (or similar extras) and ensure Graphviz is installed and in PATH.",
+            "ERROR: Visualization generation failed. Please install 'agents[viz]' (or similar extras) and ensure Graphviz is installed and in PATH.",
             file=sys.stderr,
         )
         return None
 
     logger.warning(
-        "Could not import 'draw_graph' from 'agents.extensions.visualization'. Visualization will be unavailable. Ensure 'agentic_team[viz]' (or similar) is installed."
+        "Could not import 'draw_graph' from 'agents.extensions.visualization'. Visualization will be unavailable. Ensure 'agents[viz]' (or similar) is installed."
     )
 
 

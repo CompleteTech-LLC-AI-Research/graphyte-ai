@@ -15,14 +15,14 @@ logger = logging.getLogger(__name__)
 
 # --- SDK Imports ---
 try:
-    from agentic_team import trace
+    from agents import trace  # type: ignore[attr-defined]
 except ImportError:
     logger.critical(
-        "CRITICAL Error: 'agentic_team' SDK library not found or incomplete. Cannot define orchestrator.",
+        "CRITICAL Error: 'agents' SDK library not found or incomplete. Cannot define orchestrator.",
         exc_info=True,
     )
     print(
-        "CRITICAL Error: 'agentic_team' SDK library not found or incomplete. Cannot define orchestrator.",
+        "CRITICAL Error: 'agents' SDK library not found or incomplete. Cannot define orchestrator.",
         file=sys.stderr,
     )
     raise  # Re-raise the import error

@@ -6,7 +6,7 @@ from typing import List, Optional
 
 from pydantic import ValidationError
 
-from agentic_team import RunConfig, RunResult, TResponseInputItem
+from agents import RunConfig, RunResult, TResponseInputItem  # type: ignore[attr-defined]
 
 from ..agents import measurement_instance_extractor_agent
 from ..config import (

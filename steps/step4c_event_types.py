@@ -6,7 +6,7 @@ from typing import List, Optional
 
 from pydantic import ValidationError
 
-from agentic_team import RunConfig, RunResult, TResponseInputItem
+from agents import RunConfig, RunResult, TResponseInputItem  # type: ignore[attr-defined]
 
 from ..agents import event_type_identifier_agent  # Import the new agent
 from ..config import (

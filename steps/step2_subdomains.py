@@ -6,7 +6,7 @@ from typing import List, Optional
 
 from pydantic import ValidationError
 
-from agentic_team import RunConfig, RunResult, TResponseInputItem
+from agents import RunConfig, RunResult, TResponseInputItem  # type: ignore[attr-defined]
 
 from ..agents import sub_domain_identifier_agent
 from ..config import SUB_DOMAIN_MODEL, SUB_DOMAIN_OUTPUT_DIR, SUB_DOMAIN_OUTPUT_FILENAME

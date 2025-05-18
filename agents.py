@@ -1,12 +1,10 @@
-# NOTE: Using 'agentic_team' as the alias for the SDK import
+# NOTE: Using the external ``agents`` SDK for agent definitions
 from typing import Any
 
 try:
-    from agentic_team import Agent  # type: ignore[attr-defined]
+    from agents import Agent  # type: ignore[attr-defined]
 except ImportError:
-    print(
-        "Error: 'agentic_team' SDK library not found or incomplete. Cannot define agents."
-    )
+    print("Error: 'agents' SDK library not found or incomplete. Cannot define agents.")
     # Depending on execution context, might want `sys.exit(1)` here,
     # but typically module-level errors are handled by the importer.
     Agent = Any  # type: ignore[misc]

@@ -83,7 +83,7 @@ This collaborative process, inspired by systems like [KARMA](https://arxiv.org/a
 ## Technology Stack
 
 * **Core:** Python 3.9+
-* **AI/ML:** Large Language Models (LLMs) via APIs (e.g., OpenAI, Anthropic, Google Gemini) or local models. Relies on an underlying LLM agent framework (like the one demonstrated in the provided file structure, e.g., `agentic_team`).
+* **AI/ML:** Large Language Models (LLMs) via APIs (e.g., OpenAI, Anthropic, Google Gemini) or local models. Relies on an underlying LLM agent framework (like the one demonstrated in the provided file structure, e.g., `agents`).
 * **Potential Libraries:**
     * `pydantic` (Data validation and schema definition)
     * `asyncio` (Concurrent agent execution)
