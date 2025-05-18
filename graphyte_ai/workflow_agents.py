@@ -175,7 +175,7 @@ base_type_identifier_agent = Agent(
     name="BaseTypeIdentifierAgent",  # Generic name, will be overridden
     instructions=base_type_identifier_instructions_template,  # Will be formatted in clones
     # No default model or output_type, must be specified in clones
-    tools=[confidence_score_agent, relevance_score_agent, clarity_score_agent],
+    tools=[],
     handoffs=[],
 )
 
@@ -296,7 +296,7 @@ base_instance_extractor_instructions_template = (
 base_instance_extractor_agent = Agent(
     name="BaseInstanceExtractorAgent",  # Generic name, overridden in clones
     instructions=base_instance_extractor_instructions_template,  # Formatted in clones
-    tools=[confidence_score_agent, relevance_score_agent, clarity_score_agent],
+    tools=[],
     handoffs=[],
 )
 
