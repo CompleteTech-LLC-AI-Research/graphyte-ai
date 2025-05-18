@@ -182,7 +182,7 @@ class EventDetail(BaseModel):
 
 
 # Schema for event type analysis output (Agent 4c)
-class EventSchema(BaseModel):
+class EventTypeSchema(BaseModel):
     """Schema defining the expected output for event type analysis (Step 4c)."""
 
     primary_domain: str = Field(

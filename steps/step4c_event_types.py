@@ -15,7 +15,7 @@ from ..config import (
     EVENT_TYPE_OUTPUT_FILENAME,
 )  # Import new config vars
 from ..schemas import (
-    EventSchema,
+    EventTypeSchema,
     SubDomainSchema,
     TopicSchema,
 )  # Import new output schema
@@ -30,7 +30,7 @@ async def identify_event_types(
     sub_domain_data: SubDomainSchema,
     topic_data: TopicSchema,
     overall_trace_id: Optional[str] = None,
-) -> Optional[EventSchema]:
+) -> Optional[EventTypeSchema]:
     """Identify event types based on domain, sub-domains, and topics.
 
     Args:
@@ -41,7 +41,7 @@ async def identify_event_types(
         overall_trace_id: The trace ID for logging purposes
 
     Returns:
-        An EventSchema object if successful, None otherwise
+        An EventTypeSchema object if successful, None otherwise
     """
     if not primary_domain or not sub_domain_data or not topic_data:
         logger.info("Skipping Step 4c because prerequisites were not identified.")
@@ -72,7 +72,7 @@ async def identify_event_types(
         trace_metadata={k: str(v) for k, v in step4c_metadata_for_trace.items()}
     )
     step4c_result: Optional[RunResult] = None
-    event_data: Optional[EventSchema] = None
+    event_data: Optional[EventTypeSchema] = None
 
     # Prepare context summary for the prompt
     context_summary_for_prompt = (
@@ -89,7 +89,7 @@ async def identify_event_types(
                 f"Analyze the following text to identify key EVENT types (e.g., Meeting, Acquisition, Conference, Product Launch, Election). "
                 f"Focus only on event types. Use the provided context:\n{context_summary_for_prompt}\n\n"
                 f"Identify event types relevant to this overall context. "
-                f"Output ONLY using the required EventSchema, including the primary_domain and analyzed_sub_domains list in the output."
+                f"Output ONLY using the required EventTypeSchema, including the primary_domain and analyzed_sub_domains list in the output."
             ),
         },
         {
@@ -107,24 +107,24 @@ async def identify_event_types(
 
         if step4c_result:
             potential_output_step4c = getattr(step4c_result, "final_output", None)
-            if isinstance(potential_output_step4c, EventSchema):
+            if isinstance(potential_output_step4c, EventTypeSchema):
                 event_data = potential_output_step4c
                 logger.info(
-                    "Successfully extracted EventSchema from step4c_result.final_output."
+                    "Successfully extracted EventTypeSchema from step4c_result.final_output."
                 )
             elif isinstance(potential_output_step4c, dict):
                 try:
-                    event_data = EventSchema.model_validate(potential_output_step4c)
+                    event_data = EventTypeSchema.model_validate(potential_output_step4c)
                     logger.info(
-                        "Successfully validated EventSchema from step4c_result.final_output dict."
+                        "Successfully validated EventTypeSchema from step4c_result.final_output dict."
                     )
                 except ValidationError as e:
                     logger.warning(
-                        f"Step 4c dict output failed EventSchema validation: {e}"
+                        f"Step 4c dict output failed EventTypeSchema validation: {e}"
                     )
             else:
                 logger.warning(
-                    f"Step 4c final_output was not EventSchema or dict (type: {type(potential_output_step4c)})."
+                    f"Step 4c final_output was not EventTypeSchema or dict (type: {type(potential_output_step4c)})."
                 )
 
             if event_data and event_data.identified_events:
@@ -178,7 +178,7 @@ async def identify_event_types(
                         ),
                         "model_used": EVENT_TYPE_MODEL,
                         "agent_name": event_type_identifier_agent.name,
-                        "output_schema": EventSchema.__name__,
+                        "output_schema": EventTypeSchema.__name__,
                         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
                     },
                     "trace_information": {
@@ -204,7 +204,7 @@ async def identify_event_types(
                 # event_data = None
             else:  # event_data is None or validation failed
                 logger.error(
-                    "Step 4c FAILED: Could not extract valid EventSchema output."
+                    "Step 4c FAILED: Could not extract valid EventTypeSchema output."
                 )
                 print("\nError: Failed to identify event types in Step 4c.")
                 event_data = None  # Signal failure if needed

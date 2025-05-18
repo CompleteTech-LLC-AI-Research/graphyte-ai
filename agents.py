@@ -17,7 +17,7 @@ from .schemas import (
     SingleSubDomainTopicSchema,
     EntityTypeSchema,
     OntologyTypeSchema,
-    EventSchema,
+    EventTypeSchema,
     StatementTypeSchema,
     EvidenceTypeSchema,
     MeasurementTypeSchema,
@@ -221,7 +221,7 @@ event_type_identifier_agent = base_type_identifier_agent.clone(
         item_field_name="event_type",
     ),
     model=EVENT_TYPE_MODEL,
-    output_type=EventSchema,
+    output_type=EventTypeSchema,
 )
 
 # --- Agent 4d: Statement Type Identifier ---
