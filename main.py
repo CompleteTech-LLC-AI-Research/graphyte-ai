@@ -6,16 +6,16 @@ from pathlib import Path
 
 # Import components from the workflow package
 try:
-    from utils import (
+    from .utils import (
         parse_arguments,
         read_input_from_file,
         read_input_from_directory,
         prompt_user_for_input,
         setup_logging,
     )
-    from orchestrator import run_combined_workflow
-    from steps import generate_workflow_visualization
-    from config import (
+    from .orchestrator import run_combined_workflow
+    from .steps import generate_workflow_visualization
+    from .config import (
         PYMUPDF_AVAILABLE,
         MAX_INPUT_CONTENT_LENGTH,
     )  # For initial logging
