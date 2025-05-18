@@ -26,9 +26,9 @@ try:
 except ImportError:
     TENACITY_AVAILABLE = False
 
-# NOTE: Using 'agentic_team' as the alias for the SDK import
+# NOTE: Using the external ``agents`` SDK
 try:
-    from agentic_team import (
+    from agents import (  # type: ignore[attr-defined]
         Agent,
         Runner,
         RunConfig,
@@ -37,9 +37,7 @@ try:
         AgentsException,  # Import base SDK exception for retry
     )
 except ImportError:
-    print(
-        "Error: 'agentic_team' SDK library not found or incomplete. Cannot define utils."
-    )
+    print("Error: 'agents' SDK library not found or incomplete. Cannot define utils.")
     raise
 
 # Import config constants needed in utils

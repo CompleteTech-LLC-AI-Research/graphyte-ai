@@ -32,12 +32,12 @@ except ImportError:
     )
 
 # --- SDK Imports ---
-# NOTE: Using 'agentic_team' as the alias for the SDK import
+# NOTE: Using the external ``agents`` SDK
 try:
-    from agentic_team import set_default_openai_key
+    from agents import set_default_openai_key  # type: ignore[attr-defined]
 except ImportError:
     print(
-        "Error: 'agentic_team' SDK library not found or incomplete. Please ensure it is installed and accessible."
+        "Error: 'agents' SDK library not found or incomplete. Please ensure it is installed and accessible."
     )
     sys.exit(1)
 
@@ -203,18 +203,18 @@ if not API_KEY:
         )
     sys.exit(1)
 
-# Set API key for the 'agentic_team' SDK (or equivalent SDK function)
+# Set API key for the ``agents`` SDK (or equivalent SDK function)
 try:
     set_default_openai_key(API_KEY)
-    print("OpenAI API Key set for agentic_team SDK.")
+    print("OpenAI API Key set for agents SDK.")
 except NameError:
     print(
-        "Error: Could not set OpenAI key via agentic_team SDK (likely import failure).",
+        "Error: Could not set OpenAI key via agents SDK (likely import failure).",
         file=sys.stderr,
     )
     sys.exit(1)
 except Exception as e:
-    print(f"Error setting OpenAI key via agentic_team SDK: {e}", file=sys.stderr)
+    print(f"Error setting OpenAI key via agents SDK: {e}", file=sys.stderr)
     sys.exit(1)
 
 # --- Initial Logger Check ---

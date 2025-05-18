@@ -1,4 +1,4 @@
-"""Agent workflow step modules for agentic_team_workflow."""
+"""Agent workflow step modules for the Graphyte workflow."""
 
 from .step1_domain import identify_domain
 from .step2_subdomains import identify_subdomains

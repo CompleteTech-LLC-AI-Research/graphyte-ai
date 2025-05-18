@@ -6,11 +6,11 @@ from typing import List, Optional
 
 from pydantic import ValidationError
 
-# NOTE: Assuming 'agentic_team' is the correct SDK import alias
+# NOTE: Using the external ``agents`` SDK
 try:
-    from agentic_team import RunConfig, RunResult, TResponseInputItem
+    from agents import RunConfig, RunResult, TResponseInputItem  # type: ignore[attr-defined]
 except ImportError:
-    print("Error: 'agentic_team' SDK library not found or incomplete for step 4f.")
+    print("Error: 'agents' SDK library not found or incomplete for step 4f.")
     raise
 
 from ..agents import measurement_type_identifier_agent  # Import the new agent

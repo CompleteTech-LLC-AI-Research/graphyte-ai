@@ -7,7 +7,7 @@ from typing import List, Optional
 
 from pydantic import ValidationError
 
-from agentic_team import RunConfig, RunResult, TResponseInputItem
+from agents import RunConfig, RunResult, TResponseInputItem  # type: ignore[attr-defined]
 
 from ..agents import topic_identifier_agent
 from ..config import TOPIC_MODEL, TOPIC_OUTPUT_DIR, TOPIC_OUTPUT_FILENAME
