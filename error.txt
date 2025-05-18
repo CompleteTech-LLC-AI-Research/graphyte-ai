@@ -1,0 +1,527 @@
+2025-05-17 22:23:24,241 [INFO] graphyte-ai.utils [utils.py:80]: Logging configured. Log file: /Users/completetech/Documents/GitHub/graphyte-ai/logs/workflow.log
+2025-05-17 22:23:24,241 [INFO] __main__ [main.py:164]: Starting main application coroutine using Python 3.12.
+2025-05-17 22:23:24,241 [INFO] __main__ [main.py:42]: === Starting Document Analysis Workflow ===
+2025-05-17 22:23:24,241 [WARNING] __main__ [main.py:53]: pytz library not found. Using UTC for timezone context.
+2025-05-17 22:23:24,241 [INFO] __main__ [main.py:56]: Workflow start time: 2025-05-18T02:23:24.241587+00:00
+2025-05-17 22:24:06,202 [WARNING] graphyte-ai.utils [utils.py:257]: Stdin input cancelled by user.
+2025-05-17 22:24:06,203 [WARNING] __main__ [main.py:104]: No input content provided via stdin or input was cancelled.
+2025-05-17 22:24:06,204 [INFO] __main__ [main.py:158]: === Document Analysis Workflow Finished ===
+2025-05-17 22:24:06,204 [WARNING] __main__ [main.py:175]: Execution cancelled by user (KeyboardInterrupt).
+2025-05-17 22:27:13,523 [INFO] graphyte_ai.utils [utils.py:80]: Logging configured. Log file: /Users/completetech/Documents/GitHub/graphyte-ai/graphyte_ai/logs/workflow.log
+2025-05-17 22:27:13,523 [INFO] __main__ [main.py:164]: Starting main application coroutine using Python 3.12.
+2025-05-17 22:27:13,523 [INFO] __main__ [main.py:42]: === Starting Document Analysis Workflow ===
+2025-05-17 22:27:13,523 [WARNING] __main__ [main.py:53]: pytz library not found. Using UTC for timezone context.
+2025-05-17 22:27:13,523 [INFO] __main__ [main.py:56]: Workflow start time: 2025-05-18T02:27:13.523517+00:00
+2025-05-17 22:27:16,826 [WARNING] graphyte_ai.utils [utils.py:257]: Stdin input cancelled by user.
+2025-05-17 22:27:16,827 [WARNING] __main__ [main.py:104]: No input content provided via stdin or input was cancelled.
+2025-05-17 22:27:16,827 [INFO] __main__ [main.py:158]: === Document Analysis Workflow Finished ===
+2025-05-17 22:27:16,828 [WARNING] __main__ [main.py:175]: Execution cancelled by user (KeyboardInterrupt).
+2025-05-17 22:29:51,377 [INFO] graphyte_ai.utils [utils.py:80]: Logging configured. Log file: /Users/completetech/Documents/GitHub/graphyte-ai/graphyte_ai/logs/workflow.log
+2025-05-17 22:29:51,377 [INFO] __main__ [main.py:164]: Starting main application coroutine using Python 3.12.
+2025-05-17 22:29:51,377 [INFO] __main__ [main.py:42]: === Starting Document Analysis Workflow ===
+2025-05-17 22:29:51,377 [WARNING] __main__ [main.py:53]: pytz library not found. Using UTC for timezone context.
+2025-05-17 22:29:51,377 [INFO] __main__ [main.py:56]: Workflow start time: 2025-05-18T02:29:51.377682+00:00
+2025-05-17 22:29:51,378 [INFO] graphyte_ai.utils [utils.py:121]: Reading input from file: /Users/completetech/Documents/GitHub/graphyte-ai/2505.09614v1.pdf
+2025-05-17 22:29:51,378 [ERROR] graphyte_ai.utils [utils.py:125]: Cannot read PDF '2505.09614v1.pdf'. 'PyMuPDF' library not found. Skipping.
+2025-05-17 22:29:51,378 [ERROR] __main__ [main.py:131]: Input Error processing source 'file: 2505.09614v1.pdf': ImportError: PyMuPDF not installed, cannot process PDF: 2505.09614v1.pdf
+Traceback (most recent call last):
+  File "/Users/completetech/Documents/GitHub/graphyte-ai/graphyte_ai/main.py", line 77, in main_async
+    content = read_input_from_file(file_arg_path)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/completetech/Documents/GitHub/graphyte-ai/graphyte_ai/utils.py", line 128, in read_input_from_file
+    raise ImportError(
+ImportError: PyMuPDF not installed, cannot process PDF: 2505.09614v1.pdf
+2025-05-17 22:29:51,378 [INFO] __main__ [main.py:158]: === Document Analysis Workflow Finished ===
+2025-05-17 22:30:08,650 [INFO] graphyte_ai.utils [utils.py:80]: Logging configured. Log file: /Users/completetech/Documents/GitHub/graphyte-ai/graphyte_ai/logs/workflow.log
+2025-05-17 22:30:08,650 [INFO] __main__ [main.py:164]: Starting main application coroutine using Python 3.12.
+2025-05-17 22:30:08,650 [INFO] __main__ [main.py:42]: === Starting Document Analysis Workflow ===
+2025-05-17 22:30:08,650 [WARNING] __main__ [main.py:53]: pytz library not found. Using UTC for timezone context.
+2025-05-17 22:30:08,650 [INFO] __main__ [main.py:56]: Workflow start time: 2025-05-18T02:30:08.650872+00:00
+2025-05-17 22:30:08,651 [INFO] graphyte_ai.utils [utils.py:121]: Reading input from file: /Users/completetech/Documents/GitHub/graphyte-ai/2505.09614v1.pdf
+2025-05-17 22:30:08,651 [INFO] graphyte_ai.utils [utils.py:132]: Attempting to extract text from PDF: 2505.09614v1.pdf
+2025-05-17 22:30:08,729 [INFO] graphyte_ai.utils [utils.py:140]: Successfully extracted 66691 characters from PDF: 2505.09614v1.pdf
+2025-05-17 22:30:08,729 [INFO] __main__ [main.py:96]: Obtained content from file: 2505.09614v1.pdf (length: 66691). Running analysis workflow.
+2025-05-17 22:30:08,729 [INFO] graphyte_ai.orchestrator [orchestrator.py:150]: --- Starting Analysis Workflow Trace (Document Analysis) ---
+2025-05-17 22:30:08,729 [INFO] graphyte_ai.orchestrator [orchestrator.py:164]: Overall Workflow Trace URL: https://platform.openai.com/traces/trace_6448b34d87934264a31740792238c3bf
+2025-05-17 22:30:08,729 [INFO] graphyte_ai.steps.step1_domain [step1_domain.py:31]: --- Running Step 1: Domain ID (Agent: DomainIdentifierAgent) ---
+2025-05-17 22:30:11,628 [INFO] httpx [_client.py:1740]: HTTP Request: POST https://api.openai.com/v1/responses "HTTP/1.1 200 OK"
+2025-05-17 22:30:11,666 [INFO] graphyte_ai.steps.step1_domain [step1_domain.py:56]: Successfully extracted DomainSchema from step1_result.final_output.
+2025-05-17 22:30:11,666 [INFO] graphyte_ai.steps.step1_domain [step1_domain.py:77]: Step 1 Result: Primary Domain Identified = Science
+2025-05-17 22:30:11,666 [INFO] graphyte_ai.steps.step1_domain [step1_domain.py:82]: Saving primary domain identifier output to file...
+2025-05-17 22:30:11,666 [INFO] graphyte_ai.utils [utils.py:297]: Successfully saved data to file 'domain_identifier_output.json' in directory 'outputs/01_domain_identifier'.
+2025-05-17 22:30:11,667 [INFO] graphyte_ai.steps.step1_domain [step1_domain.py:105]: Result of saving primary domain output: Success: Saved data to file 'domain_identifier_output.json' in directory 'outputs/01_domain_identifier'.
+2025-05-17 22:30:11,667 [INFO] graphyte_ai.steps.step2_subdomains [step2_subdomains.py:37]: --- Running Step 2: Sub-Domain ID (Agent: SubDomainIdentifierAgent) ---
+2025-05-17 22:30:14,004 [INFO] httpx [_client.py:1025]: HTTP Request: POST https://api.openai.com/v1/traces/ingest "HTTP/1.1 400 Bad Request"
+2025-05-17 22:30:14,005 [ERROR] openai.agents [processors.py:126]: [non-fatal] Tracing client error 400: {
+  "error": {
+    "message": "Invalid 'data[0].metadata': too many properties. Expected an object with at most 16 properties, but got an object with 22 properties instead.",
+    "type": "invalid_request_error",
+    "param": "data[0].metadata",
+    "code": "object_above_max_properties"
+  }
+}
+2025-05-17 22:30:27,213 [INFO] httpx [_client.py:1740]: HTTP Request: POST https://api.openai.com/v1/responses "HTTP/1.1 200 OK"
+2025-05-17 22:30:27,221 [INFO] graphyte_ai.steps.step2_subdomains [step2_subdomains.py:77]: Step 2 completed. Final agent: SubDomainIdentifierAgent. Trace ID: trace_6448b34d87934264a31740792238c3bf
+2025-05-17 22:30:27,221 [INFO] graphyte_ai.steps.step2_subdomains [step2_subdomains.py:85]: Successfully extracted SubDomainSchema from step2_result.final_output.
+2025-05-17 22:30:27,221 [INFO] graphyte_ai.steps.step2_subdomains [step2_subdomains.py:129]: Step 2 Result: Identified Sub-Domains = ['Artificial Intelligence', 'Cognitive Science', 'Neuroscience', 'Psychology', 'Computer Science']
+2025-05-17 22:30:27,221 [INFO] graphyte_ai.steps.step2_subdomains [step2_subdomains.py:132]: Step 2 Result (Structured Sub-Domains):
+{
+  "primary_domain": "Science",
+  "identified_sub_domains": [
+    {
+      "sub_domain": "Artificial Intelligence"
+    },
+    {
+      "sub_domain": "Cognitive Science"
+    },
+    {
+      "sub_domain": "Neuroscience"
+    },
+    {
+      "sub_domain": "Psychology"
+    },
+    {
+      "sub_domain": "Computer Science"
+    }
+  ],
+  "analysis_summary": "The text discusses the exploration and reasoning abilities of language models (LMs) in the context of causal inference using the Blicket Test. It highlights biases in the LMs that resemble human cognitive biases, especially a preference for disjunctive reasoning. The findings suggest that while LMs show promise in decision-making tasks, their ability to mimic scientific reasoning still needs improvement, particularly in recognizing and adjusting for biases in causal inference."
+}
+2025-05-17 22:30:27,221 [INFO] graphyte_ai.steps.step2_subdomains [step2_subdomains.py:149]: Saving sub-domain identifier output to file...
+2025-05-17 22:30:27,224 [INFO] graphyte_ai.utils [utils.py:297]: Successfully saved data to file 'sub_domain_identifier_output.json' in directory 'outputs/02_sub_domain_identifier'.
+2025-05-17 22:30:27,224 [INFO] graphyte_ai.steps.step2_subdomains [step2_subdomains.py:177]: Result of saving sub-domain output: Success: Saved data to file 'sub_domain_identifier_output.json' in directory 'outputs/02_sub_domain_identifier'.
+2025-05-17 22:30:27,224 [INFO] graphyte_ai.steps.step3_topics [step3_topics.py:55]: --- Starting Step 3: PARALLEL Topic ID (Agent: TopicIdentifierAgent) for 5 Sub-Domain(s) ---
+2025-05-17 22:30:27,225 [INFO] graphyte_ai.steps.step3_topics [step3_topics.py:130]: Launching 5 topic identification tasks in parallel...
+2025-05-17 22:30:29,771 [INFO] httpx [_client.py:1025]: HTTP Request: POST https://api.openai.com/v1/traces/ingest "HTTP/1.1 204 No Content"
+2025-05-17 22:30:39,428 [INFO] httpx [_client.py:1740]: HTTP Request: POST https://api.openai.com/v1/responses "HTTP/1.1 200 OK"
+2025-05-17 22:30:39,748 [INFO] httpx [_client.py:1740]: HTTP Request: POST https://api.openai.com/v1/responses "HTTP/1.1 200 OK"
+2025-05-17 22:30:40,313 [INFO] httpx [_client.py:1025]: HTTP Request: POST https://api.openai.com/v1/traces/ingest "HTTP/1.1 204 No Content"
+2025-05-17 22:30:40,581 [INFO] httpx [_client.py:1740]: HTTP Request: POST https://api.openai.com/v1/responses "HTTP/1.1 200 OK"
+2025-05-17 22:30:41,017 [INFO] httpx [_client.py:1740]: HTTP Request: POST https://api.openai.com/v1/responses "HTTP/1.1 200 OK"
+2025-05-17 22:30:42,220 [INFO] httpx [_client.py:1740]: HTTP Request: POST https://api.openai.com/v1/responses "HTTP/1.1 200 OK"
+2025-05-17 22:30:42,221 [INFO] graphyte_ai.steps.step3_topics [step3_topics.py:139]: Parallel topic identification tasks completed.
+2025-05-17 22:30:42,221 [INFO] graphyte_ai.steps.step3_topics [step3_topics.py:169]: Successfully extracted SingleSubDomainTopicSchema for 'Artificial Intelligence'.
+2025-05-17 22:30:42,222 [INFO] graphyte_ai.steps.step3_topics [step3_topics.py:204]: Step 3 Result for 'Artificial Intelligence': Identified Topics = ['Language Models and Causal Reasoning', 'Disjunctive Bias in Language Models', 'Learning Causal Structures', 'Blicket Test in AI', 'Autonomous Decision Making in AI', 'Human-Like Reasoning Biases in AI', 'Optimization of Exploration Strategies', 'Scientific Reasoning in Artificial Intelligence', 'Impact of Training Data on LM Biases', 'Testing Cognitive Abilities of Language Agents']
+2025-05-17 22:30:42,222 [INFO] graphyte_ai.steps.step3_topics [step3_topics.py:169]: Successfully extracted SingleSubDomainTopicSchema for 'Cognitive Science'.
+2025-05-17 22:30:42,222 [INFO] graphyte_ai.steps.step3_topics [step3_topics.py:204]: Step 3 Result for 'Cognitive Science': Identified Topics = ['causal reasoning', 'disjunctive bias', 'Blicket Test', 'human-like cognitive biases in AI', 'developmental psychology', 'active learning in artificial intelligence', 'cognitive exploration', 'cognitive heuristics', 'causal relationships', 'experimental paradigm in cognitive science']
+2025-05-17 22:30:42,222 [INFO] graphyte_ai.steps.step3_topics [step3_topics.py:169]: Successfully extracted SingleSubDomainTopicSchema for 'Neuroscience'.
+2025-05-17 22:30:42,222 [INFO] graphyte_ai.steps.step3_topics [step3_topics.py:204]: Step 3 Result for 'Neuroscience': Identified Topics = ['Causal reasoning in language models', 'Cognitive biases in human and machine reasoning', 'Blicket Test in cognitive science', 'Active learning and exploration in neural networks', 'Comparison of cognitive biases between LMs and human adults', 'Impact of exploration efficiency on causal inference', 'Developmental psychology and causal learning', 'Neural mechanisms behind causal understanding']
+2025-05-17 22:30:42,222 [INFO] graphyte_ai.steps.step3_topics [step3_topics.py:169]: Successfully extracted SingleSubDomainTopicSchema for 'Psychology'.
+2025-05-17 22:30:42,222 [INFO] graphyte_ai.steps.step3_topics [step3_topics.py:204]: Step 3 Result for 'Psychology': Identified Topics = ['Causal reasoning biases', 'Disjunctive bias in adults and language models', 'Developmental psychology and causal inference', 'The Blicket Test paradigm', 'Systematic irrationality in human reasoning', 'Curiosity in exploration among children vs adults', 'Inferring causal relationships based on ambiguous evidence', 'Cognitive biases in language models mimicking human behavior']
+2025-05-17 22:30:42,222 [INFO] graphyte_ai.steps.step3_topics [step3_topics.py:169]: Successfully extracted SingleSubDomainTopicSchema for 'Computer Science'.
+2025-05-17 22:30:42,222 [INFO] graphyte_ai.steps.step3_topics [step3_topics.py:204]: Step 3 Result for 'Computer Science': Identified Topics = ['Language Agents', 'Causal Reasoning', 'Language Models (LM)']
+2025-05-17 22:30:42,222 [INFO] graphyte_ai.steps.step3_topics [step3_topics.py:261]: Aggregating topic results from parallel runs and saving final output.
+2025-05-17 22:30:42,222 [INFO] graphyte_ai.steps.step3_topics [step3_topics.py:271]: Final Aggregated Topics (Structured):
+{
+  "primary_domain": "Science",
+  "sub_domain_topic_map": [
+    {
+      "sub_domain": "Artificial Intelligence",
+      "identified_topics": [
+        {
+          "topic": "Language Models and Causal Reasoning"
+        },
+        {
+          "topic": "Disjunctive Bias in Language Models"
+        },
+        {
+          "topic": "Learning Causal Structures"
+        },
+        {
+          "topic": "Blicket Test in AI"
+        },
+        {
+          "topic": "Autonomous Decision Making in AI"
+        },
+        {
+          "topic": "Human-Like Reasoning Biases in AI"
+        },
+        {
+          "topic": "Optimization of Exploration Strategies"
+        },
+        {
+          "topic": "Scientific Reasoning in Artificial Intelligence"
+        },
+        {
+          "topic": "Impact of Training Data on LM Biases"
+        },
+        {
+          "topic": "Testing Cognitive Abilities of Language Agents"
+        }
+      ]
+    },
+    {
+      "sub_domain": "Cognitive Science",
+      "identified_topics": [
+        {
+          "topic": "causal reasoning"
+        },
+        {
+          "topic": "disjunctive bias"
+        },
+        {
+          "topic": "Blicket Test"
+        },
+        {
+          "topic": "human-like cognitive biases in AI"
+        },
+        {
+          "topic": "developmental psychology"
+        },
+        {
+          "topic": "active learning in artificial intelligence"
+        },
+        {
+          "topic": "cognitive exploration"
+        },
+        {
+          "topic": "cognitive heuristics"
+        },
+        {
+          "topic": "causal relationships"
+        },
+        {
+          "topic": "experimental paradigm in cognitive science"
+        }
+      ]
+    },
+    {
+      "sub_domain": "Neuroscience",
+      "identified_topics": [
+        {
+          "topic": "Causal reasoning in language models"
+        },
+        {
+          "topic": "Cognitive biases in human and machine reasoning"
+        },
+        {
+          "topic": "Blicket Test in cognitive science"
+        },
+        {
+          "topic": "Active learning and exploration in neural networks"
+        },
+        {
+          "topic": "Comparison of cognitive biases between LMs and human adults"
+        },
+        {
+          "topic": "Impact of exploration efficiency on causal inference"
+        },
+        {
+          "topic": "Developmental psychology and causal learning"
+        },
+        {
+          "topic": "Neural mechanisms behind causal understanding"
+        }
+      ]
+    },
+    {
+      "sub_domain": "Psychology",
+      "identified_topics": [
+        {
+          "topic": "Causal reasoning biases"
+        },
+        {
+          "topic": "Disjunctive bias in adults and language models"
+        },
+        {
+          "topic": "Developmental psychology and causal inference"
+        },
+        {
+          "topic": "The Blicket Test paradigm"
+        },
+        {
+          "topic": "Systematic irrationality in human reasoning"
+        },
+        {
+          "topic": "Curiosity in exploration among children vs adults"
+        },
+        {
+          "topic": "Inferring causal relationships based on ambiguous evidence"
+        },
+        {
+          "topic": "Cognitive biases in language models mimicking human behavior"
+        }
+      ]
+    },
+    {
+      "sub_domain": "Computer Science",
+      "identified_topics": [
+        {
+          "topic": "Language Agents"
+        },
+        {
+          "topic": "Causal Reasoning"
+        },
+        {
+          "topic": "Language Models (LM)"
+        }
+      ]
+    }
+  ],
+  "analysis_summary": "Generated topics in parallel for 5 sub-domains (out of 5 attempted)."
+}
+2025-05-17 22:30:42,222 [INFO] graphyte_ai.utils [utils.py:297]: Successfully saved data to file 'topic_identifier_output.json' in directory 'outputs/03_topic_identifier'.
+2025-05-17 22:30:42,223 [INFO] graphyte_ai.steps.step3_topics [step3_topics.py:310]: Result of saving final aggregated topic output: Success: Saved data to file 'topic_identifier_output.json' in directory 'outputs/03_topic_identifier'.
+2025-05-17 22:30:42,223 [INFO] graphyte_ai.orchestrator [orchestrator.py:194]: --- Starting Step 4: Parallel Identification (Entities, Ontology, Events, Statements, Evidence, Measurements, Modalities) ---
+2025-05-17 22:30:42,223 [INFO] graphyte_ai.steps.step4a_entity_types [step4a_entity_types.py:52]: --- Running Step 4a: Entity Type ID (Agent: EntityTypeIdentifierAgent) ---
+2025-05-17 22:30:42,223 [INFO] graphyte_ai.steps.step4b_ontology_types [step4b_ontology_types.py:52]: --- Running Step 4b: Ontology Type ID (Agent: OntologyTypeIdentifierAgent) ---
+2025-05-17 22:30:42,224 [INFO] graphyte_ai.steps.step4c_event_types [step4c_event_types.py:56]: --- Running Step 4c: Event Type ID (Agent: EventTypeIdentifierAgent) ---
+2025-05-17 22:30:42,224 [INFO] graphyte_ai.steps.step4d_statement_types [step4d_statement_types.py:61]: --- Running Step 4d: Statement Type ID (Agent: StatementTypeIdentifierAgent) ---
+2025-05-17 22:30:42,224 [INFO] graphyte_ai.steps.step4e_evidence_types [step4e_evidence_types.py:61]: --- Running Step 4e: Evidence Type ID (Agent: EvidenceTypeIdentifierAgent) ---
+2025-05-17 22:30:42,225 [INFO] graphyte_ai.steps.step4f_measurement_types [step4f_measurement_types.py:61]: --- Running Step 4f: Measurement Type ID (Agent: MeasurementTypeIdentifierAgent) ---
+2025-05-17 22:30:42,225 [INFO] graphyte_ai.steps.step4g_modality_types [step4g_modality_types.py:61]: --- Running Step 4g: Modality Type ID (Agent: ModalityTypeIdentifierAgent) ---
+2025-05-17 22:30:42,226 [ERROR] openai.agents [openai_responses.py:119]: Error getting response: Unknown tool type: <class 'agents.agent.Agent'>, tool. (request_id: None)
+2025-05-17 22:30:42,226 [ERROR] openai.agents [openai_responses.py:119]: Error getting response: Unknown tool type: <class 'agents.agent.Agent'>, tool. (request_id: None)
+2025-05-17 22:30:42,227 [ERROR] openai.agents [openai_responses.py:119]: Error getting response: Unknown tool type: <class 'agents.agent.Agent'>, tool. (request_id: None)
+2025-05-17 22:30:42,227 [ERROR] openai.agents [openai_responses.py:119]: Error getting response: Unknown tool type: <class 'agents.agent.Agent'>, tool. (request_id: None)
+2025-05-17 22:30:42,227 [ERROR] openai.agents [openai_responses.py:119]: Error getting response: Unknown tool type: <class 'agents.agent.Agent'>, tool. (request_id: None)
+2025-05-17 22:30:42,228 [ERROR] openai.agents [openai_responses.py:119]: Error getting response: Unknown tool type: <class 'agents.agent.Agent'>, tool. (request_id: None)
+2025-05-17 22:30:42,228 [ERROR] openai.agents [openai_responses.py:119]: Error getting response: Unknown tool type: <class 'agents.agent.Agent'>, tool. (request_id: None)
+2025-05-17 22:30:42,228 [ERROR] graphyte_ai.steps.step4a_entity_types [step4a_entity_types.py:235]: An unexpected error occurred during Step 4a.
+Traceback (most recent call last):
+  File "/Users/completetech/Documents/GitHub/graphyte-ai/graphyte_ai/steps/step4a_entity_types.py", line 102, in identify_entity_types
+    step4_result = await run_agent_with_retry(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/completetech/Documents/GitHub/graphyte-ai/graphyte_ai/utils.py", line 362, in run_agent_with_retry
+    return await Runner.run(
+           ^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/run.py", line 218, in run
+    input_guardrail_results, turn_result = await asyncio.gather(
+                                           ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/run.py", line 760, in _run_single_turn
+    new_response = await cls._get_new_response(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/run.py", line 919, in _get_new_response
+    new_response = await model.get_response(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/models/openai_responses.py", line 76, in get_response
+    response = await self._fetch_response(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/models/openai_responses.py", line 226, in _fetch_response
+    converted_tools = Converter.convert_tools(tools, handoffs)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/models/openai_responses.py", line 338, in convert_tools
+    converted_tool, include = cls._convert_tool(tool)
+                              ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/models/openai_responses.py", line 392, in _convert_tool
+    raise UserError(f"Unknown tool type: {type(tool)}, tool")
+agents.exceptions.UserError: Unknown tool type: <class 'agents.agent.Agent'>, tool
+2025-05-17 22:30:42,230 [ERROR] graphyte_ai.steps.step4b_ontology_types [step4b_ontology_types.py:235]: An unexpected error occurred during Step 4b.
+Traceback (most recent call last):
+  File "/Users/completetech/Documents/GitHub/graphyte-ai/graphyte_ai/steps/step4b_ontology_types.py", line 100, in identify_ontology_types
+    step4b_result = await run_agent_with_retry(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/completetech/Documents/GitHub/graphyte-ai/graphyte_ai/utils.py", line 362, in run_agent_with_retry
+    return await Runner.run(
+           ^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/run.py", line 218, in run
+    input_guardrail_results, turn_result = await asyncio.gather(
+                                           ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/run.py", line 760, in _run_single_turn
+    new_response = await cls._get_new_response(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/run.py", line 919, in _get_new_response
+    new_response = await model.get_response(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/models/openai_responses.py", line 76, in get_response
+    response = await self._fetch_response(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/models/openai_responses.py", line 226, in _fetch_response
+    converted_tools = Converter.convert_tools(tools, handoffs)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/models/openai_responses.py", line 338, in convert_tools
+    converted_tool, include = cls._convert_tool(tool)
+                              ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/models/openai_responses.py", line 392, in _convert_tool
+    raise UserError(f"Unknown tool type: {type(tool)}, tool")
+agents.exceptions.UserError: Unknown tool type: <class 'agents.agent.Agent'>, tool
+2025-05-17 22:30:42,231 [ERROR] graphyte_ai.steps.step4c_event_types [step4c_event_types.py:228]: An unexpected error occurred during Step 4c.
+Traceback (most recent call last):
+  File "/Users/completetech/Documents/GitHub/graphyte-ai/graphyte_ai/steps/step4c_event_types.py", line 102, in identify_event_types
+    step4c_result = await run_agent_with_retry(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/completetech/Documents/GitHub/graphyte-ai/graphyte_ai/utils.py", line 362, in run_agent_with_retry
+    return await Runner.run(
+           ^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/run.py", line 218, in run
+    input_guardrail_results, turn_result = await asyncio.gather(
+                                           ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/run.py", line 760, in _run_single_turn
+    new_response = await cls._get_new_response(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/run.py", line 919, in _get_new_response
+    new_response = await model.get_response(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/models/openai_responses.py", line 76, in get_response
+    response = await self._fetch_response(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/models/openai_responses.py", line 226, in _fetch_response
+    converted_tools = Converter.convert_tools(tools, handoffs)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/models/openai_responses.py", line 338, in convert_tools
+    converted_tool, include = cls._convert_tool(tool)
+                              ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/models/openai_responses.py", line 392, in _convert_tool
+    raise UserError(f"Unknown tool type: {type(tool)}, tool")
+agents.exceptions.UserError: Unknown tool type: <class 'agents.agent.Agent'>, tool
+2025-05-17 22:30:42,231 [ERROR] graphyte_ai.steps.step4d_statement_types [step4d_statement_types.py:242]: An unexpected error occurred during Step 4d.
+Traceback (most recent call last):
+  File "/Users/completetech/Documents/GitHub/graphyte-ai/graphyte_ai/steps/step4d_statement_types.py", line 109, in identify_statement_types
+    step4d_result = await run_agent_with_retry(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/completetech/Documents/GitHub/graphyte-ai/graphyte_ai/utils.py", line 362, in run_agent_with_retry
+    return await Runner.run(
+           ^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/run.py", line 218, in run
+    input_guardrail_results, turn_result = await asyncio.gather(
+                                           ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/run.py", line 760, in _run_single_turn
+    new_response = await cls._get_new_response(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/run.py", line 919, in _get_new_response
+    new_response = await model.get_response(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/models/openai_responses.py", line 76, in get_response
+    response = await self._fetch_response(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/models/openai_responses.py", line 226, in _fetch_response
+    converted_tools = Converter.convert_tools(tools, handoffs)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/models/openai_responses.py", line 338, in convert_tools
+    converted_tool, include = cls._convert_tool(tool)
+                              ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/models/openai_responses.py", line 392, in _convert_tool
+    raise UserError(f"Unknown tool type: {type(tool)}, tool")
+agents.exceptions.UserError: Unknown tool type: <class 'agents.agent.Agent'>, tool
+2025-05-17 22:30:42,232 [ERROR] graphyte_ai.steps.step4e_evidence_types [step4e_evidence_types.py:241]: An unexpected error occurred during Step 4e.
+Traceback (most recent call last):
+  File "/Users/completetech/Documents/GitHub/graphyte-ai/graphyte_ai/steps/step4e_evidence_types.py", line 109, in identify_evidence_types
+    step4e_result = await run_agent_with_retry(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/completetech/Documents/GitHub/graphyte-ai/graphyte_ai/utils.py", line 362, in run_agent_with_retry
+    return await Runner.run(
+           ^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/run.py", line 218, in run
+    input_guardrail_results, turn_result = await asyncio.gather(
+                                           ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/run.py", line 760, in _run_single_turn
+    new_response = await cls._get_new_response(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/run.py", line 919, in _get_new_response
+    new_response = await model.get_response(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/models/openai_responses.py", line 76, in get_response
+    response = await self._fetch_response(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/models/openai_responses.py", line 226, in _fetch_response
+    converted_tools = Converter.convert_tools(tools, handoffs)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/models/openai_responses.py", line 338, in convert_tools
+    converted_tool, include = cls._convert_tool(tool)
+                              ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/models/openai_responses.py", line 392, in _convert_tool
+    raise UserError(f"Unknown tool type: {type(tool)}, tool")
+agents.exceptions.UserError: Unknown tool type: <class 'agents.agent.Agent'>, tool
+2025-05-17 22:30:42,233 [ERROR] graphyte_ai.steps.step4f_measurement_types [step4f_measurement_types.py:242]: An unexpected error occurred during Step 4f.
+Traceback (most recent call last):
+  File "/Users/completetech/Documents/GitHub/graphyte-ai/graphyte_ai/steps/step4f_measurement_types.py", line 109, in identify_measurement_types
+    step4f_result = await run_agent_with_retry(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/completetech/Documents/GitHub/graphyte-ai/graphyte_ai/utils.py", line 362, in run_agent_with_retry
+    return await Runner.run(
+           ^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/run.py", line 218, in run
+    input_guardrail_results, turn_result = await asyncio.gather(
+                                           ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/run.py", line 760, in _run_single_turn
+    new_response = await cls._get_new_response(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/run.py", line 919, in _get_new_response
+    new_response = await model.get_response(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/models/openai_responses.py", line 76, in get_response
+    response = await self._fetch_response(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/models/openai_responses.py", line 226, in _fetch_response
+    converted_tools = Converter.convert_tools(tools, handoffs)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/models/openai_responses.py", line 338, in convert_tools
+    converted_tool, include = cls._convert_tool(tool)
+                              ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/models/openai_responses.py", line 392, in _convert_tool
+    raise UserError(f"Unknown tool type: {type(tool)}, tool")
+agents.exceptions.UserError: Unknown tool type: <class 'agents.agent.Agent'>, tool
+2025-05-17 22:30:42,233 [ERROR] graphyte_ai.steps.step4g_modality_types [step4g_modality_types.py:241]: An unexpected error occurred during Step 4g.
+Traceback (most recent call last):
+  File "/Users/completetech/Documents/GitHub/graphyte-ai/graphyte_ai/steps/step4g_modality_types.py", line 109, in identify_modality_types
+    step4g_result = await run_agent_with_retry(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/completetech/Documents/GitHub/graphyte-ai/graphyte_ai/utils.py", line 362, in run_agent_with_retry
+    return await Runner.run(
+           ^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/run.py", line 218, in run
+    input_guardrail_results, turn_result = await asyncio.gather(
+                                           ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/run.py", line 760, in _run_single_turn
+    new_response = await cls._get_new_response(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/run.py", line 919, in _get_new_response
+    new_response = await model.get_response(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/models/openai_responses.py", line 76, in get_response
+    response = await self._fetch_response(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/models/openai_responses.py", line 226, in _fetch_response
+    converted_tools = Converter.convert_tools(tools, handoffs)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/models/openai_responses.py", line 338, in convert_tools
+    converted_tool, include = cls._convert_tool(tool)
+                              ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/envs/karma/lib/python3.12/site-packages/agents/models/openai_responses.py", line 392, in _convert_tool
+    raise UserError(f"Unknown tool type: {type(tool)}, tool")
+agents.exceptions.UserError: Unknown tool type: <class 'agents.agent.Agent'>, tool
+2025-05-17 22:30:42,233 [INFO] graphyte_ai.orchestrator [orchestrator.py:411]: --- Finished Step 4: Parallel Identification ---
+2025-05-17 22:30:42,233 [INFO] graphyte_ai.steps.step6c_aggregate_instances [step6c_aggregate_instances.py:83]: Aggregated extracted instances:
+{
+  "primary_domain": "Science",
+  "analyzed_sub_domains": [
+    "Artificial Intelligence",
+    "Cognitive Science",
+    "Neuroscience",
+    "Psychology",
+    "Computer Science"
+  ],
+  "entity_instances": [],
+  "ontology_instances": [],
+  "event_instances": [],
+  "statement_instances": [],
+  "evidence_instances": [],
+  "measurement_instances": [],
+  "modality_instances": [],
+  "relationship_instances": [],
+  "analysis_summary": "Aggregated instance results from Steps 5a-5g and Step 6b relationship instances."
+}
+2025-05-17 22:30:42,234 [INFO] graphyte_ai.utils [utils.py:297]: Successfully saved data to file 'aggregated_instance_output.json' in directory 'outputs/06c_aggregated_instances'.
+2025-05-17 22:30:42,234 [INFO] graphyte_ai.steps.step6c_aggregate_instances [step6c_aggregate_instances.py:122]: Result of saving aggregated instance output: Success: Saved data to file 'aggregated_instance_output.json' in directory 'outputs/06c_aggregated_instances'.
+2025-05-17 22:30:42,234 [INFO] graphyte_ai.orchestrator [orchestrator.py:564]: Step 1 (Domain) Result: Success
+2025-05-17 22:30:42,234 [INFO] graphyte_ai.orchestrator [orchestrator.py:567]: Step 2 (SubDomain) Result: Success
+2025-05-17 22:30:42,234 [INFO] graphyte_ai.orchestrator [orchestrator.py:570]: Step 3 (Topics) Result: Success
+2025-05-17 22:30:42,234 [INFO] graphyte_ai.orchestrator [orchestrator.py:573]: Step 4a (Entity Types) Result: Failed/Skipped/Error
+2025-05-17 22:30:42,234 [INFO] graphyte_ai.orchestrator [orchestrator.py:576]: Step 4b (Ontology Types) Result: Failed/Skipped/Error
+2025-05-17 22:30:42,234 [INFO] graphyte_ai.orchestrator [orchestrator.py:579]: Step 4c (Event Types) Result: Failed/Skipped/Error
+2025-05-17 22:30:42,234 [INFO] graphyte_ai.orchestrator [orchestrator.py:582]: Step 4d (Statement Types) Result: Failed/Skipped/Error
+2025-05-17 22:30:42,234 [INFO] graphyte_ai.orchestrator [orchestrator.py:585]: Step 4e (Evidence Types) Result: Failed/Skipped/Error
+2025-05-17 22:30:42,234 [INFO] graphyte_ai.orchestrator [orchestrator.py:588]: Step 4f (Measurement Types) Result: Failed/Skipped/Error
+2025-05-17 22:30:42,234 [INFO] graphyte_ai.orchestrator [orchestrator.py:591]: Step 4g (Modality Types) Result: Failed/Skipped/Error
+2025-05-17 22:30:42,234 [INFO] graphyte_ai.orchestrator [orchestrator.py:594]: Step 5 (Entity Instances) Result: Failed/Skipped
+2025-05-17 22:30:42,234 [INFO] graphyte_ai.orchestrator [orchestrator.py:597]: Step 5b (Ontology Instances) Result: Failed/Skipped
+2025-05-17 22:30:42,234 [INFO] graphyte_ai.orchestrator [orchestrator.py:600]: Step 5c (Event Instances) Result: Failed/Skipped
+2025-05-17 22:30:42,234 [INFO] graphyte_ai.orchestrator [orchestrator.py:603]: Step 5d (Statement Instances) Result: Failed/Skipped
+2025-05-17 22:30:42,234 [INFO] graphyte_ai.orchestrator [orchestrator.py:606]: Step 5e (Evidence Instances) Result: Failed/Skipped
+2025-05-17 22:30:42,234 [INFO] graphyte_ai.orchestrator [orchestrator.py:609]: Step 5f (Measurement Instances) Result: Failed/Skipped
+2025-05-17 22:30:42,234 [INFO] graphyte_ai.orchestrator [orchestrator.py:612]: Step 5g (Modality Instances) Result: Failed/Skipped
+2025-05-17 22:30:42,234 [INFO] graphyte_ai.orchestrator [orchestrator.py:615]: Step 6 (Relationships) Result: Failed/Skipped
+2025-05-17 22:30:42,234 [INFO] graphyte_ai.orchestrator [orchestrator.py:618]: Step 6b (Relationship Instances) Result: Failed/Skipped
+2025-05-17 22:30:42,234 [INFO] graphyte_ai.orchestrator [orchestrator.py:621]: Aggregated Instances Result: Success
+2025-05-17 22:30:42,234 [INFO] graphyte_ai.orchestrator [orchestrator.py:637]: --- Finished Analysis Workflow Trace (Document Analysis) (ID: trace_6448b34d87934264a31740792238c3bf) ---
+2025-05-17 22:30:42,234 [INFO] __main__ [main.py:158]: === Document Analysis Workflow Finished ===
+2025-05-17 22:30:42,880 [INFO] httpx [_client.py:1025]: HTTP Request: POST https://api.openai.com/v1/traces/ingest "HTTP/1.1 204 No Content"
