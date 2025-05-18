@@ -1,7 +1,7 @@
 """Agent workflow step modules for agentic_team_workflow."""
 
 from .step1_domain import identify_domain
-from .step2_subdomain import identify_subdomains
+from .step2_subdomains import identify_subdomains
 from .step3_topics import identify_topics
 from .step4a_entity_types import identify_entity_types
 from .step4b_ontology_types import identify_ontology_types
