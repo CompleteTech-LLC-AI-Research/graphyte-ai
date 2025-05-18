@@ -124,15 +124,15 @@ Graphyte AI can be run via the command line, processing input from files, direct
 
 ```bash
 # Process a single text file
-python -m graphyte_ai --file path/to/your/document.txt
+python -m graphyte_ai.main --file path/to/your/document.txt
 
 # Process all readable files in a directory
-python -m graphyte_ai --dir path/to/your/documents/
+python -m graphyte_ai.main --dir path/to/your/documents/
 
 # Process input piped from another command or entered manually
-cat report.txt | python -m graphyte_ai
+cat report.txt | python -m graphyte_ai.main
 # Or just run and paste text when prompted:
-python -m graphyte_ai
+python -m graphyte_ai.main
 ```
 
 ### Generating the Workflow Graph
