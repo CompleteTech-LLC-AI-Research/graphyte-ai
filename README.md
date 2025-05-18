@@ -137,19 +137,20 @@ python -m graphyte_ai.main
 
 ### Generating the Workflow Graph
 
-Use the helper script to create a Graphviz description of the planned agent workflow:
+Generate a Graphviz description of the planned agent workflow using the built‑in
+`--visualize` option:
 
 ```bash
-python scripts/generate_workflow_graph.py
+python -m graphyte_ai.main --visualize
 ```
 
-This writes the definition to `workflow.gv`. Render it with Graphviz as needed, for example:
+The graph file will be written to
+`outputs/00_visualization/agent_workflow_graph.gv`. Render it with Graphviz as
+needed:
 
 ```bash
-dot -Tpng workflow.gv -o workflow.png
+dot -Tpng outputs/00_visualization/agent_workflow_graph.gv -o workflow.png
 ```
-
-*(Note: Assumes the main execution script is within a package structure like `graphyte_ai` as shown in the provided file structure. Adjust the command if your entry point is different.)*
 
 ### Configuration
 
