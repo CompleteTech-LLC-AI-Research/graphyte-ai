@@ -2,11 +2,11 @@
 from typing import Any
 
 try:
-    # Assuming 'agents' is the correct SDK import name based on previous examples
-    # If your alias is truly 'agentic_team', adjust the import accordingly.
-    from agents import Agent  # type: ignore[attr-defined]
+    from agentic_team import Agent  # type: ignore[attr-defined]
 except ImportError:
-    print("Error: Agent SDK library not found or incomplete. Cannot define agents.")
+    print(
+        "Error: 'agentic_team' SDK library not found or incomplete. Cannot define agents."
+    )
     # Depending on execution context, might want `sys.exit(1)` here,
     # but typically module-level errors are handled by the importer.
     Agent = Any  # type: ignore[misc]
