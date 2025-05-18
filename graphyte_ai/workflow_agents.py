@@ -503,7 +503,20 @@ relationship_type_identifier_agent = Agent(
     ),
     model=RELATIONSHIP_MODEL,
     output_type=SingleEntityTypeRelationshipSchema,
-    tools=[],
+    tools=[
+        confidence_score_agent.as_tool(
+            tool_name="confidence_score",
+            tool_description="Evaluate confidence between 0.0 and 1.0",
+        ),
+        relevance_score_agent.as_tool(
+            tool_name="relevance_score",
+            tool_description="Judge relevance between 0.0 and 1.0",
+        ),
+        clarity_score_agent.as_tool(
+            tool_name="clarity_score",
+            tool_description="Assess clarity between 0.0 and 1.0",
+        ),
+    ],
     handoffs=[],
 )
 
