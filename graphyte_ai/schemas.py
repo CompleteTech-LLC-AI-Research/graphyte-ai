@@ -15,6 +15,19 @@ class DomainSchema(BaseModel):
         )
     )
 
+    confidence_score: Optional[float] = Field(
+        None,
+        description="Optional confidence score (0.0 to 1.0) for the domain identification.",
+    )
+    relevance_score: Optional[float] = Field(
+        None,
+        description="Optional relevance score (0.0 to 1.0) indicating how strongly the domain relates to the text.",
+    )
+    clarity_score: Optional[float] = Field(
+        None,
+        description="Optional clarity score (0.0 to 1.0) showing how well-defined the domain is in context.",
+    )
+
 
 # Simple schema used when only a confidence score is needed
 class ConfidenceScoreSchema(BaseModel):
@@ -56,6 +69,18 @@ class SubDomainDetail(BaseModel):
     sub_domain: str = Field(
         description="The specific sub-domain identified within the text."
     )
+    confidence_score: Optional[float] = Field(
+        None,
+        description="Optional confidence score (0.0 to 1.0) for this sub-domain.",
+    )
+    relevance_score: Optional[float] = Field(
+        None,
+        description="Optional relevance score (0.0 to 1.0) expressing how strongly this sub-domain relates to the text.",
+    )
+    clarity_score: Optional[float] = Field(
+        None,
+        description="Optional clarity score (0.0 to 1.0) for how clearly this sub-domain is defined in context.",
+    )
 
 
 # Schema for sub-domain analysis output (Agent 2)
@@ -78,6 +103,18 @@ class TopicDetail(BaseModel):
     """Represents a single identified topic."""
 
     topic: str = Field(description="The specific topic identified within the text.")
+    confidence_score: Optional[float] = Field(
+        None,
+        description="Optional confidence score (0.0 to 1.0) for this topic.",
+    )
+    relevance_score: Optional[float] = Field(
+        None,
+        description="Optional relevance score (0.0 to 1.0) indicating how strongly the topic relates to the text.",
+    )
+    clarity_score: Optional[float] = Field(
+        None,
+        description="Optional clarity score (0.0 to 1.0) for how clearly the topic is defined in context.",
+    )
 
 
 # Schema for the output of the *single* topic identification agent call (Agent 3)
