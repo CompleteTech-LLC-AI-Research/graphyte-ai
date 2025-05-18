@@ -61,7 +61,7 @@ from .config import (
 base_scoring_instructions_template = (
     "Evaluate the provided {item_description} and assign a numeric {score_type} between 0.0 and 1.0. "
     "Use any available context to inform your assessment. "
-    "Output ONLY the result using the provided schema structure."
+    "Output ONLY JSON using the schema with the '{score_field}' field."
 )
 
 base_scoring_agent = Agent(
@@ -79,6 +79,7 @@ confidence_score_agent = base_scoring_agent.clone(
     instructions=base_scoring_instructions_template.format(
         item_description="domain or relationship instance",
         score_type="confidence score ",
+        score_field="confidence_score",
     ),
     model=DEFAULT_MODEL,
     output_type=ConfidenceScoreSchema,
@@ -95,6 +96,7 @@ relevance_score_agent = base_scoring_agent.clone(
             "measurement/modality type, or relationship type"
         ),
         score_type="relevance score ",
+        score_field="relevance_score",
     ),
     model=DEFAULT_MODEL,
     output_type=RelevanceScoreSchema,
@@ -105,7 +107,9 @@ relevance_score_agent = base_scoring_agent.clone(
 clarity_score_agent = base_scoring_agent.clone(
     name="ClarityScoreAgent",
     instructions=base_scoring_instructions_template.format(
-        item_description="text, relationship, or entity", score_type="clarity score "
+        item_description="text, relationship, or entity",
+        score_type="clarity score ",
+        score_field="clarity_score",
     ),
     model=DEFAULT_MODEL,
     output_type=ClarityScoreSchema,
@@ -120,8 +124,8 @@ domain_identifier_agent = Agent(
         "Politics, Education, Environment, Business, Lifestyle, Travel, etc. "
         "Focus on the *primary* topic. The 'domain' field must contain a single concise label representing this dominant topic.\n"
         "If several potential domains appear in the text, select the one with the greatest overall coverage.\n"
-        "Use the confidence_score, relevance_score, and clarity_score tools to assign scores for the result.\n"
-        "Output ONLY valid JSON matching the DomainSchema and include confidence_score, relevance_score, and clarity_score fields."
+        "Call the confidence_score, relevance_score, and clarity_score tools to generate scores before producing the final output.\n"
+        "Output ONLY valid JSON matching the DomainSchema with 'confidence_score', 'relevance_score', and 'clarity_score' fields."
     ),
     model=DOMAIN_MODEL,
     output_type=DomainSchema,
@@ -149,8 +153,8 @@ sub_domain_identifier_agent = Agent(
         "You are given text content and its primary domain. Your task is to identify specific sub-domains "
         "within the text related to the primary domain. "
         "Also provide a brief overall analysis summary.\n"
-        "Use the confidence_score, relevance_score, and clarity_score tools to score each identified sub-domain.\n"
-        "Output ONLY the result using the provided SubDomainSchema. Ensure the identified_sub_domains field contains a list of items each with sub_domain, confidence_score, relevance_score, and clarity_score."
+        "Call the confidence_score, relevance_score, and clarity_score tools for each identified sub-domain before producing the final output.\n"
+        "Output ONLY the result using the provided SubDomainSchema. Ensure the identified_sub_domains field contains a list of items each with 'sub_domain', 'confidence_score', 'relevance_score', and 'clarity_score'."
     ),
     model=SUB_DOMAIN_MODEL,
     tools=[
@@ -177,8 +181,8 @@ topic_identifier_agent = Agent(
     instructions=(
         "You are provided with text, its primary domain, and ONE specific sub-domain. "
         "Your task: Analyze the *full text* and identify specific, relevant topics mentioned within the text that fall under the provided single sub-domain. "
-        "Use the confidence_score, relevance_score, and clarity_score tools to score each identified topic.\n"
-        "Output the results ONLY using the provided SingleSubDomainTopicSchema, including the topic string for each item in the identified_topics list along with confidence_score, relevance_score, and clarity_score."
+        "Call the confidence_score, relevance_score, and clarity_score tools for each identified topic before producing the final output.\n"
+        "Output the results ONLY using the provided SingleSubDomainTopicSchema, including the topic string for each item in the identified_topics list with 'confidence_score', 'relevance_score', and 'clarity_score'."
     ),
     model=TOPIC_MODEL,
     tools=[
@@ -210,8 +214,8 @@ base_type_identifier_instructions_template = (
     "Use this context to assess which {concept_type_singular}s are most relevant to the overall subject matter.\n"
     "For EACH identified {concept_type_singular}, provide:\n"
     "1. The classified {concept_type_singular}.\n"
-    "Leverage the confidence_score_agent, relevance_score_agent, and clarity_score_agent tools to score each candidate before finalizing your list.\n"
-    "Include confidence_score, relevance_score, and clarity_score for each returned item.\n"
+    "Call the confidence_score_agent, relevance_score_agent, and clarity_score_agent tools for each candidate before finalizing your list.\n"
+    "Include 'confidence_score', 'relevance_score', and 'clarity_score' for each returned item.\n"
     "Provide an overall analysis summary if applicable.\n"
     "Output ONLY the result using the provided schema structure. Ensure the {list_field_name} field contains a list of items, each with '{item_field_name}'. Include the 'primary_domain' and 'analyzed_sub_domains' fields from the context in your output schema."
 )
@@ -346,8 +350,8 @@ base_instance_extractor_instructions_template = (
     "Extract specific {concept_description} from the provided text. "
     "Use the context of domain, sub-domains, topics and identified {type_list_name} to guide relevance. "
     "For each extracted instance provide the {instance_field} and {span_field}. "
-    "Leverage the confidence_score_agent, relevance_score_agent, and clarity_score_agent tools to score each instance. "
-    "Output ONLY the result using the provided schema structure. "
+    "Call the confidence_score_agent, relevance_score_agent, and clarity_score_agent tools for each instance before producing the final output. "
+    "Output ONLY the result using the provided schema structure. Include 'confidence_score', 'relevance_score', and 'clarity_score' for each item. "
     "Ensure the '{list_field}' field contains all extracted items and include the 'primary_domain' and 'analyzed_sub_domains' fields from the context."
 )
 
@@ -494,8 +498,8 @@ relationship_type_identifier_agent = Agent(
         "Examples of relationships: WORKS_FOR, LOCATED_IN, ACQUIRED, PARTNERED_WITH, COMPETES_WITH, FOUNDED_BY, MANUFACTURES, USES_TECHNOLOGY, etc.\n"
         "For EACH identified relationship involving the focus entity type:\n"
         "1. State the unique type of relationship found.\n"
-        "2. Provide a relevance score (0.0 to 1.0) indicating the confidence/clarity of this relationship based on the text and context.\n"
-        "Output ONLY the result using the provided SingleEntityTypeRelationshipSchema. Ensure the 'entity_type_focus' field matches the entity type you were asked to focus on, and populate the 'identified_relationships' list with RelationshipDetail objects. Do not add commentary outside the schema."
+        "2. Call the confidence_score, relevance_score, and clarity_score tools to score the relationship before producing the final output.\n"
+        "Output ONLY the result using the provided SingleEntityTypeRelationshipSchema. Ensure the 'entity_type_focus' field matches the entity type you were asked to focus on, and populate the 'identified_relationships' list with RelationshipDetail objects containing 'confidence_score', 'relevance_score', and 'clarity_score'. Do not add commentary outside the schema."
     ),
     model=RELATIONSHIP_MODEL,
     output_type=SingleEntityTypeRelationshipSchema,
