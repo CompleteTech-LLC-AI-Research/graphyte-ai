@@ -31,6 +31,7 @@ from .schemas import (
     EventInstanceSchema,
     ConfidenceScoreSchema,
     RelevanceScoreSchema,
+    ClarityScoreSchema,
 )
 from .config import (
     DOMAIN_MODEL,
@@ -153,6 +154,8 @@ clarity_score_agent = base_scoring_agent.clone(
     instructions=base_scoring_instructions_template.format(
         item_description="text, relationship, or entity", score_type="clarity score "
     ),
+    model=DEFAULT_MODEL,
+    output_type=ClarityScoreSchema,
 )
 
 
