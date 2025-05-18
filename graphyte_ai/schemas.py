@@ -296,6 +296,18 @@ class StatementDetail(BaseModel):
     )
     # Optional: Add a snippet of the text classified
     # supporting_text: Optional[str] = Field(None, description="The text snippet classified as this statement type.")
+    confidence_score: Optional[float] = Field(
+        None,
+        description="Optional confidence score (0.0 to 1.0) for this statement type.",
+    )
+    relevance_score: Optional[float] = Field(
+        None,
+        description="Optional relevance score (0.0 to 1.0) for this statement type.",
+    )
+    clarity_score: Optional[float] = Field(
+        None,
+        description="Optional clarity score (0.0 to 1.0) for this statement type.",
+    )
 
 
 # Schema for statement type analysis output (Agent 4d)
@@ -371,6 +383,18 @@ class MeasurementDetail(BaseModel):
     # Optional: Add unit or value if needed
     # unit: Optional[str] = Field(None, description="The unit of the measurement, if applicable.")
     # value: Optional[str] = Field(None, description="The actual value mentioned, if relevant.")
+    confidence_score: Optional[float] = Field(
+        None,
+        description="Optional confidence score (0.0 to 1.0) for this measurement type.",
+    )
+    relevance_score: Optional[float] = Field(
+        None,
+        description="Optional relevance score (0.0 to 1.0) for this measurement type.",
+    )
+    clarity_score: Optional[float] = Field(
+        None,
+        description="Optional clarity score (0.0 to 1.0) for this measurement type.",
+    )
 
     confidence_score: Optional[float] = Field(
         None,
@@ -416,6 +440,18 @@ class ModalityDetail(BaseModel):
     )
     # Optional: Add count or description if needed
     # count: Optional[int] = Field(None, description="Number of times this modality is represented, if applicable.")
+    confidence_score: Optional[float] = Field(
+        None,
+        description="Optional confidence score (0.0 to 1.0) for this modality type.",
+    )
+    relevance_score: Optional[float] = Field(
+        None,
+        description="Optional relevance score (0.0 to 1.0) for this modality type.",
+    )
+    clarity_score: Optional[float] = Field(
+        None,
+        description="Optional clarity score (0.0 to 1.0) for this modality type.",
+    )
 
     confidence_score: Optional[float] = Field(
         None,
