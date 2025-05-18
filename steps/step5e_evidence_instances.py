@@ -8,7 +8,7 @@ from pydantic import ValidationError
 
 from agents import RunConfig, RunResult, TResponseInputItem  # type: ignore[attr-defined]
 
-from ..agents import evidence_instance_extractor_agent
+from ..workflow_agents import evidence_instance_extractor_agent
 from ..config import (
     EVIDENCE_INSTANCE_MODEL,
     EVIDENCE_INSTANCE_OUTPUT_DIR,

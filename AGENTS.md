@@ -15,7 +15,7 @@ This project contains Python utilities for orchestrating multi-agent workflows f
 
 - `main.py` – CLI entry point to run the workflow.
 - `orchestrator.py` – coordinates agents and workflow steps.
-- `agents.py` – defines agent instances.
+- `workflow_agents.py` – defines agent instances.
 - `steps/` – individual step implementations for the workflow.
 - `config.py` – configuration constants and environment variable loading.
 - `schemas.py` – Pydantic models defining expected data structures.
