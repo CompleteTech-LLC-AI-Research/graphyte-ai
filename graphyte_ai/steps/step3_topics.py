@@ -7,7 +7,12 @@ from typing import List, Optional
 
 from pydantic import ValidationError
 
-from agents import RunConfig, RunResult, TResponseInputItem  # type: ignore[attr-defined]
+from agents import (
+    RunConfig,
+    RunResult,
+    TResponseInputItem,
+    gen_trace_id,
+)  # type: ignore[attr-defined]
 
 from ..workflow_agents import topic_identifier_agent, topic_result_agent
 from ..config import TOPIC_MODEL, TOPIC_OUTPUT_DIR, TOPIC_OUTPUT_FILENAME
@@ -64,6 +69,7 @@ async def identify_topics(
         []
     )  # Keep track of which sub-domain corresponds to which task/result
     aggregated_topic_results: List[SingleSubDomainTopicSchema] = []
+    sub_domain_trace_map: dict[str, str] = {}
 
     # --- Prepare tasks for parallel execution ---
     for index, current_sub_domain in enumerate(sub_domains_list_for_step3):
@@ -91,9 +97,11 @@ async def identify_topics(
             "batch_index": str(index + 1),
             "batch_size": str(len(sub_domains_list_for_step3)),
         }
+        step3_iter_trace_id = gen_trace_id()
+        sub_domain_trace_map[current_sub_domain] = step3_iter_trace_id
         step3_iter_run_config = RunConfig(
             workflow_name="step3_topics",
-            trace_id=trace_id,
+            trace_id=step3_iter_trace_id,
             group_id=group_id,
             trace_metadata={
                 k: str(v) for k, v in step3_iter_metadata_for_trace.items()
@@ -337,6 +345,7 @@ async def identify_topics(
         "trace_information": {
             "trace_id": trace_id or "N/A",
             "notes": f"Aggregated from PARALLEL calls to {topic_identifier_agent.name} in Step 3 of workflow.",
+            "sub_domain_trace_ids": sub_domain_trace_map,
         },
     }
     save_result_step3_final = direct_save_json_output(
