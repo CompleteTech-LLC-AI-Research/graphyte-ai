@@ -2,16 +2,19 @@
 
 import logging
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import List, Optional, cast
 
 from pydantic import ValidationError
 
 from agents import RunConfig, RunResult, TResponseInputItem  # type: ignore[attr-defined]
 
-from ..workflow_agents import sub_domain_identifier_agent
+from ..workflow_agents import (
+    sub_domain_identifier_agent,
+    sub_domain_result_agent,
+)
 from ..config import SUB_DOMAIN_MODEL, SUB_DOMAIN_OUTPUT_DIR, SUB_DOMAIN_OUTPUT_FILENAME
 from ..schemas import SubDomainSchema
-from ..utils import direct_save_json_output, run_agent_with_retry
+from ..utils import direct_save_json_output, run_agent_with_retry, score_sub_domains
 
 logger = logging.getLogger(__name__)
 
@@ -103,20 +106,62 @@ async def identify_subdomains(
                 )
 
             if sub_domain_data and sub_domain_data.identified_sub_domains:
+                sub_domain_data = cast(SubDomainSchema, sub_domain_data)
+                assert sub_domain_data is not None
+                scored_data: SubDomainSchema = sub_domain_data
                 if (
-                    sub_domain_data.primary_domain
-                    and sub_domain_data.primary_domain != primary_domain
+                    scored_data.primary_domain
+                    and scored_data.primary_domain != primary_domain
                 ):
                     logger.warning(
                         f"Primary domain mismatch between Step 1 ('{primary_domain}') and Step 2 output ('{sub_domain_data.primary_domain}'). Using Step 1's."
                     )
-                    sub_domain_data.primary_domain = (
-                        primary_domain  # Ensure consistency
-                    )
-                elif not sub_domain_data.primary_domain:
-                    sub_domain_data.primary_domain = (
+                    scored_data.primary_domain = primary_domain  # Ensure consistency
+                elif not scored_data.primary_domain:
+                    scored_data.primary_domain = (
                         primary_domain  # Ensure primary domain is set
                     )
+
+                scored_data = await score_sub_domains(scored_data, content)
+
+                scored_result = await run_agent_with_retry(
+                    sub_domain_result_agent,
+                    scored_data.model_dump_json(),
+                )
+
+                if scored_result:
+                    potential_scored_output = getattr(
+                        scored_result, "final_output", None
+                    )
+                    if isinstance(potential_scored_output, SubDomainSchema):
+                        scored_data = potential_scored_output
+                    elif isinstance(potential_scored_output, dict):
+                        try:
+                            scored_data = SubDomainSchema.model_validate(
+                                potential_scored_output
+                            )
+                        except ValidationError as e:
+                            logger.warning(
+                                "SubDomainSchema validation error after scoring: %s",
+                                e,
+                            )
+                            scored_data = SubDomainSchema.model_validate(
+                                scored_data.model_dump()
+                            )
+                    else:
+                        logger.error(
+                            "Unexpected sub-domain result output type: %s",
+                            type(potential_scored_output),
+                        )
+                        scored_data = SubDomainSchema.model_validate(
+                            scored_data.model_dump()
+                        )
+                else:
+                    scored_data = SubDomainSchema.model_validate(
+                        scored_data.model_dump()
+                    )
+
+                sub_domain_data = scored_data
 
                 sub_domains_items = sub_domain_data.identified_sub_domains
                 sub_domains_list = [

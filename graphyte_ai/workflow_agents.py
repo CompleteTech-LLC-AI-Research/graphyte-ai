@@ -197,6 +197,13 @@ sub_domain_identifier_agent = Agent(
     output_type=SubDomainSchema,
 )
 
+# --- Agent 2b: Sub-Domain Result ---
+sub_domain_result_agent = create_result_agent(
+    base_agent=sub_domain_identifier_agent,
+    schema=SubDomainSchema,
+    item_description="sub-domain list",
+)
+
 # --- Agent 3: Topic Identifier (for one sub-domain) ---
 topic_identifier_agent = Agent(
     name="TopicIdentifierAgent",
@@ -563,6 +570,7 @@ all_agents = {
     "domain_identifier": domain_identifier_agent,
     "domain_result": domain_result_agent,
     "sub_domain_identifier": sub_domain_identifier_agent,
+    "sub_domain_result": sub_domain_result_agent,
     "topic_identifier": topic_identifier_agent,
     "entity_type_identifier": entity_type_identifier_agent,
     "ontology_type_identifier": ontology_type_identifier_agent,
@@ -589,3 +597,4 @@ all_agents = {
 if "__all__" in globals():
     __all_list = cast(List[str], globals()["__all__"])
     __all_list.append("domain_result_agent")
+    __all_list.append("sub_domain_result_agent")
