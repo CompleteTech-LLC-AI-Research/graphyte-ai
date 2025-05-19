@@ -29,7 +29,8 @@ async def identify_relationship_instances(
     primary_domain: str,
     sub_domain_data: SubDomainSchema,
     relationship_type_data: RelationshipSchema,
-    overall_trace_id: Optional[str] = None,
+    trace_id: Optional[str] = None,
+    group_id: Optional[str] = None,
 ) -> Optional[RelationshipInstanceSchema]:
     """Extract relationship instances using prior type results and instances."""
 
@@ -48,7 +49,12 @@ async def identify_relationship_instances(
         "workflow_step": "6b_relationship_instance_extraction",
         "agent_name": "Relationship Instance Extractor",
     }
-    run_config = RunConfig(trace_metadata=meta)
+    run_config = RunConfig(
+        workflow_name="step6b_relationship_instances",
+        trace_id=trace_id,
+        group_id=group_id,
+        trace_metadata=meta,
+    )
 
     rel_types = [
         rel.relationship_type
@@ -124,13 +130,13 @@ async def identify_relationship_instances(
                     "output_schema": RelationshipInstanceSchema.__name__,
                     "timestamp_utc": datetime.now(timezone.utc).isoformat(),
                 },
-                "trace_information": {"trace_id": overall_trace_id or "N/A"},
+                "trace_information": {"trace_id": trace_id or "N/A"},
             }
             direct_save_json_output(
                 RELATIONSHIP_INSTANCE_OUTPUT_DIR,
                 RELATIONSHIP_INSTANCE_OUTPUT_FILENAME,
                 output_content,
-                overall_trace_id,
+                trace_id,
             )
         else:
             if final:

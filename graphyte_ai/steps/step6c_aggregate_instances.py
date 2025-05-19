@@ -36,7 +36,8 @@ def aggregate_extracted_instances(
     measurement_instances: Optional[MeasurementInstanceSchema] = None,
     modality_instances: Optional[ModalityInstanceSchema] = None,
     relationship_instances: Optional[RelationshipInstanceSchema] = None,
-    overall_trace_id: Optional[str] = None,
+    trace_id: Optional[str] = None,
+    group_id: Optional[str] = None,
 ) -> Optional[ExtractedInstancesSchema]:
     """Combine instance outputs from Steps 5a–5g and Step 6b relationship instances."""
 
@@ -107,7 +108,7 @@ def aggregate_extracted_instances(
             "timestamp_utc": datetime.now(timezone.utc).isoformat(),
         },
         "trace_information": {
-            "trace_id": overall_trace_id or "N/A",
+            "trace_id": trace_id or "N/A",
             "notes": "Aggregated from instance extraction steps",
         },
     }
@@ -116,7 +117,7 @@ def aggregate_extracted_instances(
         AGGREGATED_INSTANCE_OUTPUT_DIR,
         AGGREGATED_INSTANCE_OUTPUT_FILENAME,
         output_content,
-        overall_trace_id,
+        trace_id,
     )
     print(f"  - {save_result}")
     logger.info(f"Result of saving aggregated instance output: {save_result}")

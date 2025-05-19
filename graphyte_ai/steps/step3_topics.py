@@ -21,7 +21,8 @@ async def identify_topics(
     content: str,
     primary_domain: str,
     sub_domain_data: SubDomainSchema,
-    overall_trace_id: Optional[str] = None,
+    trace_id: Optional[str] = None,
+    group_id: Optional[str] = None,
 ) -> Optional[TopicSchema]:
     """Identify topics for each sub-domain from the input content.
 
@@ -29,7 +30,8 @@ async def identify_topics(
         content: The text content to analyze
         primary_domain: The primary domain identified in step 1
         sub_domain_data: The SubDomainSchema from step 2
-        overall_trace_id: The trace ID for logging purposes
+        trace_id: The trace ID for logging purposes
+        group_id: The trace group ID for logging purposes
 
     Returns:
         A TopicSchema object if successful, None otherwise
@@ -90,7 +92,12 @@ async def identify_topics(
             "batch_size": str(len(sub_domains_list_for_step3)),
         }
         step3_iter_run_config = RunConfig(
-            trace_metadata={k: str(v) for k, v in step3_iter_metadata_for_trace.items()}
+            workflow_name="step3_topics",
+            trace_id=trace_id,
+            group_id=group_id,
+            trace_metadata={
+                k: str(v) for k, v in step3_iter_metadata_for_trace.items()
+            },
         )
 
         step3_iter_input_list: List[TResponseInputItem] = [
@@ -231,7 +238,7 @@ async def identify_topics(
         except (ValidationError, TypeError) as e:
             logger.exception(
                 f"Validation or Type error processing result for '{current_sub_domain}'. Error: {e}",
-                extra={"trace_id": overall_trace_id or "N/A"},
+                extra={"trace_id": trace_id or "N/A"},
             )
             print(
                 f"\nError: A data validation or type issue occurred processing result for sub-domain '{current_sub_domain}'."
@@ -240,7 +247,7 @@ async def identify_topics(
         except Exception as e:
             logger.exception(
                 f"An unexpected error occurred processing result for '{current_sub_domain}'.",
-                extra={"trace_id": overall_trace_id or "N/A"},
+                extra={"trace_id": trace_id or "N/A"},
             )
             print(
                 f"\nAn unexpected error occurred processing result for sub-domain '{current_sub_domain}': {type(e).__name__}: {e}"
@@ -328,12 +335,15 @@ async def identify_topics(
             "timestamp_utc": datetime.now(timezone.utc).isoformat(),
         },
         "trace_information": {
-            "trace_id": overall_trace_id or "N/A",
+            "trace_id": trace_id or "N/A",
             "notes": f"Aggregated from PARALLEL calls to {topic_identifier_agent.name} in Step 3 of workflow.",
         },
     }
     save_result_step3_final = direct_save_json_output(
-        TOPIC_OUTPUT_DIR, TOPIC_OUTPUT_FILENAME, topic_output_content, overall_trace_id
+        TOPIC_OUTPUT_DIR,
+        TOPIC_OUTPUT_FILENAME,
+        topic_output_content,
+        trace_id,
     )
     print("\nSaving final aggregated topic output file...")
     print(f"  - {save_result_step3_final}")
