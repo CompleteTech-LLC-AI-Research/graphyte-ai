@@ -3,9 +3,6 @@ from typing import Any
 
 try:
     from agents import Agent, ModelSettings  # type: ignore[attr-defined]
-    from agents.extensions.handoff_prompt import (
-        prompt_with_handoff_instructions,
-    )
 except ImportError:
     print("Error: 'agents' SDK library not found or incomplete. Cannot define agents.")
     # Depending on execution context, might want `sys.exit(1)` here,
@@ -123,16 +120,14 @@ clarity_score_agent = base_scoring_agent.clone(
 # Coordinates calling all three scoring agents and outputs the combined scoring result.
 scoring_orchestration_agent = Agent(
     name="ScoringOrchestrationAgent",
-    instructions=prompt_with_handoff_instructions(
-        (
-            "Obtain confidence, relevance, and clarity scores for the provided domain "
-            "by sequentially transferring to the scoring agents. "
-            "First call transfer_to_confidence_score_agent and wait for its result. "
-            "Then call transfer_to_relevance_score_agent, and finally "
-            "transfer_to_clarity_score_agent. Invoke only one handoff at a time. "
-            "After gathering all scores, output ONLY JSON matching the "
-            "ScoringResultSchema."
-        )
+    instructions=(
+        "Obtain confidence, relevance, and clarity scores for the provided domain "
+        "by sequentially transferring to the scoring agents. "
+        "First call transfer_to_confidence_score_agent and wait for its result. "
+        "Then call transfer_to_relevance_score_agent, and finally "
+        "transfer_to_clarity_score_agent. Invoke only one handoff at a time. "
+        "After gathering all scores, output ONLY JSON matching the "
+        "ScoringResultSchema."
     ),
     model=DEFAULT_MODEL,
     handoffs=[confidence_score_agent, relevance_score_agent, clarity_score_agent],
@@ -148,16 +143,14 @@ clarity_score_agent.handoffs = [scoring_orchestration_agent]
 # --- Agent 1: Domain Identifier ---
 domain_identifier_agent = Agent(
     name="DomainIdentifierAgent",
-    instructions=prompt_with_handoff_instructions(
-        (
-            "Your primary task: Analyze the provided text content and identify the single, most relevant high-level domain. "
-            "Examples include: Finance, Technology, Healthcare, Arts, Science, Entertainment, Sports, "
-            "Politics, Education, Environment, Business, Lifestyle, Travel, etc. "
-            "Focus on the *primary* topic. The 'domain' field must contain a single concise label representing this dominant topic.\n"
-            "If several potential domains appear in the text, select the one with the greatest overall coverage.\n"
-            "After determining the domain, transfer_to_scoring_orchestration_agent to obtain confidence, relevance, and clarity scores before producing the final output.\n"
-            "Output ONLY valid JSON matching the DomainSchema once scoring is complete."
-        )
+    instructions=(
+        "Your primary task: Analyze the provided text content and identify the single, most relevant high-level domain. "
+        "Examples include: Finance, Technology, Healthcare, Arts, Science, Entertainment, Sports, "
+        "Politics, Education, Environment, Business, Lifestyle, Travel, etc. "
+        "Focus on the *primary* topic. The 'domain' field must contain a single concise label representing this dominant topic.\n"
+        "If several potential domains appear in the text, select the one with the greatest overall coverage.\n"
+        "After determining the domain, transfer_to_scoring_orchestration_agent to obtain confidence, relevance, and clarity scores before producing the final output.\n"
+        "Output ONLY valid JSON matching the DomainSchema once scoring is complete."
     ),
     model=DOMAIN_MODEL,
     output_type=DomainSchema,
