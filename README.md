@@ -212,13 +212,6 @@ The workflow progresses through several key phases:
     * Determines relevant **Sub-Domains**...
     * Extracts key **Topics**...
 
-    After establishing the domain context, the **Domain Agent** hands off
-    control to a *scoring orchestrator*. This orchestrator then performs its own
-    set of handoffs to the individual scoring agents and aggregates their
-    results before returning to the main workflow. For details on the handoff
-    mechanism, see the [Agents SDK documentation on
-    handoffs](graphyte_ai/agent-sdk-docs-examples/docs/handoffs.md#handoffs).
-
 2.  **Type Identification (Step 4 - Parallel):**
     * Leverages the established context to identify various conceptual **Types**...
 
