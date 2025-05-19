@@ -1,5 +1,5 @@
 # NOTE: Using the external ``agents`` SDK for agent definitions
-from typing import Any
+from typing import Any, cast, List
 
 try:
     from agents import Agent  # type: ignore[attr-defined]
@@ -128,6 +128,20 @@ domain_identifier_agent = Agent(
         "Output ONLY valid JSON matching the DomainResultSchema."
     ),
     model=DOMAIN_MODEL,
+    output_type=DomainResultSchema,
+    tools=[],
+    handoffs=[],
+)
+
+# --- Agent 1b: Domain Result ---
+domain_result_agent = domain_identifier_agent.clone(
+    name="DomainResultAgent",
+    instructions=(
+        "You are provided with a domain label and pre-calculated confidence, "
+        "relevance, and clarity scores. Do not recompute these values. "
+        "Return ONLY valid JSON conforming to DomainResultSchema that "
+        "includes the supplied domain and scores."
+    ),
     output_type=DomainResultSchema,
     tools=[],
     handoffs=[],
@@ -512,6 +526,7 @@ relationship_extractor_agent = base_instance_extractor_agent.clone(
 # You can optionally create a list or dict to easily access all agents
 all_agents = {
     "domain_identifier": domain_identifier_agent,
+    "domain_result": domain_result_agent,
     "sub_domain_identifier": sub_domain_identifier_agent,
     "topic_identifier": topic_identifier_agent,
     "entity_type_identifier": entity_type_identifier_agent,
@@ -535,3 +550,7 @@ all_agents = {
     "relationship_instance_extractor": relationship_extractor_agent,
     # Note: Base agent is not typically included here unless used directly
 }
+
+if "__all__" in globals():
+    __all_list = cast(List[str], globals()["__all__"])
+    __all_list.append("domain_result_agent")
