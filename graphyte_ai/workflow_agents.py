@@ -134,10 +134,9 @@ clarity_score = base_scoring_agent.clone(
 async def run_confidence_score(item: str, context: str) -> str:
     """Run the confidence scoring agent on an item and its document context."""
 
-    text_input = f"Item: {item}\n\nContext:\n{context}"
     result = await Runner.run(
         confidence_score,
-        input=text_input,
+        input={"item": item, "context": context},
     )
     return str(result.final_output)
 
@@ -146,10 +145,9 @@ async def run_confidence_score(item: str, context: str) -> str:
 async def run_relevance_score(item: str, context: str) -> str:
     """Run the relevance scoring agent on an item and its document context."""
 
-    text_input = f"Item: {item}\n\nContext:\n{context}"
     result = await Runner.run(
         relevance_score,
-        input=text_input,
+        input={"item": item, "context": context},
     )
     return str(result.final_output)
 
@@ -158,10 +156,9 @@ async def run_relevance_score(item: str, context: str) -> str:
 async def run_clarity_score(item: str, context: str) -> str:
     """Run the clarity scoring agent on an item and its document context."""
 
-    text_input = f"Item: {item}\n\nContext:\n{context}"
     result = await Runner.run(
         clarity_score,
-        input=text_input,
+        input={"item": item, "context": context},
     )
     return str(result.final_output)
 
