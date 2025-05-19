@@ -2,26 +2,13 @@
 from typing import Any
 
 try:
-    from agents import (  # type: ignore[attr-defined]
-        Agent,
-        ModelSettings,
-        Runner,
-        function_tool,
-    )
-except ImportError:  # pragma: no cover - optional SDK
+    from agents import Agent, ModelSettings  # type: ignore[attr-defined]
+except ImportError:
     print("Error: 'agents' SDK library not found or incomplete. Cannot define agents.")
+    # Depending on execution context, might want `sys.exit(1)` here,
+    # but typically module-level errors are handled by the importer.
     Agent = Any  # type: ignore[misc]
     ModelSettings = Any  # type: ignore[misc]
-    Runner = Any  # type: ignore[misc]
-
-    def function_tool(*_args, **_kwargs):  # type: ignore[return-type]
-        """Fallback decorator when the agents SDK is unavailable."""
-
-        def decorator(func):
-            return func
-
-        return decorator
-
 
 from .schemas import (
     DomainSchema,
@@ -73,8 +60,8 @@ from .config import (
 # --- Base Agent for Scoring ---
 # Template agent used for calculating confidence or relevance scores.
 base_scoring_instructions_template = (
-    "You will receive the item to score and the full document context. "
-    "Evaluate the provided {item_description} within that context and assign a numeric {score_type} between 0.0 and 1.0. "
+    "Evaluate the provided {item_description} and assign a numeric {score_type} between 0.0 and 1.0. "
+    "Use any available context to inform your assessment. "
     "Output ONLY JSON using the schema with the '{score_field}' field."
 )
 
@@ -129,40 +116,6 @@ clarity_score_agent = base_scoring_agent.clone(
     output_type=ClarityScoreSchema,
 )
 
-
-@function_tool(name_override="confidence_score")
-async def run_confidence_score(item: str, context: str) -> str:
-    """Run the confidence scoring agent on an item and its document context."""
-
-    result = await Runner.run(
-        confidence_score_agent,
-        input={"item": item, "context": context},
-    )
-    return str(result.final_output)
-
-
-@function_tool(name_override="relevance_score")
-async def run_relevance_score(item: str, context: str) -> str:
-    """Run the relevance scoring agent on an item and its document context."""
-
-    result = await Runner.run(
-        relevance_score_agent,
-        input={"item": item, "context": context},
-    )
-    return str(result.final_output)
-
-
-@function_tool(name_override="clarity_score")
-async def run_clarity_score(item: str, context: str) -> str:
-    """Run the clarity scoring agent on an item and its document context."""
-
-    result = await Runner.run(
-        clarity_score_agent,
-        input={"item": item, "context": context},
-    )
-    return str(result.final_output)
-
-
 # --- Agent 1: Domain Identifier ---
 domain_identifier_agent = Agent(
     name="DomainIdentifierAgent",
@@ -178,7 +131,20 @@ domain_identifier_agent = Agent(
     model=DOMAIN_MODEL,
     output_type=DomainSchema,
     model_settings=ModelSettings(tool_choice="required"),
-    tools=[run_confidence_score, run_relevance_score, run_clarity_score],
+    tools=[
+        confidence_score_agent.as_tool(
+            tool_name="confidence_score",
+            tool_description="Evaluate confidence between 0.0 and 1.0",
+        ),
+        relevance_score_agent.as_tool(
+            tool_name="relevance_score",
+            tool_description="Judge relevance between 0.0 and 1.0",
+        ),
+        clarity_score_agent.as_tool(
+            tool_name="clarity_score",
+            tool_description="Assess clarity between 0.0 and 1.0",
+        ),
+    ],
     handoffs=[],
 )
 
@@ -194,7 +160,20 @@ sub_domain_identifier_agent = Agent(
     ),
     model=SUB_DOMAIN_MODEL,
     model_settings=ModelSettings(tool_choice="required"),
-    tools=[run_confidence_score, run_relevance_score, run_clarity_score],
+    tools=[
+        confidence_score_agent.as_tool(
+            tool_name="confidence_score",
+            tool_description="Evaluate confidence between 0.0 and 1.0",
+        ),
+        relevance_score_agent.as_tool(
+            tool_name="relevance_score",
+            tool_description="Judge relevance between 0.0 and 1.0",
+        ),
+        clarity_score_agent.as_tool(
+            tool_name="clarity_score",
+            tool_description="Assess clarity between 0.0 and 1.0",
+        ),
+    ],
     handoffs=[],
     output_type=SubDomainSchema,
 )
@@ -210,7 +189,20 @@ topic_identifier_agent = Agent(
     ),
     model=TOPIC_MODEL,
     model_settings=ModelSettings(tool_choice="required"),
-    tools=[run_confidence_score, run_relevance_score, run_clarity_score],
+    tools=[
+        confidence_score_agent.as_tool(
+            tool_name="confidence_score",
+            tool_description="Evaluate confidence between 0.0 and 1.0",
+        ),
+        relevance_score_agent.as_tool(
+            tool_name="relevance_score",
+            tool_description="Judge relevance between 0.0 and 1.0",
+        ),
+        clarity_score_agent.as_tool(
+            tool_name="clarity_score",
+            tool_description="Assess clarity between 0.0 and 1.0",
+        ),
+    ],
     handoffs=[],
     output_type=SingleSubDomainTopicSchema,
 )
@@ -237,7 +229,20 @@ base_type_identifier_agent = Agent(
     instructions=base_type_identifier_instructions_template,  # Will be formatted in clones
     # No default model or output_type, must be specified in clones
     model_settings=ModelSettings(tool_choice="required"),
-    tools=[run_confidence_score, run_relevance_score, run_clarity_score],
+    tools=[
+        confidence_score_agent.as_tool(
+            tool_name="confidence_score",
+            tool_description="Evaluate confidence between 0.0 and 1.0",
+        ),
+        relevance_score_agent.as_tool(
+            tool_name="relevance_score",
+            tool_description="Judge relevance between 0.0 and 1.0",
+        ),
+        clarity_score_agent.as_tool(
+            tool_name="clarity_score",
+            tool_description="Assess clarity between 0.0 and 1.0",
+        ),
+    ],
     handoffs=[],
 )
 
@@ -360,7 +365,20 @@ base_instance_extractor_agent = Agent(
     name="BaseInstanceExtractorAgent",  # Generic name, overridden in clones
     instructions=base_instance_extractor_instructions_template,  # Formatted in clones
     model_settings=ModelSettings(tool_choice="required"),
-    tools=[run_confidence_score, run_relevance_score, run_clarity_score],
+    tools=[
+        confidence_score_agent.as_tool(
+            tool_name="confidence_score",
+            tool_description="Evaluate confidence between 0.0 and 1.0",
+        ),
+        relevance_score_agent.as_tool(
+            tool_name="relevance_score",
+            tool_description="Judge relevance between 0.0 and 1.0",
+        ),
+        clarity_score_agent.as_tool(
+            tool_name="clarity_score",
+            tool_description="Assess clarity between 0.0 and 1.0",
+        ),
+    ],
     handoffs=[],
 )
 
@@ -493,7 +511,20 @@ relationship_type_identifier_agent = Agent(
     model=RELATIONSHIP_MODEL,
     output_type=SingleEntityTypeRelationshipSchema,
     model_settings=ModelSettings(tool_choice="required"),
-    tools=[run_confidence_score, run_relevance_score, run_clarity_score],
+    tools=[
+        confidence_score_agent.as_tool(
+            tool_name="confidence_score",
+            tool_description="Evaluate confidence between 0.0 and 1.0",
+        ),
+        relevance_score_agent.as_tool(
+            tool_name="relevance_score",
+            tool_description="Judge relevance between 0.0 and 1.0",
+        ),
+        clarity_score_agent.as_tool(
+            tool_name="clarity_score",
+            tool_description="Assess clarity between 0.0 and 1.0",
+        ),
+    ],
     handoffs=[],
 )
 
