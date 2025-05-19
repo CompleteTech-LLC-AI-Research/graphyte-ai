@@ -18,7 +18,11 @@ from ..schemas import (
     SingleSubDomainTopicSchema,
     SingleSubDomainEntityTypeSchema,
 )
-from ..utils import direct_save_json_output, run_agent_with_retry
+from ..utils import (
+    direct_save_json_output,
+    run_agent_with_retry,
+    score_entity_types,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -136,6 +140,8 @@ async def identify_entity_types(
                     entity_data.sub_domain = topic_info.sub_domain
                     # If strict matching is needed, correct it:
                     # entity_data.analyzed_sub_domains = [sd.sub_domain for sd in sub_domain_data.identified_sub_domains]
+
+                entity_data = await score_entity_types(entity_data, content)
 
                 # Log and print results
                 entity_log_items = [

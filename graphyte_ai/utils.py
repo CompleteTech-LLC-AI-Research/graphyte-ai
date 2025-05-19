@@ -60,6 +60,13 @@ from .schemas import (
     SubDomainSchema,
     TopicSchema,
     TopicDetail,
+    SingleSubDomainEntityTypeSchema,
+    OntologyTypeSchema,
+    EventTypeSchema,
+    StatementTypeSchema,
+    EvidenceTypeSchema,
+    MeasurementTypeSchema,
+    ModalityTypeSchema,
 )
 
 # Get logger for utils module
@@ -574,3 +581,264 @@ async def score_topics(topic_data: TopicSchema, context_text: str) -> TopicSchem
         item.clarity_score = clar_data.clarity_score if clar_data else None
 
     return topic_data
+
+
+async def score_entity_types(
+    entity_data: SingleSubDomainEntityTypeSchema, context_text: str
+) -> SingleSubDomainEntityTypeSchema:
+    """Score each entity type within ``entity_data``.
+
+    Parameters
+    ----------
+    entity_data:
+        The entity type analysis output for a single sub-domain.
+    context_text:
+        The original text content used for scoring.
+
+    Returns
+    -------
+    SingleSubDomainEntityTypeSchema
+        The updated schema with scores populated on each entity type.
+    """
+
+    tasks = [
+        run_parallel_scoring(item.entity_type, context_text)
+        for item in entity_data.identified_entities
+    ]
+
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    for item, result in zip(entity_data.identified_entities, results):
+        if isinstance(result, Exception):
+            logger.error(
+                "Scoring failed for entity type '%s'", item.entity_type, exc_info=result
+            )
+            continue
+
+        conf_data, rel_data, clar_data = cast(
+            tuple[
+                Optional[ConfidenceScoreSchema],
+                Optional[RelevanceScoreSchema],
+                Optional[ClarityScoreSchema],
+            ],
+            result,
+        )
+        item.confidence_score = conf_data.confidence_score if conf_data else None
+        item.relevance_score = rel_data.relevance_score if rel_data else None
+        item.clarity_score = clar_data.clarity_score if clar_data else None
+
+    return entity_data
+
+
+async def score_ontology_types(
+    ontology_data: OntologyTypeSchema, context_text: str
+) -> OntologyTypeSchema:
+    """Score each ontology type within ``ontology_data``."""
+
+    tasks = [
+        run_parallel_scoring(item.ontology_type, context_text)
+        for item in ontology_data.identified_ontology_types
+    ]
+
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    for item, result in zip(ontology_data.identified_ontology_types, results):
+        if isinstance(result, Exception):
+            logger.error(
+                "Scoring failed for ontology type '%s'",
+                item.ontology_type,
+                exc_info=result,
+            )
+            continue
+
+        conf_data, rel_data, clar_data = cast(
+            tuple[
+                Optional[ConfidenceScoreSchema],
+                Optional[RelevanceScoreSchema],
+                Optional[ClarityScoreSchema],
+            ],
+            result,
+        )
+        item.confidence_score = conf_data.confidence_score if conf_data else None
+        item.relevance_score = rel_data.relevance_score if rel_data else None
+        item.clarity_score = clar_data.clarity_score if clar_data else None
+
+    return ontology_data
+
+
+async def score_event_types(
+    event_data: EventTypeSchema, context_text: str
+) -> EventTypeSchema:
+    """Score each event type within ``event_data``."""
+
+    tasks = [
+        run_parallel_scoring(item.event_type, context_text)
+        for item in event_data.identified_events
+    ]
+
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    for item, result in zip(event_data.identified_events, results):
+        if isinstance(result, Exception):
+            logger.error(
+                "Scoring failed for event type '%s'", item.event_type, exc_info=result
+            )
+            continue
+
+        conf_data, rel_data, clar_data = cast(
+            tuple[
+                Optional[ConfidenceScoreSchema],
+                Optional[RelevanceScoreSchema],
+                Optional[ClarityScoreSchema],
+            ],
+            result,
+        )
+        item.confidence_score = conf_data.confidence_score if conf_data else None
+        item.relevance_score = rel_data.relevance_score if rel_data else None
+        item.clarity_score = clar_data.clarity_score if clar_data else None
+
+    return event_data
+
+
+async def score_statement_types(
+    statement_data: StatementTypeSchema, context_text: str
+) -> StatementTypeSchema:
+    """Score each statement type within ``statement_data``."""
+
+    tasks = [
+        run_parallel_scoring(item.statement_type, context_text)
+        for item in statement_data.identified_statements
+    ]
+
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    for item, result in zip(statement_data.identified_statements, results):
+        if isinstance(result, Exception):
+            logger.error(
+                "Scoring failed for statement type '%s'",
+                item.statement_type,
+                exc_info=result,
+            )
+            continue
+
+        conf_data, rel_data, clar_data = cast(
+            tuple[
+                Optional[ConfidenceScoreSchema],
+                Optional[RelevanceScoreSchema],
+                Optional[ClarityScoreSchema],
+            ],
+            result,
+        )
+        item.confidence_score = conf_data.confidence_score if conf_data else None
+        item.relevance_score = rel_data.relevance_score if rel_data else None
+        item.clarity_score = clar_data.clarity_score if clar_data else None
+
+    return statement_data
+
+
+async def score_evidence_types(
+    evidence_data: EvidenceTypeSchema, context_text: str
+) -> EvidenceTypeSchema:
+    """Score each evidence type within ``evidence_data``."""
+
+    tasks = [
+        run_parallel_scoring(item.evidence_type, context_text)
+        for item in evidence_data.identified_evidence
+    ]
+
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    for item, result in zip(evidence_data.identified_evidence, results):
+        if isinstance(result, Exception):
+            logger.error(
+                "Scoring failed for evidence type '%s'",
+                item.evidence_type,
+                exc_info=result,
+            )
+            continue
+
+        conf_data, rel_data, clar_data = cast(
+            tuple[
+                Optional[ConfidenceScoreSchema],
+                Optional[RelevanceScoreSchema],
+                Optional[ClarityScoreSchema],
+            ],
+            result,
+        )
+        item.confidence_score = conf_data.confidence_score if conf_data else None
+        item.relevance_score = rel_data.relevance_score if rel_data else None
+        item.clarity_score = clar_data.clarity_score if clar_data else None
+
+    return evidence_data
+
+
+async def score_measurement_types(
+    measurement_data: MeasurementTypeSchema, context_text: str
+) -> MeasurementTypeSchema:
+    """Score each measurement type within ``measurement_data``."""
+
+    tasks = [
+        run_parallel_scoring(item.measurement_type, context_text)
+        for item in measurement_data.identified_measurements
+    ]
+
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    for item, result in zip(measurement_data.identified_measurements, results):
+        if isinstance(result, Exception):
+            logger.error(
+                "Scoring failed for measurement type '%s'",
+                item.measurement_type,
+                exc_info=result,
+            )
+            continue
+
+        conf_data, rel_data, clar_data = cast(
+            tuple[
+                Optional[ConfidenceScoreSchema],
+                Optional[RelevanceScoreSchema],
+                Optional[ClarityScoreSchema],
+            ],
+            result,
+        )
+        item.confidence_score = conf_data.confidence_score if conf_data else None
+        item.relevance_score = rel_data.relevance_score if rel_data else None
+        item.clarity_score = clar_data.clarity_score if clar_data else None
+
+    return measurement_data
+
+
+async def score_modality_types(
+    modality_data: ModalityTypeSchema, context_text: str
+) -> ModalityTypeSchema:
+    """Score each modality type within ``modality_data``."""
+
+    tasks = [
+        run_parallel_scoring(item.modality_type, context_text)
+        for item in modality_data.identified_modalities
+    ]
+
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    for item, result in zip(modality_data.identified_modalities, results):
+        if isinstance(result, Exception):
+            logger.error(
+                "Scoring failed for modality type '%s'",
+                item.modality_type,
+                exc_info=result,
+            )
+            continue
+
+        conf_data, rel_data, clar_data = cast(
+            tuple[
+                Optional[ConfidenceScoreSchema],
+                Optional[RelevanceScoreSchema],
+                Optional[ClarityScoreSchema],
+            ],
+            result,
+        )
+        item.confidence_score = conf_data.confidence_score if conf_data else None
+        item.relevance_score = rel_data.relevance_score if rel_data else None
+        item.clarity_score = clar_data.clarity_score if clar_data else None
+
+    return modality_data

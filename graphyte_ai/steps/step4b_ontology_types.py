@@ -15,7 +15,11 @@ from ..config import (
     ONTOLOGY_TYPE_OUTPUT_FILENAME,
 )
 from ..schemas import OntologyTypeSchema, SubDomainSchema, TopicSchema
-from ..utils import direct_save_json_output, run_agent_with_retry
+from ..utils import (
+    direct_save_json_output,
+    run_agent_with_retry,
+    score_ontology_types,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -147,6 +151,8 @@ async def identify_ontology_types(
                     logger.warning(
                         f"Analyzed sub-domains in Step 4b output {ontology_data.analyzed_sub_domains} differs from Step 2 input { [sd.sub_domain for sd in sub_domain_data.identified_sub_domains]}. Using Step 4b's list."
                     )
+
+                ontology_data = await score_ontology_types(ontology_data, content)
 
                 # Log and print results
                 ontology_log_items = [

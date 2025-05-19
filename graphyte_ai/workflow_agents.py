@@ -251,8 +251,7 @@ base_type_identifier_instructions_template = (
     "Use this context to assess which {concept_type_singular}s are most relevant to the overall subject matter.\n"
     "For EACH identified {concept_type_singular}, provide:\n"
     "1. The classified {concept_type_singular}.\n"
-    "Call the confidence_score_agent, relevance_score_agent, and clarity_score_agent tools for each candidate before finalizing your list.\n"
-    "Every item MUST include 'confidence_score', 'relevance_score', and 'clarity_score'.\n"
+    "Do **not** include scoring fields such as 'confidence_score', 'relevance_score', or 'clarity_score'.\n"
     "Provide an overall analysis summary if applicable.\n"
     "Output ONLY the result using the provided schema structure. Ensure the {list_field_name} field contains a list of items, each with '{item_field_name}'. Include the 'primary_domain' and 'analyzed_sub_domains' fields from the context in your output schema."
 )
@@ -261,20 +260,7 @@ base_type_identifier_agent = Agent(
     name="BaseTypeIdentifierAgent",  # Generic name, will be overridden
     instructions=base_type_identifier_instructions_template,  # Will be formatted in clones
     # No default model or output_type, must be specified in clones
-    tools=[
-        confidence_score_agent.as_tool(
-            tool_name="confidence_score",
-            tool_description="Evaluate confidence between 0.0 and 1.0",
-        ),
-        relevance_score_agent.as_tool(
-            tool_name="relevance_score",
-            tool_description="Judge relevance between 0.0 and 1.0",
-        ),
-        clarity_score_agent.as_tool(
-            tool_name="clarity_score",
-            tool_description="Assess clarity between 0.0 and 1.0",
-        ),
-    ],
+    tools=[],
     handoffs=[],
 )
 
