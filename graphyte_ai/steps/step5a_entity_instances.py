@@ -1,4 +1,4 @@
-"""Step 5: Entity instance extraction functionality."""
+"""Step 5a: Entity instance extraction functionality."""
 
 import logging
 from datetime import datetime, timezone
@@ -35,26 +35,26 @@ async def identify_entity_instances(
 ) -> Optional[EntityInstanceSchema]:
     """Extract specific entity mentions from the text based on context."""
     if not primary_domain or not sub_domain_data or not topic_data or not entity_data:
-        logger.info("Skipping Step 5 because prerequisites were not identified.")
+        logger.info("Skipping Step 5a because prerequisites were not identified.")
         if not primary_domain:
-            print("Skipping Step 5 as primary domain was not identified.")
+            print("Skipping Step 5a as primary domain was not identified.")
         elif not sub_domain_data:
-            print("Skipping Step 5 as sub-domain identification failed.")
+            print("Skipping Step 5a as sub-domain identification failed.")
         elif not topic_data:
-            print("Skipping Step 5 as topic identification failed.")
+            print("Skipping Step 5a as topic identification failed.")
         elif not entity_data:
-            print("Skipping Step 5 as entity type identification failed.")
+            print("Skipping Step 5a as entity type identification failed.")
         return None
 
     logger.info(
-        f"--- Running Step 5: Entity Instance Extraction (Agent: {entity_instance_extractor_agent.name}) ---"
+        f"--- Running Step 5a: Entity Instance Extraction (Agent: {entity_instance_extractor_agent.name}) ---"
     )
     print(
-        f"\n--- Running Step 5: Entity Instance Extraction using model: {ENTITY_INSTANCE_MODEL} ---"
+        f"\n--- Running Step 5a: Entity Instance Extraction using model: {ENTITY_INSTANCE_MODEL} ---"
     )
 
-    step5_metadata_for_trace = {
-        "workflow_step": "5_entity_instance_extraction",
+    step5a_metadata_for_trace = {
+        "workflow_step": "5a_entity_instance_extraction",
         "agent_name": "Entity Instance Extractor",
         "actual_agent": str(entity_instance_extractor_agent.name),
         "primary_domain_input": primary_domain,
@@ -64,10 +64,10 @@ async def identify_entity_instances(
         ),
         "entity_type_count": str(len(entity_data.identified_entities)),
     }
-    step5_run_config = RunConfig(
-        trace_metadata={k: str(v) for k, v in step5_metadata_for_trace.items()}
+    step5a_run_config = RunConfig(
+        trace_metadata={k: str(v) for k, v in step5a_metadata_for_trace.items()}
     )
-    step5_result: Optional[RunResult] = None
+    step5a_result: Optional[RunResult] = None
     instance_data: Optional[EntityInstanceSchema] = None
 
     context_summary_for_prompt = (
@@ -76,7 +76,7 @@ async def identify_entity_instances(
         f"Entity Types Considered: {', '.join(et.entity_type for et in entity_data.identified_entities)}"
     )
 
-    step5_input_list: List[TResponseInputItem] = [
+    step5a_input_list: List[TResponseInputItem] = [
         {
             "role": "user",
             "content": (
@@ -91,14 +91,14 @@ async def identify_entity_instances(
     ]
 
     try:
-        step5_result = await run_agent_with_retry(
+        step5a_result = await run_agent_with_retry(
             agent=entity_instance_extractor_agent,
-            input_data=step5_input_list,
-            config=step5_run_config,
+            input_data=step5a_input_list,
+            config=step5a_run_config,
         )
 
-        if step5_result:
-            potential_output = getattr(step5_result, "final_output", None)
+        if step5a_result:
+            potential_output = getattr(step5a_result, "final_output", None)
             if isinstance(potential_output, EntityInstanceSchema):
                 instance_data = potential_output
             elif isinstance(potential_output, dict):
@@ -108,11 +108,11 @@ async def identify_entity_instances(
                     )
                 except ValidationError as e:
                     logger.warning(
-                        f"Step 5 dict output failed EntityInstanceSchema validation: {e}"
+                        f"Step 5a dict output failed EntityInstanceSchema validation: {e}"
                     )
             else:
                 logger.warning(
-                    f"Step 5 final_output was not EntityInstanceSchema or dict (type: {type(potential_output)})."
+                    f"Step 5a final_output was not EntityInstanceSchema or dict (type: {type(potential_output)})."
                 )
 
             if instance_data and instance_data.identified_instances:
@@ -123,7 +123,7 @@ async def identify_entity_instances(
                         sd.sub_domain for sd in sub_domain_data.identified_sub_domains
                     ]
                 logger.info(
-                    f"Step 5 Result (Structured Instances):\n{instance_data.model_dump_json(indent=2)}"
+                    f"Step 5a Result (Structured Instances):\n{instance_data.model_dump_json(indent=2)}"
                 )
                 print("\n--- Entity Instances Extracted (Structured Output) ---")
                 print(instance_data.model_dump_json(indent=2))
@@ -145,7 +145,7 @@ async def identify_entity_instances(
                     },
                     "trace_information": {
                         "trace_id": overall_trace_id or "N/A",
-                        "notes": f"Generated by {entity_instance_extractor_agent.name} in Step 5 of workflow.",
+                        "notes": f"Generated by {entity_instance_extractor_agent.name} in Step 5a of workflow.",
                     },
                 }
                 save_result = direct_save_json_output(
@@ -158,17 +158,17 @@ async def identify_entity_instances(
                 logger.info(f"Result of saving entity instance output: {save_result}")
             elif instance_data and not instance_data.identified_instances:
                 logger.warning(
-                    "Step 5 completed but identified_instances list is empty."
+                    "Step 5a completed but identified_instances list is empty."
                 )
-                print("\nStep 5 completed, but no entity instances were identified.")
+                print("\nStep 5a completed, but no entity instances were identified.")
             else:
                 logger.error(
-                    "Step 5 FAILED: Could not extract valid EntityInstanceSchema output."
+                    "Step 5a FAILED: Could not extract valid EntityInstanceSchema output."
                 )
-                print("\nError: Failed to extract entity instances in Step 5.")
+                print("\nError: Failed to extract entity instances in Step 5a.")
                 instance_data = None
         else:
-            logger.error("Step 5 FAILED: Runner.run did not return a result.")
+            logger.error("Step 5a FAILED: Runner.run did not return a result.")
             print(
                 "\nError: Failed to get a result from the entity instance extraction step."
             )
@@ -176,18 +176,18 @@ async def identify_entity_instances(
 
     except (ValidationError, TypeError) as e:
         logger.exception(
-            f"Validation or Type error during Step 5 agent run. Error: {e}",
+            f"Validation or Type error during Step 5a agent run. Error: {e}",
             extra={"trace_id": overall_trace_id or "N/A"},
         )
-        print("\nError: A data validation or type issue occurred during Step 5.")
+        print("\nError: A data validation or type issue occurred during Step 5a.")
         print(f"Error details: {e}")
         instance_data = None
     except Exception as e:
         logger.exception(
-            "An unexpected error occurred during Step 5.",
+            "An unexpected error occurred during Step 5a.",
             extra={"trace_id": overall_trace_id or "N/A"},
         )
-        print(f"\nAn unexpected error occurred during Step 5: {type(e).__name__}: {e}")
+        print(f"\nAn unexpected error occurred during Step 5a: {type(e).__name__}: {e}")
         instance_data = None
 
     return instance_data

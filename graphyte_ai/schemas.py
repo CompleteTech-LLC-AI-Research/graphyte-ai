@@ -450,7 +450,7 @@ class ModalityTypeSchema(BaseModel):
     )
 
 
-# --- Schema for Step 5: Entity Instance Extraction ---
+# --- Schema for Step 5a: Entity Instance Extraction ---
 
 
 class EntityInstanceDetail(BaseModel):
@@ -936,7 +936,7 @@ class RelationshipInstanceSchema(BaseModel):
 
 # --- Aggregated Extracted Instances Schema ---
 class ExtractedInstancesSchema(BaseModel):
-    """Aggregates all instance extraction outputs from Step 5."""
+    """Aggregates all instance extraction outputs from Steps 5a-5g."""
 
     primary_domain: str = Field(
         description="Overall primary domain context for the extracted instances."

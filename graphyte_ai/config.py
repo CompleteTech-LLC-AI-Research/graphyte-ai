@@ -57,7 +57,7 @@ MEASUREMENT_TYPE_OUTPUT_DIR = OUTPUTS_DIR_BASE / "04f_measurement_type_identifie
 MODALITY_TYPE_OUTPUT_DIR = (
     OUTPUTS_DIR_BASE / "04g_modality_type_identifier"
 )  # Added directory for new agent (4g)
-ENTITY_INSTANCE_OUTPUT_DIR = OUTPUTS_DIR_BASE / "05_entity_instance_extractor"
+ENTITY_INSTANCE_OUTPUT_DIR = OUTPUTS_DIR_BASE / "05a_entity_instance_extractor"
 ONTOLOGY_INSTANCE_OUTPUT_DIR = OUTPUTS_DIR_BASE / "05b_ontology_instance_extractor"
 EVENT_INSTANCE_OUTPUT_DIR = OUTPUTS_DIR_BASE / "05c_event_instance_extractor"
 STATEMENT_INSTANCE_OUTPUT_DIR = OUTPUTS_DIR_BASE / "05d_statement_instance_extractor"
