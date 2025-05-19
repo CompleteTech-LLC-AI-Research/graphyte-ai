@@ -158,6 +158,7 @@ dot -Tpng outputs/00_visualization/agent_workflow_graph.gv -o workflow.png
 * **API Keys:** Provide necessary API keys in the `.env` file.
 * **Output Directories:** Output JSON files for each step are saved in the `outputs/` directory by default.
 * **(Advanced):** Modify agent prompts and schemas in the `workflow_agents.py` and `schemas.py` files for domain-specific tuning.
+* **(Advanced):** Wrap identifier agents with `create_result_agent` in `workflow_agents.py` to emit result schemas using pre-computed scores.
 * **(Advanced):** Configure target Knowledge Graph connection details for the final integration step (implementation specific).
 
 ## Use Cases

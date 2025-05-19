@@ -116,6 +116,47 @@ clarity_score_agent = base_scoring_agent.clone(
     output_type=ClarityScoreSchema,
 )
 
+# --- Result Agent Helper ---
+# Allows cloning an existing agent to simply return a provided item
+# along with pre-calculated scores.
+result_agent_instructions_template = (
+    "You are provided with a {item_description} and pre-calculated confidence, "
+    "relevance, and clarity scores. Do not recompute these values. "
+    "Return ONLY valid JSON conforming to {schema_name} that "
+    "includes the supplied {item_description} and scores."
+)
+
+
+def create_result_agent(base_agent: Agent, schema: Any, item_description: str) -> Agent:
+    """Clone ``base_agent`` and configure it to return a result with scores.
+
+    Parameters
+    ----------
+    base_agent : Agent
+        The agent instance to clone.
+    schema : Any
+        Output schema that the result should conform to.
+    item_description : str
+        Description of the item being returned (e.g., "domain label").
+
+    Returns
+    -------
+    Agent
+        A new agent that echoes the provided result and scores.
+    """
+
+    return base_agent.clone(
+        name=base_agent.name.replace("Identifier", "Result"),
+        instructions=result_agent_instructions_template.format(
+            item_description=item_description,
+            schema_name=schema.__name__,
+        ),
+        output_type=schema,
+        tools=[],
+        handoffs=[],
+    )
+
+
 # --- Agent 1: Domain Identifier ---
 domain_identifier_agent = Agent(
     name="DomainIdentifierAgent",
@@ -135,17 +176,10 @@ domain_identifier_agent = Agent(
 )
 
 # --- Agent 1b: Domain Result ---
-domain_result_agent = domain_identifier_agent.clone(
-    name="DomainResultAgent",
-    instructions=(
-        "You are provided with a domain label and pre-calculated confidence, "
-        "relevance, and clarity scores. Do not recompute these values. "
-        "Return ONLY valid JSON conforming to DomainResultSchema that "
-        "includes the supplied domain and scores."
-    ),
-    output_type=DomainResultSchema,
-    tools=[],
-    handoffs=[],
+domain_result_agent = create_result_agent(
+    base_agent=domain_identifier_agent,
+    schema=DomainResultSchema,
+    item_description="domain label",
 )
 
 # --- Agent 2: Sub-Domain Identifier ---
