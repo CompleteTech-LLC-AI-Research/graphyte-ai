@@ -62,9 +62,6 @@ class ClarityScoreSchema(BaseModel):
     clarity_score: float = Field(
         description="Clarity level (0.0 to 1.0) indicating how understandable the item is."
     )
-    item_id: Optional[str] = Field(
-        None, description="Optional identifier for the evaluated item."
-    )
 
 
 # Nested schema for a sub-domain
