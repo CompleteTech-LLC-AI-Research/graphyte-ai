@@ -124,6 +124,7 @@ domain_identifier_agent = Agent(
         "Politics, Education, Environment, Business, Lifestyle, Travel, etc. "
         "Focus on the *primary* topic. The 'domain' field must contain a single concise label representing this dominant topic.\n"
         "If several potential domains appear in the text, select the one with the greatest overall coverage.\n"
+        "Do **not** provide `confidence_score`, `relevance_score`, or `clarity_score`; these will be produced later.\n"
         "Output ONLY valid JSON matching the DomainResultSchema."
     ),
     model=DOMAIN_MODEL,
