@@ -140,11 +140,6 @@ scoring_orchestration_agent = Agent(
     model_settings=ModelSettings(tool_choice="required"),
 )
 
-# Prevent the framework from automatically resetting `tool_choice` back to
-# "auto" after each handoff so that the scoring orchestration agent continues
-# forcing tool usage until all three scoring agents have been called.
-scoring_orchestration_agent.reset_tool_choice = False
-
 # Ensure score agents return control to the orchestration agent
 confidence_score_agent.handoffs = [scoring_orchestration_agent]
 relevance_score_agent.handoffs = [scoring_orchestration_agent]
