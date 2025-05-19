@@ -131,20 +131,7 @@ domain_identifier_agent = Agent(
     model=DOMAIN_MODEL,
     output_type=DomainSchema,
     model_settings=ModelSettings(tool_choice="required"),
-    tools=[
-        confidence_score_agent.as_tool(
-            tool_name="confidence_score",
-            tool_description="Evaluate confidence between 0.0 and 1.0",
-        ),
-        relevance_score_agent.as_tool(
-            tool_name="relevance_score",
-            tool_description="Judge relevance between 0.0 and 1.0",
-        ),
-        clarity_score_agent.as_tool(
-            tool_name="clarity_score",
-            tool_description="Assess clarity between 0.0 and 1.0",
-        ),
-    ],
+    tools=[],
     handoffs=[],
 )
 
@@ -160,20 +147,7 @@ sub_domain_identifier_agent = Agent(
     ),
     model=SUB_DOMAIN_MODEL,
     model_settings=ModelSettings(tool_choice="required"),
-    tools=[
-        confidence_score_agent.as_tool(
-            tool_name="confidence_score",
-            tool_description="Evaluate confidence between 0.0 and 1.0",
-        ),
-        relevance_score_agent.as_tool(
-            tool_name="relevance_score",
-            tool_description="Judge relevance between 0.0 and 1.0",
-        ),
-        clarity_score_agent.as_tool(
-            tool_name="clarity_score",
-            tool_description="Assess clarity between 0.0 and 1.0",
-        ),
-    ],
+    tools=[],
     handoffs=[],
     output_type=SubDomainSchema,
 )
@@ -189,20 +163,7 @@ topic_identifier_agent = Agent(
     ),
     model=TOPIC_MODEL,
     model_settings=ModelSettings(tool_choice="required"),
-    tools=[
-        confidence_score_agent.as_tool(
-            tool_name="confidence_score",
-            tool_description="Evaluate confidence between 0.0 and 1.0",
-        ),
-        relevance_score_agent.as_tool(
-            tool_name="relevance_score",
-            tool_description="Judge relevance between 0.0 and 1.0",
-        ),
-        clarity_score_agent.as_tool(
-            tool_name="clarity_score",
-            tool_description="Assess clarity between 0.0 and 1.0",
-        ),
-    ],
+    tools=[],
     handoffs=[],
     output_type=SingleSubDomainTopicSchema,
 )
@@ -229,20 +190,7 @@ base_type_identifier_agent = Agent(
     instructions=base_type_identifier_instructions_template,  # Will be formatted in clones
     # No default model or output_type, must be specified in clones
     model_settings=ModelSettings(tool_choice="required"),
-    tools=[
-        confidence_score_agent.as_tool(
-            tool_name="confidence_score",
-            tool_description="Evaluate confidence between 0.0 and 1.0",
-        ),
-        relevance_score_agent.as_tool(
-            tool_name="relevance_score",
-            tool_description="Judge relevance between 0.0 and 1.0",
-        ),
-        clarity_score_agent.as_tool(
-            tool_name="clarity_score",
-            tool_description="Assess clarity between 0.0 and 1.0",
-        ),
-    ],
+    tools=[],
     handoffs=[],
 )
 
@@ -365,20 +313,7 @@ base_instance_extractor_agent = Agent(
     name="BaseInstanceExtractorAgent",  # Generic name, overridden in clones
     instructions=base_instance_extractor_instructions_template,  # Formatted in clones
     model_settings=ModelSettings(tool_choice="required"),
-    tools=[
-        confidence_score_agent.as_tool(
-            tool_name="confidence_score",
-            tool_description="Evaluate confidence between 0.0 and 1.0",
-        ),
-        relevance_score_agent.as_tool(
-            tool_name="relevance_score",
-            tool_description="Judge relevance between 0.0 and 1.0",
-        ),
-        clarity_score_agent.as_tool(
-            tool_name="clarity_score",
-            tool_description="Assess clarity between 0.0 and 1.0",
-        ),
-    ],
+    tools=[],
     handoffs=[],
 )
 
