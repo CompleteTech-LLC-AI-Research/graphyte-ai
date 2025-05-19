@@ -7,7 +7,12 @@ from typing import List, Optional
 
 from pydantic import ValidationError
 
-from agents import RunConfig, RunResult, TResponseInputItem  # type: ignore[attr-defined]
+from agents import (
+    RunConfig,
+    RunResult,
+    TResponseInputItem,
+    gen_trace_id,
+)  # type: ignore[attr-defined]
 
 from ..workflow_agents import topic_identifier_agent, topic_result_agent
 from ..config import TOPIC_MODEL, TOPIC_OUTPUT_DIR, TOPIC_OUTPUT_FILENAME
@@ -82,6 +87,10 @@ async def identify_topics(
             if len(current_sub_domain) > 28
             else current_sub_domain
         )
+        topic_trace_id = gen_trace_id()
+        logger.debug(
+            f"Generated topic trace ID {topic_trace_id} for sub-domain '{current_sub_domain}'"
+        )
         step3_iter_metadata_for_trace = {
             "workflow_step": f"3_topic_id_batch_{index+1}",
             "agent_name": f"Topic ID ({display_sub_domain})",
@@ -90,10 +99,11 @@ async def identify_topics(
             "sub_domain_analyzed": current_sub_domain,
             "batch_index": str(index + 1),
             "batch_size": str(len(sub_domains_list_for_step3)),
+            "topic_trace_id": topic_trace_id,
         }
         step3_iter_run_config = RunConfig(
             workflow_name="step3_topics",
-            trace_id=trace_id,
+            trace_id=topic_trace_id,
             group_id=group_id,
             trace_metadata={
                 k: str(v) for k, v in step3_iter_metadata_for_trace.items()
