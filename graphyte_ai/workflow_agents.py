@@ -124,25 +124,11 @@ domain_identifier_agent = Agent(
         "Politics, Education, Environment, Business, Lifestyle, Travel, etc. "
         "Focus on the *primary* topic. The 'domain' field must contain a single concise label representing this dominant topic.\n"
         "If several potential domains appear in the text, select the one with the greatest overall coverage.\n"
-        "Call the confidence_score, relevance_score, and clarity_score tools to generate scores before producing the final output.\n"
-        "Output ONLY valid JSON matching the DomainSchema. The result MUST include 'confidence_score', 'relevance_score', and 'clarity_score'."
+        "Output ONLY valid JSON matching the DomainSchema."
     ),
     model=DOMAIN_MODEL,
     output_type=DomainSchema,
-    tools=[
-        confidence_score_agent.as_tool(
-            tool_name="confidence_score",
-            tool_description="Evaluate confidence between 0.0 and 1.0",
-        ),
-        relevance_score_agent.as_tool(
-            tool_name="relevance_score",
-            tool_description="Judge relevance between 0.0 and 1.0",
-        ),
-        clarity_score_agent.as_tool(
-            tool_name="clarity_score",
-            tool_description="Assess clarity between 0.0 and 1.0",
-        ),
-    ],
+    tools=[],
     handoffs=[],
 )
 
@@ -153,24 +139,10 @@ sub_domain_identifier_agent = Agent(
         "You are given text content and its primary domain. Your task is to identify specific sub-domains "
         "within the text related to the primary domain. "
         "Also provide a brief overall analysis summary.\n"
-        "Call the confidence_score, relevance_score, and clarity_score tools for each identified sub-domain before producing the final output.\n"
-        "Output ONLY the result using the provided SubDomainSchema. Every item in the identified_sub_domains list MUST include 'sub_domain', 'confidence_score', 'relevance_score', and 'clarity_score'."
+        "Output ONLY the result using the provided SubDomainSchema."
     ),
     model=SUB_DOMAIN_MODEL,
-    tools=[
-        confidence_score_agent.as_tool(
-            tool_name="confidence_score",
-            tool_description="Evaluate confidence between 0.0 and 1.0",
-        ),
-        relevance_score_agent.as_tool(
-            tool_name="relevance_score",
-            tool_description="Judge relevance between 0.0 and 1.0",
-        ),
-        clarity_score_agent.as_tool(
-            tool_name="clarity_score",
-            tool_description="Assess clarity between 0.0 and 1.0",
-        ),
-    ],
+    tools=[],
     handoffs=[],
     output_type=SubDomainSchema,
 )
