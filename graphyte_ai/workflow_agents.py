@@ -1,11 +1,18 @@
 # NOTE: Using the external ``agents`` SDK for agent definitions
-from typing import Any
+from typing import Any, Optional
 
 try:
-    from agents import Agent, ModelSettings  # type: ignore[attr-defined]
+    from agents import (
+        Agent,
+        ModelSettings,
+        Runner,
+        RunConfig,
+        RunResult,
+    )  # type: ignore[attr-defined]
     from agents.extensions.handoff_prompt import (
         prompt_with_handoff_instructions,
     )
+    from pydantic import ValidationError
 except ImportError:
     print("Error: 'agents' SDK library not found or incomplete. Cannot define agents.")
     # Depending on execution context, might want `sys.exit(1)` here,
@@ -119,8 +126,67 @@ clarity_score_agent = base_scoring_agent.clone(
     output_type=ClarityScoreSchema,
 )
 
-# --- Scoring Orchestration Agent ---
-# Coordinates calling all three scoring agents and outputs the combined scoring result.
+
+async def run_scoring_agents(
+    item: str, config: Optional[RunConfig] = None
+) -> Optional[ScoringResultSchema]:
+    """Run all three scoring agents sequentially and aggregate their scores."""
+
+    def _extract_score(output: Any, schema_cls: Any, field: str) -> Optional[float]:
+        if isinstance(output, schema_cls):
+            return getattr(output, field)
+        if isinstance(output, dict):
+            try:
+                validated = schema_cls.model_validate(output)
+                return getattr(validated, field)
+            except ValidationError:
+                return None
+        return None
+
+    scores = {}
+
+    conf_res: Optional[RunResult] = await Runner.run(
+        starting_agent=confidence_score_agent, input=item, run_config=config
+    )
+    if not conf_res:
+        return None
+    conf_out = _extract_score(
+        conf_res.final_output, ConfidenceScoreSchema, "confidence_score"
+    )
+    if conf_out is None:
+        return None
+    scores["confidence_score"] = conf_out
+
+    rel_res: Optional[RunResult] = await Runner.run(
+        starting_agent=relevance_score_agent, input=item, run_config=config
+    )
+    if not rel_res:
+        return None
+    rel_out = _extract_score(
+        rel_res.final_output, RelevanceScoreSchema, "relevance_score"
+    )
+    if rel_out is None:
+        return None
+    scores["relevance_score"] = rel_out
+
+    clar_res: Optional[RunResult] = await Runner.run(
+        starting_agent=clarity_score_agent, input=item, run_config=config
+    )
+    if not clar_res:
+        return None
+    clar_out = _extract_score(
+        clar_res.final_output, ClarityScoreSchema, "clarity_score"
+    )
+    if clar_out is None:
+        return None
+    scores["clarity_score"] = clar_out
+
+    return ScoringResultSchema(**scores)
+
+
+# --- Scoring Orchestration Agent (DEPRECATED) ---
+# Previously coordinated all three scoring agents via handoffs. Use
+# ``run_scoring_agents`` instead of this agent going forward.
 scoring_orchestration_agent = Agent(
     name="ScoringOrchestrationAgent",
     instructions=prompt_with_handoff_instructions(
@@ -140,15 +206,6 @@ scoring_orchestration_agent = Agent(
     model_settings=ModelSettings(tool_choice="required"),
 )
 
-# Prevent the framework from automatically resetting `tool_choice` back to
-# "auto" after each handoff so that the scoring orchestration agent continues
-# forcing tool usage until all three scoring agents have been called.
-scoring_orchestration_agent.reset_tool_choice = False
-
-# Ensure score agents return control to the orchestration agent
-confidence_score_agent.handoffs = [scoring_orchestration_agent]
-relevance_score_agent.handoffs = [scoring_orchestration_agent]
-clarity_score_agent.handoffs = [scoring_orchestration_agent]
 
 # --- Agent 1: Domain Identifier ---
 domain_identifier_agent = Agent(
@@ -160,15 +217,14 @@ domain_identifier_agent = Agent(
             "Politics, Education, Environment, Business, Lifestyle, Travel, etc. "
             "Focus on the *primary* topic. The 'domain' field must contain a single concise label representing this dominant topic.\n"
             "If several potential domains appear in the text, select the one with the greatest overall coverage.\n"
-            "After determining the domain, transfer_to_scoring_orchestration_agent to obtain confidence, relevance, and clarity scores before producing the final output.\n"
-            "Output ONLY valid JSON matching the DomainSchema once scoring is complete."
+            "Output ONLY valid JSON matching the DomainSchema."
         )
     ),
     model=DOMAIN_MODEL,
     output_type=DomainSchema,
     model_settings=ModelSettings(tool_choice="required"),
     tools=[],
-    handoffs=[scoring_orchestration_agent],
+    handoffs=[],
 )
 
 # --- Agent 2: Sub-Domain Identifier ---
@@ -583,7 +639,6 @@ all_agents = {
     "confidence_score": confidence_score_agent,
     "relevance_score": relevance_score_agent,
     "clarity_score": clarity_score_agent,
-    "scoring_orchestration": scoring_orchestration_agent,
     "relationship_identifier": relationship_type_identifier_agent,
     "relationship_instance_extractor": relationship_extractor_agent,
     # Note: Base agent is not typically included here unless used directly

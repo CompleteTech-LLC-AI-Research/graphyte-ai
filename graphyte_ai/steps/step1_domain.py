@@ -8,9 +8,9 @@ from pydantic import ValidationError
 
 from agents import RunConfig, RunResult  # type: ignore[attr-defined]
 
-from ..workflow_agents import domain_identifier_agent, scoring_orchestration_agent
+from ..workflow_agents import domain_identifier_agent, run_scoring_agents
 from ..config import DOMAIN_MODEL, DOMAIN_OUTPUT_DIR, DOMAIN_OUTPUT_FILENAME
-from ..schemas import DomainSchema, ScoringResultSchema
+from ..schemas import DomainSchema
 from ..utils import direct_save_json_output, run_agent_with_retry
 
 logger = logging.getLogger(__name__)
@@ -89,34 +89,16 @@ async def identify_domain(
                         trace_metadata={
                             "workflow_step": "1_domain_scoring",
                             "agent_name": "Scoring",
-                            "actual_agent": str(scoring_orchestration_agent.name),
+                            "actual_agent": "run_scoring_agents",
                         }
                     )
-                    scoring_result = await run_agent_with_retry(
-                        agent=scoring_orchestration_agent,
-                        input_data=primary_domain,
-                        config=scoring_run_config,
+                    scores = await run_scoring_agents(
+                        primary_domain, scoring_run_config
                     )
-                    if scoring_result:
-                        scores_output = getattr(scoring_result, "final_output", None)
-                        if isinstance(scores_output, ScoringResultSchema):
-                            domain_data.confidence_score = (
-                                scores_output.confidence_score
-                            )
-                            domain_data.relevance_score = scores_output.relevance_score
-                            domain_data.clarity_score = scores_output.clarity_score
-                        elif isinstance(scores_output, dict):
-                            try:
-                                scores = ScoringResultSchema.model_validate(
-                                    scores_output
-                                )
-                                domain_data.confidence_score = scores.confidence_score
-                                domain_data.relevance_score = scores.relevance_score
-                                domain_data.clarity_score = scores.clarity_score
-                            except ValidationError as e:
-                                logger.warning(
-                                    f"Failed validating ScoringResultSchema: {e}"
-                                )
+                    if scores:
+                        domain_data.confidence_score = scores.confidence_score
+                        domain_data.relevance_score = scores.relevance_score
+                        domain_data.clarity_score = scores.clarity_score
 
                 logger.info("Saving primary domain identifier output to file...")
                 print("\nSaving primary domain output file...")
