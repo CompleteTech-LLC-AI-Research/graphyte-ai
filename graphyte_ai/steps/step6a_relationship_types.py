@@ -137,9 +137,6 @@ async def identify_relationship_types(
             "batch_index": str(index + 1),
             "batch_size": str(len(entity_types_list_for_step6a)),
             "context_subdomain_count": str(len(sub_domain_data.identified_sub_domains)),
-            "context_topic_count": str(
-                sum(len(t.identified_topics) for t in topic_data.sub_domain_topic_map)
-            ),
             "context_entity_type_count": str(len(entity_data.identified_entities)),
         }
         step6a_iter_run_config = RunConfig(
