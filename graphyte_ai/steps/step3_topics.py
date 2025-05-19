@@ -7,22 +7,12 @@ from typing import List, Optional
 
 from pydantic import ValidationError
 
-from agents import (
-    RunConfig,
-    RunResult,
-    TResponseInputItem,
-    gen_trace_id,
-)  # type: ignore[attr-defined]
+from agents import RunConfig, RunResult, TResponseInputItem  # type: ignore[attr-defined]
 
 from ..workflow_agents import topic_identifier_agent, topic_result_agent
 from ..config import TOPIC_MODEL, TOPIC_OUTPUT_DIR, TOPIC_OUTPUT_FILENAME
 from ..schemas import TopicSchema, SingleSubDomainTopicSchema, SubDomainSchema
-from ..utils import (
-    direct_save_json_output,
-    run_agent_with_retry,
-    score_topics,
-    slugify,
-)
+from ..utils import direct_save_json_output, run_agent_with_retry, score_topics
 
 logger = logging.getLogger(__name__)
 
@@ -72,8 +62,7 @@ async def identify_topics(
     topic_tasks = []
     sub_domains_being_processed = (
         []
-    )  # Keep track of which sub-domain corresponds to each task
-    sub_domain_trace_map: dict[str, str] = {}
+    )  # Keep track of which sub-domain corresponds to which task/result
     aggregated_topic_results: List[SingleSubDomainTopicSchema] = []
 
     # --- Prepare tasks for parallel execution ---
@@ -87,9 +76,6 @@ async def identify_topics(
         logger.debug(
             f"Preparing task for Step 3 ({index+1}/{len(sub_domains_list_for_step3)}): Sub-Domain '{current_sub_domain}'"
         )
-
-        slug = slugify(current_sub_domain)
-        step3_iter_trace_id = gen_trace_id()
 
         display_sub_domain = (
             (current_sub_domain[:25] + "...")
@@ -106,15 +92,13 @@ async def identify_topics(
             "batch_size": str(len(sub_domains_list_for_step3)),
         }
         step3_iter_run_config = RunConfig(
-            workflow_name=f"step3_topics_{slug}",
-            trace_id=step3_iter_trace_id,
+            workflow_name="step3_topics",
+            trace_id=trace_id,
             group_id=group_id,
             trace_metadata={
                 k: str(v) for k, v in step3_iter_metadata_for_trace.items()
             },
         )
-
-        sub_domain_trace_map[current_sub_domain] = step3_iter_trace_id
 
         step3_iter_input_list: List[TResponseInputItem] = [
             {
@@ -342,7 +326,6 @@ async def identify_topics(
             "sub_domains_successfully_processed": [
                 item.sub_domain for item in aggregated_topic_results
             ],
-            "trace_ids_per_sub_domain": sub_domain_trace_map,
             "sub_domain_input_source": "List extracted from Step 2 output (SubDomainSchema)",
             "execution_mode": "Parallel (asyncio.gather)",
             "model_used_per_topic_call": TOPIC_MODEL,
