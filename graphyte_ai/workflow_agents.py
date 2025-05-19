@@ -2,12 +2,13 @@
 from typing import Any
 
 try:
-    from agents import Agent  # type: ignore[attr-defined]
+    from agents import Agent, ModelSettings  # type: ignore[attr-defined]
 except ImportError:
     print("Error: 'agents' SDK library not found or incomplete. Cannot define agents.")
     # Depending on execution context, might want `sys.exit(1)` here,
     # but typically module-level errors are handled by the importer.
     Agent = Any  # type: ignore[misc]
+    ModelSettings = Any  # type: ignore[misc]
 
 from .schemas import (
     DomainSchema,
@@ -129,6 +130,7 @@ domain_identifier_agent = Agent(
     ),
     model=DOMAIN_MODEL,
     output_type=DomainSchema,
+    model_settings=ModelSettings(tool_choice="required"),
     tools=[
         confidence_score_agent.as_tool(
             tool_name="confidence_score",
@@ -157,6 +159,7 @@ sub_domain_identifier_agent = Agent(
         "Output ONLY the result using the provided SubDomainSchema. Every item in the identified_sub_domains list MUST include 'sub_domain', 'confidence_score', 'relevance_score', and 'clarity_score'."
     ),
     model=SUB_DOMAIN_MODEL,
+    model_settings=ModelSettings(tool_choice="required"),
     tools=[
         confidence_score_agent.as_tool(
             tool_name="confidence_score",
@@ -185,6 +188,7 @@ topic_identifier_agent = Agent(
         "Output the results ONLY using the provided SingleSubDomainTopicSchema. Every item in identified_topics MUST include the topic string plus 'confidence_score', 'relevance_score', and 'clarity_score'."
     ),
     model=TOPIC_MODEL,
+    model_settings=ModelSettings(tool_choice="required"),
     tools=[
         confidence_score_agent.as_tool(
             tool_name="confidence_score",
@@ -224,6 +228,7 @@ base_type_identifier_agent = Agent(
     name="BaseTypeIdentifierAgent",  # Generic name, will be overridden
     instructions=base_type_identifier_instructions_template,  # Will be formatted in clones
     # No default model or output_type, must be specified in clones
+    model_settings=ModelSettings(tool_choice="required"),
     tools=[
         confidence_score_agent.as_tool(
             tool_name="confidence_score",
@@ -359,6 +364,7 @@ base_instance_extractor_instructions_template = (
 base_instance_extractor_agent = Agent(
     name="BaseInstanceExtractorAgent",  # Generic name, overridden in clones
     instructions=base_instance_extractor_instructions_template,  # Formatted in clones
+    model_settings=ModelSettings(tool_choice="required"),
     tools=[
         confidence_score_agent.as_tool(
             tool_name="confidence_score",
@@ -504,6 +510,7 @@ relationship_type_identifier_agent = Agent(
     ),
     model=RELATIONSHIP_MODEL,
     output_type=SingleEntityTypeRelationshipSchema,
+    model_settings=ModelSettings(tool_choice="required"),
     tools=[
         confidence_score_agent.as_tool(
             tool_name="confidence_score",
