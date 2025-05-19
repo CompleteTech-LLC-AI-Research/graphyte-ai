@@ -58,6 +58,8 @@ from .schemas import (
     RelevanceScoreSchema,
     ClarityScoreSchema,
     SubDomainSchema,
+    TopicSchema,
+    TopicDetail,
 )
 
 # Get logger for utils module
@@ -520,3 +522,55 @@ async def score_sub_domains(
         item.clarity_score = clar_data.clarity_score if clar_data else None
 
     return sub_domain_data
+
+
+async def score_topics(topic_data: TopicSchema, context_text: str) -> TopicSchema:
+    """Score each topic within ``topic_data``.
+
+    Each :class:`TopicDetail` item will receive confidence, relevance,
+    and clarity scores calculated via :func:`run_parallel_scoring`.
+
+    Parameters
+    ----------
+    topic_data:
+        The aggregated topic analysis output.
+    context_text:
+        The original text content used for scoring.
+
+    Returns
+    -------
+    TopicSchema
+        The updated schema with scores populated on each topic.
+    """
+
+    tasks = []
+    topic_items: List[TopicDetail] = []
+
+    for sub_domain in topic_data.sub_domain_topic_map:
+        for topic in sub_domain.identified_topics:
+            tasks.append(run_parallel_scoring(topic.topic, context_text))
+            topic_items.append(topic)
+
+    if not tasks:
+        return topic_data
+
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    for item, result in zip(topic_items, results):
+        if isinstance(result, Exception):
+            logger.error("Scoring failed for topic '%s'", item.topic, exc_info=result)
+            continue
+
+        conf_data, rel_data, clar_data = cast(
+            tuple[
+                Optional[ConfidenceScoreSchema],
+                Optional[RelevanceScoreSchema],
+                Optional[ClarityScoreSchema],
+            ],
+            result,
+        )
+        item.confidence_score = conf_data.confidence_score if conf_data else None
+        item.relevance_score = rel_data.relevance_score if rel_data else None
+        item.clarity_score = clar_data.clarity_score if clar_data else None
+
+    return topic_data

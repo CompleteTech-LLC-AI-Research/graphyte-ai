@@ -9,10 +9,10 @@ from pydantic import ValidationError
 
 from agents import RunConfig, RunResult, TResponseInputItem  # type: ignore[attr-defined]
 
-from ..workflow_agents import topic_identifier_agent
+from ..workflow_agents import topic_identifier_agent, topic_result_agent
 from ..config import TOPIC_MODEL, TOPIC_OUTPUT_DIR, TOPIC_OUTPUT_FILENAME
 from ..schemas import TopicSchema, SingleSubDomainTopicSchema, SubDomainSchema
-from ..utils import direct_save_json_output, run_agent_with_retry
+from ..utils import direct_save_json_output, run_agent_with_retry, score_topics
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +62,6 @@ async def identify_topics(
         []
     )  # Keep track of which sub-domain corresponds to which task/result
     aggregated_topic_results: List[SingleSubDomainTopicSchema] = []
-    final_topic_data: Optional[TopicSchema] = None
 
     # --- Prepare tasks for parallel execution ---
     for index, current_sub_domain in enumerate(sub_domains_list_for_step3):
@@ -267,6 +266,37 @@ async def identify_topics(
         sub_domain_topic_map=aggregated_topic_results,
         analysis_summary=f"Generated topics in parallel for {len(aggregated_topic_results)} sub-domains (out of {len(sub_domains_being_processed)} attempted).",  # Use processed count
     )
+
+    final_topic_data = await score_topics(final_topic_data, content)
+
+    scored_result = await run_agent_with_retry(
+        topic_result_agent,
+        final_topic_data.model_dump_json(),
+    )
+
+    if scored_result:
+        potential_scored_output = getattr(scored_result, "final_output", None)
+        if isinstance(potential_scored_output, TopicSchema):
+            final_topic_data = potential_scored_output
+        elif isinstance(potential_scored_output, dict):
+            try:
+                final_topic_data = TopicSchema.model_validate(potential_scored_output)
+            except ValidationError as e:
+                logger.warning(
+                    "TopicSchema validation error after scoring: %s",
+                    e,
+                )
+                final_topic_data = TopicSchema.model_validate(
+                    final_topic_data.model_dump()
+                )
+        else:
+            logger.error(
+                "Unexpected topic result output type: %s",
+                type(potential_scored_output),
+            )
+            final_topic_data = TopicSchema.model_validate(final_topic_data.model_dump())
+    else:
+        final_topic_data = TopicSchema.model_validate(final_topic_data.model_dump())
 
     logger.info(
         f"Final Aggregated Topics (Structured):\n{final_topic_data.model_dump_json(indent=2)}"
