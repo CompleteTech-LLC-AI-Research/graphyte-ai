@@ -88,7 +88,7 @@ base_scoring_agent = Agent(
 # --- Confidence Score Agent ---
 # Specialized clone of the base scoring agent used to assess
 # confidence in a domain classification or relationship instance.
-confidence_score = base_scoring_agent.clone(
+confidence_score_agent = base_scoring_agent.clone(
     name="ConfidenceScoreAgent",
     instructions=base_scoring_instructions_template.format(
         item_description="domain or relationship instance",
@@ -102,7 +102,7 @@ confidence_score = base_scoring_agent.clone(
 # --- Relevance Score Agent ---
 # Clone of the base scoring agent used to judge relevance of items like
 # sub-domains, topics, types, or relationship types.
-relevance_score = base_scoring_agent.clone(
+relevance_score_agent = base_scoring_agent.clone(
     name="RelevanceScoreAgent",
     instructions=base_scoring_instructions_template.format(
         item_description=(
@@ -118,7 +118,7 @@ relevance_score = base_scoring_agent.clone(
 
 # --- Clarity Score Agent ---
 # Clone of the base scoring agent used to assess clarity of text, relationships, or entities.
-clarity_score = base_scoring_agent.clone(
+clarity_score_agent = base_scoring_agent.clone(
     name="ClarityScoreAgent",
     instructions=base_scoring_instructions_template.format(
         item_description="text, relationship, or entity",
@@ -135,7 +135,7 @@ async def run_confidence_score(item: str, context: str) -> str:
     """Run the confidence scoring agent on an item and its document context."""
 
     result = await Runner.run(
-        confidence_score,
+        confidence_score_agent,
         input={"item": item, "context": context},
     )
     return str(result.final_output)
@@ -146,7 +146,7 @@ async def run_relevance_score(item: str, context: str) -> str:
     """Run the relevance scoring agent on an item and its document context."""
 
     result = await Runner.run(
-        relevance_score,
+        relevance_score_agent,
         input={"item": item, "context": context},
     )
     return str(result.final_output)
@@ -157,7 +157,7 @@ async def run_clarity_score(item: str, context: str) -> str:
     """Run the clarity scoring agent on an item and its document context."""
 
     result = await Runner.run(
-        clarity_score,
+        clarity_score_agent,
         input={"item": item, "context": context},
     )
     return str(result.final_output)
@@ -226,7 +226,7 @@ base_type_identifier_instructions_template = (
     "Use this context to assess which {concept_type_singular}s are most relevant to the overall subject matter.\n"
     "For EACH identified {concept_type_singular}, provide:\n"
     "1. The classified {concept_type_singular}.\n"
-    "Call the confidence_score, relevance_score, and clarity_score tools for each candidate before finalizing your list.\n"
+    "Call the confidence_score_agent, relevance_score_agent, and clarity_score_agent tools for each candidate before finalizing your list.\n"
     "Every item MUST include 'confidence_score', 'relevance_score', and 'clarity_score'.\n"
     "Provide an overall analysis summary if applicable.\n"
     "Output ONLY the result using the provided schema structure. Ensure the {list_field_name} field contains a list of items, each with '{item_field_name}'. Include the 'primary_domain' and 'analyzed_sub_domains' fields from the context in your output schema."
@@ -350,7 +350,7 @@ base_instance_extractor_instructions_template = (
     "Extract specific {concept_description} from the provided text. "
     "Use the context of domain, sub-domains, topics and identified {type_list_name} to guide relevance. "
     "For each extracted instance provide the {instance_field} and {span_field}. "
-    "Call the confidence_score, relevance_score, and clarity_score tools for each instance before producing the final output. "
+    "Call the confidence_score_agent, relevance_score_agent, and clarity_score_agent tools for each instance before producing the final output. "
     "Every item MUST include 'confidence_score', 'relevance_score', and 'clarity_score'. "
     "Output ONLY the result using the provided schema structure. "
     "Ensure the '{list_field}' field contains all extracted items and include the 'primary_domain' and 'analyzed_sub_domains' fields from the context."
@@ -531,9 +531,9 @@ all_agents = {
     "evidence_instance_extractor": evidence_instance_extractor_agent,
     "measurement_instance_extractor": measurement_instance_extractor_agent,
     "modality_instance_extractor": modality_instance_extractor_agent,
-    "confidence_score": confidence_score,
-    "relevance_score": relevance_score,
-    "clarity_score": clarity_score,
+    "confidence_score": confidence_score_agent,
+    "relevance_score": relevance_score_agent,
+    "clarity_score": clarity_score_agent,
     "relationship_identifier": relationship_type_identifier_agent,
     "relationship_instance_extractor": relationship_extractor_agent,
     # Note: Base agent is not typically included here unless used directly
