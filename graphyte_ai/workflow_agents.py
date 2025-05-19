@@ -14,6 +14,7 @@ from .schemas import (
     DomainResultSchema,
     SubDomainSchema,
     SingleSubDomainTopicSchema,
+    TopicSchema,
     EntityTypeSchema,
     OntologyTypeSchema,
     EventTypeSchema,
@@ -230,6 +231,13 @@ topic_identifier_agent = Agent(
     ],
     handoffs=[],
     output_type=SingleSubDomainTopicSchema,
+)
+
+# --- Agent 3b: Topic Result ---
+topic_result_agent = create_result_agent(
+    base_agent=topic_identifier_agent,
+    schema=TopicSchema,
+    item_description="topic analysis result",
 )
 
 
@@ -572,6 +580,7 @@ all_agents = {
     "sub_domain_identifier": sub_domain_identifier_agent,
     "sub_domain_result": sub_domain_result_agent,
     "topic_identifier": topic_identifier_agent,
+    "topic_result": topic_result_agent,
     "entity_type_identifier": entity_type_identifier_agent,
     "ontology_type_identifier": ontology_type_identifier_agent,
     "event_type_identifier": event_type_identifier_agent,
@@ -598,3 +607,4 @@ if "__all__" in globals():
     __all_list = cast(List[str], globals()["__all__"])
     __all_list.append("domain_result_agent")
     __all_list.append("sub_domain_result_agent")
+    __all_list.append("topic_result_agent")
