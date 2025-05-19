@@ -4,7 +4,7 @@ import json
 import logging
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, cast
 
 from pydantic import ValidationError
 
@@ -57,6 +57,7 @@ from .schemas import (
     ConfidenceScoreSchema,
     RelevanceScoreSchema,
     ClarityScoreSchema,
+    SubDomainSchema,
 )
 
 # Get logger for utils module
@@ -469,3 +470,53 @@ async def run_parallel_scoring(
             )
 
     return confidence_data, relevance_data, clarity_data
+
+
+async def score_sub_domains(
+    sub_domain_data: SubDomainSchema, context_text: str
+) -> SubDomainSchema:
+    """Score each sub-domain within ``sub_domain_data``.
+
+    Each ``SubDomainDetail`` item will receive confidence, relevance,
+    and clarity scores calculated via :func:`run_parallel_scoring`.
+
+    Parameters
+    ----------
+    sub_domain_data:
+        The initial sub-domain analysis output.
+    context_text:
+        The original text content used for scoring.
+
+    Returns
+    -------
+    SubDomainSchema
+        The updated schema with scores populated on each sub-domain.
+    """
+
+    tasks = [
+        run_parallel_scoring(item.sub_domain, context_text)
+        for item in sub_domain_data.identified_sub_domains
+    ]
+
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    for item, result in zip(sub_domain_data.identified_sub_domains, results):
+        if isinstance(result, Exception):
+            logger.error(
+                "Scoring failed for sub-domain '%s'", item.sub_domain, exc_info=result
+            )
+            continue
+
+        conf_data, rel_data, clar_data = cast(
+            tuple[
+                Optional[ConfidenceScoreSchema],
+                Optional[RelevanceScoreSchema],
+                Optional[ClarityScoreSchema],
+            ],
+            result,
+        )
+        item.confidence_score = conf_data.confidence_score if conf_data else None
+        item.relevance_score = rel_data.relevance_score if rel_data else None
+        item.clarity_score = clar_data.clarity_score if clar_data else None
+
+    return sub_domain_data
