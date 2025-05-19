@@ -24,7 +24,11 @@ from ..schemas import (
     SubDomainSchema,
     TopicSchema,
 )  # Import new output schema
-from ..utils import direct_save_json_output, run_agent_with_retry
+from ..utils import (
+    direct_save_json_output,
+    run_agent_with_retry,
+    score_evidence_types,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -154,6 +158,8 @@ async def identify_evidence_types(
                     logger.warning(
                         f"Analyzed sub-domains in Step 4e output {evidence_data.analyzed_sub_domains} differs from Step 2 input { [sd.sub_domain for sd in sub_domain_data.identified_sub_domains]}. Using Step 4e's list."
                     )
+
+                evidence_data = await score_evidence_types(evidence_data, content)
 
                 # Log and print results
                 evidence_log_items = [

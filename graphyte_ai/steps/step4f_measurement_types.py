@@ -24,7 +24,11 @@ from ..schemas import (
     SubDomainSchema,
     TopicSchema,
 )  # Import new output schema
-from ..utils import direct_save_json_output, run_agent_with_retry
+from ..utils import (
+    direct_save_json_output,
+    run_agent_with_retry,
+    score_measurement_types,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -154,6 +158,10 @@ async def identify_measurement_types(
                     logger.warning(
                         f"Analyzed sub-domains in Step 4f output {measurement_data.analyzed_sub_domains} differs from Step 2 input { [sd.sub_domain for sd in sub_domain_data.identified_sub_domains]}. Using Step 4f's list."
                     )
+
+                measurement_data = await score_measurement_types(
+                    measurement_data, content
+                )
 
                 # Log and print results
                 measurement_log_items = [
