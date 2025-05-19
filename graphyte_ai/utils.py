@@ -3,7 +3,6 @@ import asyncio
 import json
 import logging
 import sys
-import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union, cast
 
@@ -272,16 +271,6 @@ def prompt_user_for_input() -> str:
         print("\nInput cancelled by user.")
         logger.warning("Stdin input cancelled by user.")
         return ""
-
-
-def slugify(text: str, max_length: Optional[int] = None) -> str:
-    """Convert text to a filesystem-friendly slug."""
-
-    slug = re.sub(r"[^a-z0-9]+", "_", text.lower())
-    slug = re.sub(r"_{2,}", "_", slug).strip("_")
-    if max_length and max_length > 0:
-        slug = slug[:max_length].rstrip("_")
-    return slug
 
 
 # --- Helper Function to Save JSON Output ---
