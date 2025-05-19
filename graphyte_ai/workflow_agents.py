@@ -532,9 +532,9 @@ all_agents = {
     "evidence_instance_extractor": evidence_instance_extractor_agent,
     "measurement_instance_extractor": measurement_instance_extractor_agent,
     "modality_instance_extractor": modality_instance_extractor_agent,
-    "confidence_score": confidence_score,
-    "relevance_score": relevance_score,
-    "clarity_score": clarity_score,
+    "confidence_score": run_confidence_score,
+    "relevance_score": run_relevance_score,
+    "clarity_score": run_clarity_score,
     "relationship_identifier": relationship_type_identifier_agent,
     "relationship_instance_extractor": relationship_extractor_agent,
     # Note: Base agent is not typically included here unless used directly
