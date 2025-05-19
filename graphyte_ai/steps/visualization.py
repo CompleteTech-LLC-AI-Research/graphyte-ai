@@ -2,6 +2,7 @@
 
 import logging
 import sys
+from typing import Optional
 
 from ..workflow_agents import domain_identifier_agent
 from ..config import VISUALIZATION_OUTPUT_DIR, VISUALIZATION_FILENAME
@@ -36,7 +37,9 @@ except ImportError:
     )
 
 
-async def generate_workflow_visualization() -> None:
+async def generate_workflow_visualization(
+    trace_id: Optional[str] = None, group_id: Optional[str] = None
+) -> None:
     """Generates a visualization of the defined agent structure and saves it."""
     if not VIZ_AVAILABLE:
         # Error message already printed by dummy draw_graph or import failure logged

@@ -33,7 +33,8 @@ async def identify_relationship_types(
     sub_domain_data: SubDomainSchema,
     topic_data: TopicSchema,
     entity_data: EntityTypeSchema,
-    overall_trace_id: Optional[str] = None,
+    trace_id: Optional[str] = None,
+    group_id: Optional[str] = None,
 ) -> Optional[RelationshipSchema]:
     """Identify relationship types for each entity type focus.
 
@@ -43,7 +44,8 @@ async def identify_relationship_types(
         sub_domain_data: The SubDomainSchema from step 2
         topic_data: The TopicSchema from step 3
         entity_data: The EntityTypeSchema from step 4a
-        overall_trace_id: The trace ID for logging purposes
+        trace_id: The trace ID for logging purposes
+        group_id: The trace group ID for logging purposes
 
     Returns:
         A RelationshipSchema object if successful, None otherwise
@@ -143,9 +145,12 @@ async def identify_relationship_types(
             "context_entity_type_count": str(len(entity_data.identified_entities)),
         }
         step6a_iter_run_config = RunConfig(
+            workflow_name="step6a_relationship_types",
+            trace_id=trace_id,
+            group_id=group_id,
             trace_metadata={
                 k: str(v) for k, v in step6a_iter_metadata_for_trace.items()
-            }
+            },
         )
 
         step6a_iter_input_list: List[TResponseInputItem] = [
@@ -299,7 +304,7 @@ async def identify_relationship_types(
         except (ValidationError, TypeError) as e:
             logger.exception(
                 f"Validation or Type error processing relationship result for focus '{current_entity_type}'. Error: {e}",
-                extra={"trace_id": overall_trace_id or "N/A"},
+                extra={"trace_id": trace_id or "N/A"},
             )
             print(
                 f"\nError: A data validation or type issue occurred processing relationship result for focus '{current_entity_type}'."
@@ -308,7 +313,7 @@ async def identify_relationship_types(
         except Exception as e:
             logger.exception(
                 f"An unexpected error occurred processing relationship result for focus '{current_entity_type}'.",
-                extra={"trace_id": overall_trace_id or "N/A"},
+                extra={"trace_id": trace_id or "N/A"},
             )
             print(
                 f"\nAn unexpected error occurred processing relationship result for focus '{current_entity_type}': {type(e).__name__}: {e}"
@@ -379,7 +384,7 @@ async def identify_relationship_types(
             "timestamp_utc": datetime.now(timezone.utc).isoformat(),
         },
         "trace_information": {
-            "trace_id": overall_trace_id or "N/A",
+            "trace_id": trace_id or "N/A",
             "notes": f"Aggregated from PARALLEL calls to {relationship_type_identifier_agent.name} in Step 6a of workflow.",
         },
     }
@@ -387,7 +392,7 @@ async def identify_relationship_types(
         RELATIONSHIP_OUTPUT_DIR,
         RELATIONSHIP_OUTPUT_FILENAME,
         relationship_output_content,
-        overall_trace_id,
+        trace_id,
     )
     print("\nSaving final aggregated relationship output file...")
     print(f"  - {save_result_step6a_final}")

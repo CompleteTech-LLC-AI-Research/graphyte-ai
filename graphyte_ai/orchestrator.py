@@ -130,7 +130,9 @@ async def run_step_with_trace(
         trace_id=step_trace_id,
         metadata=metadata,
     ):
-        result_obj = step_func(*args, overall_trace_id=step_trace_id, **kwargs)
+        result_obj = step_func(
+            *args, trace_id=step_trace_id, group_id=overall_group_id, **kwargs
+        )
         if asyncio.iscoroutine(result_obj):
             result_val = await result_obj
         else:
