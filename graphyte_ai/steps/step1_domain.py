@@ -1,5 +1,6 @@
 """Step 1: Domain identification functionality."""
 
+import json
 import logging
 from datetime import datetime, timezone
 from typing import Dict, Any, Optional
@@ -8,10 +9,14 @@ from pydantic import ValidationError
 
 from agents import RunConfig, RunResult  # type: ignore[attr-defined]
 
-from ..workflow_agents import domain_identifier_agent
+from ..workflow_agents import domain_identifier_agent, domain_result_agent
 from ..config import DOMAIN_MODEL, DOMAIN_OUTPUT_DIR, DOMAIN_OUTPUT_FILENAME
-from ..schemas import DomainSchema
-from ..utils import direct_save_json_output, run_agent_with_retry
+from ..schemas import DomainSchema, DomainResultSchema
+from ..utils import (
+    direct_save_json_output,
+    run_agent_with_retry,
+    run_parallel_scoring,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -21,17 +26,17 @@ async def identify_domain(
     trace_id: Optional[str] = None,
     group_id: Optional[str] = None,
     save_output: bool = True,
-) -> Optional[DomainSchema]:
+) -> Optional[DomainResultSchema]:
     """Identify the primary domain from the input content.
 
     Args:
         content: The text content to analyze
         trace_id: The trace ID for logging purposes
         group_id: The trace group ID for logging purposes
-        save_output: Whether to save the unscored domain result to file
+        save_output: Whether to save the scored domain result to file
 
     Returns:
-        A DomainSchema object if successful, None otherwise
+        A DomainResultSchema object if successful, None otherwise
     """
     logger.info(
         f"--- Running Step 1: Domain ID (Agent: {domain_identifier_agent.name}) ---"
@@ -50,7 +55,8 @@ async def identify_domain(
         trace_metadata={k: str(v) for k, v in step1_metadata_for_trace.items()},
     )
     step1_result: Optional[RunResult] = None
-    domain_data: Optional[DomainSchema] = None
+    raw_domain: Optional[DomainSchema] = None
+    domain_data: Optional[DomainResultSchema] = None
 
     try:
         step1_result = await run_agent_with_retry(
@@ -60,13 +66,13 @@ async def identify_domain(
         if step1_result:
             potential_output = getattr(step1_result, "final_output", None)
             if isinstance(potential_output, DomainSchema):
-                domain_data = potential_output
+                raw_domain = potential_output
                 logger.info(
                     "Successfully extracted DomainSchema from step1_result.final_output."
                 )
             elif isinstance(potential_output, dict):
                 try:
-                    domain_data = DomainSchema.model_validate(potential_output)
+                    raw_domain = DomainSchema.model_validate(potential_output)
                     logger.info(
                         "Successfully validated DomainSchema from step1_result.final_output dict."
                     )
@@ -79,28 +85,75 @@ async def identify_domain(
                     f"Step 1 final_output was not DomainSchema or dict (type: {type(potential_output)})."
                 )
 
-        if domain_data and domain_data.domain:
-            primary_domain = domain_data.domain.strip()
+        if raw_domain and raw_domain.domain:
+            primary_domain = raw_domain.domain.strip()
             if primary_domain:
                 logger.info(
                     f"Step 1 Result: Primary Domain Identified = {primary_domain}"
                 )
                 print(f"Step 1 Result: Primary Domain Identified = {primary_domain}")
 
+                conf_data, rel_data, clar_data = await run_parallel_scoring(
+                    primary_domain, content
+                )
+
+                payload = {
+                    "domain": primary_domain,
+                    "confidence_score": (
+                        conf_data.confidence_score if conf_data else None
+                    ),
+                    "relevance_score": rel_data.relevance_score if rel_data else None,
+                    "clarity_score": clar_data.clarity_score if clar_data else None,
+                }
+
+                scored_result = await run_agent_with_retry(
+                    domain_result_agent, json.dumps(payload)
+                )
+
+                if scored_result:
+                    potential_output = getattr(scored_result, "final_output", None)
+                    if isinstance(potential_output, DomainResultSchema):
+                        domain_data = potential_output
+                    elif isinstance(potential_output, dict):
+                        try:
+                            domain_data = DomainResultSchema.model_validate(
+                                potential_output
+                            )
+                        except ValidationError as e:
+                            logger.warning("DomainResultSchema validation error: %s", e)
+                            domain_data = DomainResultSchema.model_validate(payload)
+                    else:
+                        logger.error(
+                            "Unexpected domain result output type: %s",
+                            type(potential_output),
+                        )
+                        domain_data = DomainResultSchema.model_validate(payload)
+                else:
+                    domain_data = DomainResultSchema.model_validate(payload)
+
+                assert domain_data is not None
+
+                logger.info(
+                    "Parallel scoring results - confidence: %s, relevance: %s, clarity: %s",
+                    domain_data.confidence_score,
+                    domain_data.relevance_score,
+                    domain_data.clarity_score,
+                )
+
                 if save_output:
-                    logger.info("Saving primary domain identifier output to file...")
-                    print("\nSaving primary domain output file...")
+                    logger.info("Saving scored domain output to file...")
+                    print("\nSaving scored domain output file...")
                     domain_output_content: Dict[str, Any] = domain_data.model_dump()
                     domain_output_content["analysis_details"] = {
                         "source_text_length": len(content),
-                        "model_used": DOMAIN_MODEL,
-                        "agent_name": domain_identifier_agent.name,
-                        "output_schema": DomainSchema.__name__,
+                        "model_used": domain_result_agent.model,
+                        "agent_name": domain_result_agent.name,
+                        "output_schema": DomainResultSchema.__name__,
                         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
                     }
                     domain_output_content["trace_information"] = {
                         "trace_id": trace_id or "N/A",
-                        "notes": f"Generated by {domain_identifier_agent.name} in Step 1 of workflow.",
+                        "notes": f"Generated by {domain_result_agent.name} after scoring in Step 1.",
                     }
                     save_result = direct_save_json_output(
                         DOMAIN_OUTPUT_DIR,
@@ -110,7 +163,7 @@ async def identify_domain(
                     )
                     print(f"  - {save_result}")
                     logger.info(
-                        f"Result of saving primary domain output: {save_result}"
+                        "Result of saving scored domain output: %s", save_result
                     )
             else:
                 logger.error(
