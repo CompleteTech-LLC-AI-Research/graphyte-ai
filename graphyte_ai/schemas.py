@@ -1,35 +1,11 @@
 from typing import List, Optional
 from pydantic import BaseModel, Field
 
-
-class ScoredModel(BaseModel):
-    """Mixin providing optional scoring fields constrained between 0 and 1."""
-
-    confidence_score: Optional[float] = Field(
-        None,
-        description="Optional confidence score (0.0 to 1.0).",
-        ge=0.0,
-        le=1.0,
-    )
-    relevance_score: Optional[float] = Field(
-        None,
-        description="Optional relevance score (0.0 to 1.0).",
-        ge=0.0,
-        le=1.0,
-    )
-    clarity_score: Optional[float] = Field(
-        None,
-        description="Optional clarity score (0.0 to 1.0).",
-        ge=0.0,
-        le=1.0,
-    )
-
-
 # --- Schemas for Existing Agents (1-3) ---
 
 
 # Schema for primary domain output (Agent 1)
-class DomainSchema(ScoredModel):
+class DomainSchema(BaseModel):
     """Schema defining the expected output: the primary domain."""
 
     domain: str = Field(
@@ -39,7 +15,18 @@ class DomainSchema(ScoredModel):
         )
     )
 
-    # scoring fields inherited from ``ScoredModel``
+    confidence_score: Optional[float] = Field(
+        None,
+        description="Optional confidence score (0.0 to 1.0) for the domain identification.",
+    )
+    relevance_score: Optional[float] = Field(
+        None,
+        description="Optional relevance score (0.0 to 1.0) indicating how strongly the domain relates to the text.",
+    )
+    clarity_score: Optional[float] = Field(
+        None,
+        description="Optional clarity score (0.0 to 1.0) showing how well-defined the domain is in context.",
+    )
 
 
 # Simple schema used when only a confidence score is needed
@@ -76,13 +63,24 @@ class ClarityScoreSchema(BaseModel):
 
 
 # Nested schema for a sub-domain
-class SubDomainDetail(ScoredModel):
+class SubDomainDetail(BaseModel):
     """Represents a single identified sub-domain."""
 
     sub_domain: str = Field(
         description="The specific sub-domain identified within the text."
     )
-    # scoring fields inherited from ``ScoredModel``
+    confidence_score: Optional[float] = Field(
+        None,
+        description="Optional confidence score (0.0 to 1.0) for this sub-domain.",
+    )
+    relevance_score: Optional[float] = Field(
+        None,
+        description="Optional relevance score (0.0 to 1.0) expressing how strongly this sub-domain relates to the text.",
+    )
+    clarity_score: Optional[float] = Field(
+        None,
+        description="Optional clarity score (0.0 to 1.0) for how clearly this sub-domain is defined in context.",
+    )
 
 
 # Schema for sub-domain analysis output (Agent 2)
@@ -101,11 +99,22 @@ class SubDomainSchema(BaseModel):
 
 
 # Nested schema for a topic
-class TopicDetail(ScoredModel):
+class TopicDetail(BaseModel):
     """Represents a single identified topic."""
 
     topic: str = Field(description="The specific topic identified within the text.")
-    # scoring fields inherited from ``ScoredModel``
+    confidence_score: Optional[float] = Field(
+        None,
+        description="Optional confidence score (0.0 to 1.0) for this topic.",
+    )
+    relevance_score: Optional[float] = Field(
+        None,
+        description="Optional relevance score (0.0 to 1.0) indicating how strongly the topic relates to the text.",
+    )
+    clarity_score: Optional[float] = Field(
+        None,
+        description="Optional clarity score (0.0 to 1.0) for how clearly the topic is defined in context.",
+    )
 
 
 # Schema for the output of the *single* topic identification agent call (Agent 3)
@@ -136,7 +145,7 @@ class TopicSchema(BaseModel):
 
 
 # Nested schema for an entity type (Agent 4a)
-class EntityTypeDetail(ScoredModel):
+class EntityTypeDetail(BaseModel):
     """Represents an entity type with optional scoring information."""
 
     entity_type: str = Field(
@@ -145,7 +154,18 @@ class EntityTypeDetail(ScoredModel):
             "DATE, MONEY, PRODUCT, TECHNOLOGY, SCIENTIFIC_CONCEPT, ECONOMIC_INDICATOR)."  # Removed EVENT as it's now separate
         )
     )
-    # scoring fields inherited from ``ScoredModel``
+    confidence_score: Optional[float] = Field(
+        None,
+        description="Optional confidence score (0.0 to 1.0) for this entity type.",
+    )
+    relevance_score: Optional[float] = Field(
+        None,
+        description="Optional relevance score (0.0 to 1.0) for this entity type.",
+    )
+    clarity_score: Optional[float] = Field(
+        None,
+        description="Optional clarity score (0.0 to 1.0) for this entity type.",
+    )
 
 
 # Schema for entity type analysis output (Agent 4a)
@@ -168,7 +188,7 @@ class EntityTypeSchema(BaseModel):
 
 
 # Nested schema for an ontology type/concept (Agent 4b)
-class OntologyTypeDetail(ScoredModel):
+class OntologyTypeDetail(BaseModel):
     """Represents an ontology type or concept with optional scoring information."""
 
     ontology_type: str = Field(
@@ -176,7 +196,18 @@ class OntologyTypeDetail(ScoredModel):
             "The identified ontology type or concept (e.g., Schema.org:Person, FIBO:FinancialInstrument, GO:biological_process)."
         )
     )
-    # scoring fields inherited from ``ScoredModel``
+    confidence_score: Optional[float] = Field(
+        None,
+        description="Optional confidence score (0.0 to 1.0) for this ontology type.",
+    )
+    relevance_score: Optional[float] = Field(
+        None,
+        description="Optional relevance score (0.0 to 1.0) for this ontology type.",
+    )
+    clarity_score: Optional[float] = Field(
+        None,
+        description="Optional clarity score (0.0 to 1.0) for this ontology type.",
+    )
 
 
 # Schema for ontology type analysis output (Agent 4b)
@@ -199,7 +230,7 @@ class OntologyTypeSchema(BaseModel):
 
 
 # Nested schema for an event type (Agent 4c)
-class EventDetail(ScoredModel):
+class EventDetail(BaseModel):
     """Represents an identified event type with optional scoring information."""
 
     event_type: str = Field(
@@ -207,7 +238,18 @@ class EventDetail(ScoredModel):
             "The classified type of the event identified (e.g., Meeting, Acquisition, Conference, Product Launch, Election, Natural Disaster)."
         )
     )
-    # scoring fields inherited from ``ScoredModel``
+    confidence_score: Optional[float] = Field(
+        None,
+        description="Optional confidence score (0.0 to 1.0) for this event type.",
+    )
+    relevance_score: Optional[float] = Field(
+        None,
+        description="Optional relevance score (0.0 to 1.0) for this event type.",
+    )
+    clarity_score: Optional[float] = Field(
+        None,
+        description="Optional clarity score (0.0 to 1.0) for this event type.",
+    )
     # Optional: Add description if needed, like 'Brief description of the event instance'
     # description: Optional[str] = Field(None, description="A brief description or name of the specific event instance.")
 
@@ -232,7 +274,7 @@ class EventTypeSchema(BaseModel):
 
 
 # Nested schema for a statement type (Agent 4d)
-class StatementDetail(ScoredModel):
+class StatementDetail(BaseModel):
     """Represents an identified statement type with optional scoring information."""
 
     statement_type: str = Field(
@@ -240,7 +282,18 @@ class StatementDetail(ScoredModel):
             "The classified type of the statement identified (e.g., Fact, Claim, Opinion, Question, Instruction, Hypothesis, Prediction)."
         )
     )
-    # scoring fields inherited from ``ScoredModel``
+    confidence_score: Optional[float] = Field(
+        None,
+        description="Optional confidence score (0.0 to 1.0) for this statement type.",
+    )
+    relevance_score: Optional[float] = Field(
+        None,
+        description="Optional relevance score (0.0 to 1.0) for this statement type.",
+    )
+    clarity_score: Optional[float] = Field(
+        None,
+        description="Optional clarity score (0.0 to 1.0) for this statement type.",
+    )
     # Optional: Add a snippet of the text classified
     # supporting_text: Optional[str] = Field(None, description="The text snippet classified as this statement type.")
 
@@ -265,7 +318,7 @@ class StatementTypeSchema(BaseModel):
 
 
 # Nested schema for an evidence type (Agent 4e)
-class EvidenceDetail(ScoredModel):
+class EvidenceDetail(BaseModel):
     """Represents an identified evidence type with optional scoring information."""
 
     evidence_type: str = Field(
@@ -273,7 +326,18 @@ class EvidenceDetail(ScoredModel):
             "The classified type of evidence identified (e.g., Testimony, Document, Statistic, Anecdote, Expert Opinion, Observation, Example)."
         )
     )
-    # scoring fields inherited from ``ScoredModel``
+    confidence_score: Optional[float] = Field(
+        None,
+        description="Optional confidence score (0.0 to 1.0) for this evidence type.",
+    )
+    relevance_score: Optional[float] = Field(
+        None,
+        description="Optional relevance score (0.0 to 1.0) for this evidence type.",
+    )
+    clarity_score: Optional[float] = Field(
+        None,
+        description="Optional clarity score (0.0 to 1.0) for this evidence type.",
+    )
 
 
 # Schema for evidence type analysis output (Agent 4e)
@@ -296,7 +360,7 @@ class EvidenceTypeSchema(BaseModel):
 
 
 # Nested schema for a measurement type (Agent 4f)
-class MeasurementDetail(ScoredModel):
+class MeasurementDetail(BaseModel):
     """Represents an identified measurement type with optional scoring information."""
 
     measurement_type: str = Field(
@@ -307,7 +371,18 @@ class MeasurementDetail(ScoredModel):
     # Optional: Add unit or value if needed
     # unit: Optional[str] = Field(None, description="The unit of the measurement, if applicable.")
     # value: Optional[str] = Field(None, description="The actual value mentioned, if relevant.")
-    # scoring fields inherited from ``ScoredModel``
+    confidence_score: Optional[float] = Field(
+        None,
+        description="Optional confidence score (0.0 to 1.0) for this measurement type.",
+    )
+    relevance_score: Optional[float] = Field(
+        None,
+        description="Optional relevance score (0.0 to 1.0) for this measurement type.",
+    )
+    clarity_score: Optional[float] = Field(
+        None,
+        description="Optional clarity score (0.0 to 1.0) for this measurement type.",
+    )
 
 
 # Schema for measurement type analysis output (Agent 4f)
@@ -330,7 +405,7 @@ class MeasurementTypeSchema(BaseModel):
 
 
 # Nested schema for a modality type (Agent 4g - NEW)
-class ModalityDetail(ScoredModel):
+class ModalityDetail(BaseModel):
     """Represents an identified modality type with optional scoring information."""
 
     modality_type: str = Field(
@@ -340,7 +415,18 @@ class ModalityDetail(ScoredModel):
     )
     # Optional: Add count or description if needed
     # count: Optional[int] = Field(None, description="Number of times this modality is represented, if applicable.")
-    # scoring fields inherited from ``ScoredModel``
+    confidence_score: Optional[float] = Field(
+        None,
+        description="Optional confidence score (0.0 to 1.0) for this modality type.",
+    )
+    relevance_score: Optional[float] = Field(
+        None,
+        description="Optional relevance score (0.0 to 1.0) for this modality type.",
+    )
+    clarity_score: Optional[float] = Field(
+        None,
+        description="Optional clarity score (0.0 to 1.0) for this modality type.",
+    )
 
 
 # Schema for modality type analysis output (Agent 4g - NEW)
@@ -365,7 +451,7 @@ class ModalityTypeSchema(BaseModel):
 # --- Schema for Step 5: Entity Instance Extraction ---
 
 
-class EntityInstanceDetail(ScoredModel):
+class EntityInstanceDetail(BaseModel):
     """Represents a specific entity mention extracted from the text."""
 
     entity_type: str = Field(
@@ -380,7 +466,18 @@ class EntityInstanceDetail(ScoredModel):
         None,
         description="End character index of the mention in the full text (exclusive).",
     )
-    # scoring fields inherited from ``ScoredModel``
+    confidence_score: Optional[float] = Field(
+        None,
+        description="Optional confidence score (0.0 to 1.0) for this entity instance.",
+    )
+    relevance_score: Optional[float] = Field(
+        None,
+        description="Optional relevance score (0.0 to 1.0) for this entity instance.",
+    )
+    clarity_score: Optional[float] = Field(
+        None,
+        description="Optional clarity score (0.0 to 1.0) for this entity instance.",
+    )
 
 
 class EntityInstanceSchema(BaseModel):
@@ -406,7 +503,7 @@ class EntityInstanceSchema(BaseModel):
 # --- Schema for Step 5b: Ontology Instance Extraction ---
 
 
-class OntologyInstanceDetail(ScoredModel):
+class OntologyInstanceDetail(BaseModel):
     """Represents a specific ontology concept mention extracted from the text."""
 
     ontology_type: str = Field(
@@ -421,7 +518,18 @@ class OntologyInstanceDetail(ScoredModel):
         None,
         description="End character index of the mention in the full text (exclusive).",
     )
-    # scoring fields inherited from ``ScoredModel``
+    confidence_score: Optional[float] = Field(
+        None,
+        description="Optional confidence score (0.0 to 1.0) for this ontology instance.",
+    )
+    relevance_score: Optional[float] = Field(
+        None,
+        description="Optional relevance score (0.0 to 1.0) for this ontology instance.",
+    )
+    clarity_score: Optional[float] = Field(
+        None,
+        description="Optional clarity score (0.0 to 1.0) for this ontology instance.",
+    )
 
 
 class OntologyInstanceSchema(BaseModel):
@@ -448,7 +556,7 @@ class OntologyInstanceSchema(BaseModel):
 # --- Schema for Step 5c: Event Instance Extraction ---
 
 
-class EventInstanceDetail(ScoredModel):
+class EventInstanceDetail(BaseModel):
     """Represents a specific event mention extracted from the text."""
 
     event_type: str = Field(
@@ -463,7 +571,18 @@ class EventInstanceDetail(ScoredModel):
         None,
         description="End character index of the mention in the full text (exclusive).",
     )
-    # scoring fields inherited from ``ScoredModel``
+    confidence_score: Optional[float] = Field(
+        None,
+        description="Optional confidence score (0.0 to 1.0) for this event instance.",
+    )
+    relevance_score: Optional[float] = Field(
+        None,
+        description="Optional relevance score (0.0 to 1.0) for this event instance.",
+    )
+    clarity_score: Optional[float] = Field(
+        None,
+        description="Optional clarity score (0.0 to 1.0) for this event instance.",
+    )
 
 
 class EventInstanceSchema(BaseModel):
@@ -489,7 +608,7 @@ class EventInstanceSchema(BaseModel):
 # --- Schema for Step 5d: Statement Instance Extraction ---
 
 
-class StatementInstanceDetail(ScoredModel):
+class StatementInstanceDetail(BaseModel):
     """Represents a specific statement mention extracted from the text."""
 
     statement_type: str = Field(
@@ -506,7 +625,18 @@ class StatementInstanceDetail(ScoredModel):
         None,
         description="End character index of the statement in the full text (exclusive).",
     )
-    # scoring fields inherited from ``ScoredModel``
+    confidence_score: Optional[float] = Field(
+        None,
+        description="Optional confidence score (0.0 to 1.0) for this statement instance.",
+    )
+    relevance_score: Optional[float] = Field(
+        None,
+        description="Optional relevance score (0.0 to 1.0) for this statement instance.",
+    )
+    clarity_score: Optional[float] = Field(
+        None,
+        description="Optional clarity score (0.0 to 1.0) for this statement instance.",
+    )
 
 
 class StatementInstanceSchema(BaseModel):
@@ -533,7 +663,7 @@ class StatementInstanceSchema(BaseModel):
 # --- Schema for Step 5e: Evidence Instance Extraction ---
 
 
-class EvidenceInstanceDetail(ScoredModel):
+class EvidenceInstanceDetail(BaseModel):
     """Represents a specific evidence mention extracted from the text."""
 
     evidence_type: str = Field(
@@ -548,7 +678,18 @@ class EvidenceInstanceDetail(ScoredModel):
         None,
         description="End character index of the mention in the full text (exclusive).",
     )
-    # scoring fields inherited from ``ScoredModel``
+    confidence_score: Optional[float] = Field(
+        None,
+        description="Optional confidence score (0.0 to 1.0) for this evidence instance.",
+    )
+    relevance_score: Optional[float] = Field(
+        None,
+        description="Optional relevance score (0.0 to 1.0) for this evidence instance.",
+    )
+    clarity_score: Optional[float] = Field(
+        None,
+        description="Optional clarity score (0.0 to 1.0) for this evidence instance.",
+    )
 
 
 class EvidenceInstanceSchema(BaseModel):
@@ -575,7 +716,7 @@ class EvidenceInstanceSchema(BaseModel):
 # --- Schema for Step 5f: Measurement Instance Extraction ---
 
 
-class MeasurementInstanceDetail(ScoredModel):
+class MeasurementInstanceDetail(BaseModel):
     """Represents a specific measurement mention extracted from the text."""
 
     measurement_type: str = Field(
@@ -590,7 +731,18 @@ class MeasurementInstanceDetail(ScoredModel):
         None,
         description="End character index of the mention in the full text (exclusive).",
     )
-    # scoring fields inherited from ``ScoredModel``
+    confidence_score: Optional[float] = Field(
+        None,
+        description="Optional confidence score (0.0 to 1.0) for this measurement instance.",
+    )
+    relevance_score: Optional[float] = Field(
+        None,
+        description="Optional relevance score (0.0 to 1.0) for this measurement instance.",
+    )
+    clarity_score: Optional[float] = Field(
+        None,
+        description="Optional clarity score (0.0 to 1.0) for this measurement instance.",
+    )
 
 
 class MeasurementInstanceSchema(BaseModel):
@@ -617,7 +769,7 @@ class MeasurementInstanceSchema(BaseModel):
 # --- Schema for Step 5g: Modality Instance Extraction ---
 
 
-class ModalityInstanceDetail(ScoredModel):
+class ModalityInstanceDetail(BaseModel):
     """Represents a specific modality mention extracted from the text."""
 
     modality_type: str = Field(
@@ -634,7 +786,18 @@ class ModalityInstanceDetail(ScoredModel):
         None,
         description="End character index of the mention in the full text (exclusive).",
     )
-    # scoring fields inherited from ``ScoredModel``
+    confidence_score: Optional[float] = Field(
+        None,
+        description="Optional confidence score (0.0 to 1.0) for this modality instance.",
+    )
+    relevance_score: Optional[float] = Field(
+        None,
+        description="Optional relevance score (0.0 to 1.0) for this modality instance.",
+    )
+    clarity_score: Optional[float] = Field(
+        None,
+        description="Optional clarity score (0.0 to 1.0) for this modality instance.",
+    )
 
 
 class ModalityInstanceSchema(BaseModel):
@@ -662,13 +825,24 @@ class ModalityInstanceSchema(BaseModel):
 
 
 # Nested schema for a specific identified relationship between entities
-class RelationshipDetail(ScoredModel):
+class RelationshipDetail(BaseModel):
     """Represents a single identified relationship between two entities with optional scoring information."""
 
     relationship_type: str = Field(
         description="The nature of the relationship identified (e.g., WORKS_FOR, LOCATED_IN, ACQUIRED, PARTNERS_WITH, COMPETES_WITH)."
     )
-    # scoring fields inherited from ``ScoredModel``
+    confidence_score: Optional[float] = Field(
+        None,
+        description="Optional confidence score (0.0 to 1.0) for identifying this relationship type.",
+    )
+    relevance_score: Optional[float] = Field(
+        None,
+        description="Optional relevance score (0.0 to 1.0) for identifying this relationship type.",
+    )
+    clarity_score: Optional[float] = Field(
+        None,
+        description="Optional clarity score (0.0 to 1.0) for identifying this relationship type.",
+    )
     # Optional: Add a field for the sentence/snippet supporting the relationship
     # supporting_text: Optional[str] = Field(None, description="The text snippet that supports this relationship finding.")
 
@@ -709,7 +883,7 @@ class RelationshipSchema(BaseModel):
 
 
 # --- Schema for Step 6: Relationship Instance Extraction ---
-class RelationshipInstanceDetail(ScoredModel):
+class RelationshipInstanceDetail(BaseModel):
     """Represents a specific relationship instance between two entities.
 
     Optional scoring fields ``confidence_score``, ``relevance_score`` and
@@ -726,7 +900,18 @@ class RelationshipInstanceDetail(ScoredModel):
     snippet: Optional[str] = Field(
         None, description="Optional text snippet supporting this relationship instance."
     )
-    # scoring fields inherited from ``ScoredModel``
+    confidence_score: Optional[float] = Field(
+        None,
+        description="Optional confidence score (0.0 to 1.0) for this relationship instance.",
+    )
+    relevance_score: Optional[float] = Field(
+        None,
+        description="Optional relevance score (0.0 to 1.0) for this relationship instance.",
+    )
+    clarity_score: Optional[float] = Field(
+        None,
+        description="Optional clarity score (0.0 to 1.0) for this relationship instance.",
+    )
 
 
 class RelationshipInstanceSchema(BaseModel):
