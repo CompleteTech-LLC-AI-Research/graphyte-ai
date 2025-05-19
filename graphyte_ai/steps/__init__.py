@@ -12,7 +12,7 @@ from .step4f_measurement_types import identify_measurement_types
 from .step4g_modality_types import (
     identify_modality_types,
 )  # Added import for new step (4g)
-from .step5_entity_instances import identify_entity_instances
+from .step5a_entity_instances import identify_entity_instances
 from .step5b_ontology_instances import identify_ontology_instances
 from .step5c_event_instances import identify_event_instances
 from .step5d_statement_instances import identify_statement_instances

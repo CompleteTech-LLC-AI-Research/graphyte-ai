@@ -216,7 +216,7 @@ The workflow progresses through several key phases:
 2.  **Type Identification (Step 4 - Parallel):**
     * Leverages the established context to identify various conceptual **Types**...
 
-3.  **Instance Extraction (Step 5 - Parallel):**
+3.  **Instance Extraction (Steps 5a-5g - Parallel):**
     * Extracts specific **Instances** or mentions...
     * After **relationship instance extraction (Step 6b)**, these results are aggregated into a unified `ExtractedInstances` node for later steps. The aggregated output now includes relationship instances.
 

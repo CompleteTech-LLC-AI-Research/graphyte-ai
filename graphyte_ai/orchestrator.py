@@ -504,7 +504,7 @@ async def run_combined_workflow(content: str) -> None:
                 )
                 print("Skipping Step 4 (Parallel ID) due to missing prior results.")
 
-            # === Step 5: Extract Specific Entity Instances ===
+            # === Step 5a: Extract Specific Entity Instances ===
             instance_data = (
                 await identify_entity_instances(
                     content,
@@ -680,7 +680,7 @@ async def run_combined_workflow(content: str) -> None:
                 f"Step 4g (Modality Types) Result: {'Success' if modality_data else 'Failed/Skipped/Error'}"
             )  # Added log for new step (4g)
             logger.info(
-                f"Step 5 (Entity Instances) Result: {'Success' if instance_data else 'Failed/Skipped'}"
+                f"Step 5a (Entity Instances) Result: {'Success' if instance_data else 'Failed/Skipped'}"
             )
             logger.info(
                 f"Step 5b (Ontology Instances) Result: {'Success' if ontology_instance_data else 'Failed/Skipped'}"
