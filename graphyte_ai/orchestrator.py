@@ -46,6 +46,7 @@ from .config import (  # noqa: E402
     AGENT_TRACE_BASE_URL,
 )
 from .schemas import (  # noqa: E402
+    DomainResultSchema,  # noqa: F401 - used in step1 output typing
     EntityTypeSchema,
     OntologyTypeSchema,
     EventTypeSchema,

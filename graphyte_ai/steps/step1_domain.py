@@ -10,7 +10,7 @@ from agents import RunConfig, RunResult  # type: ignore[attr-defined]
 
 from ..workflow_agents import domain_identifier_agent
 from ..config import DOMAIN_MODEL, DOMAIN_OUTPUT_DIR, DOMAIN_OUTPUT_FILENAME
-from ..schemas import DomainSchema
+from ..schemas import DomainResultSchema
 from ..utils import direct_save_json_output, run_agent_with_retry
 
 logger = logging.getLogger(__name__)
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 async def identify_domain(
     content: str, overall_trace_id: Optional[str] = None
-) -> Optional[DomainSchema]:
+) -> Optional[DomainResultSchema]:
     """Identify the primary domain from the input content.
 
     Args:
@@ -26,7 +26,7 @@ async def identify_domain(
         overall_trace_id: The trace ID for logging purposes
 
     Returns:
-        A DomainSchema object if successful, None otherwise
+        A DomainResultSchema object if successful, None otherwise
     """
     logger.info(
         f"--- Running Step 1: Domain ID (Agent: {domain_identifier_agent.name}) ---"
@@ -42,7 +42,7 @@ async def identify_domain(
         trace_metadata={k: str(v) for k, v in step1_metadata_for_trace.items()}
     )
     step1_result: Optional[RunResult] = None
-    domain_data: Optional[DomainSchema] = None
+    domain_data: Optional[DomainResultSchema] = None
 
     try:
         step1_result = await run_agent_with_retry(
@@ -51,24 +51,24 @@ async def identify_domain(
 
         if step1_result:
             potential_output = getattr(step1_result, "final_output", None)
-            if isinstance(potential_output, DomainSchema):
+            if isinstance(potential_output, DomainResultSchema):
                 domain_data = potential_output
                 logger.info(
-                    "Successfully extracted DomainSchema from step1_result.final_output."
+                    "Successfully extracted DomainResultSchema from step1_result.final_output."
                 )
             elif isinstance(potential_output, dict):
                 try:
-                    domain_data = DomainSchema.model_validate(potential_output)
+                    domain_data = DomainResultSchema.model_validate(potential_output)
                     logger.info(
-                        "Successfully validated DomainSchema from step1_result.final_output dict."
+                        "Successfully validated DomainResultSchema from step1_result.final_output dict."
                     )
                 except ValidationError as e:
                     logger.warning(
-                        f"Step 1 dict output failed DomainSchema validation: {e}"
+                        f"Step 1 dict output failed DomainResultSchema validation: {e}"
                     )
             else:
                 logger.warning(
-                    f"Step 1 final_output was not DomainSchema or dict (type: {type(potential_output)})."
+                    f"Step 1 final_output was not DomainResultSchema or dict (type: {type(potential_output)})."
                 )
 
         if domain_data and domain_data.domain:
@@ -86,7 +86,7 @@ async def identify_domain(
                     "source_text_length": len(content),
                     "model_used": DOMAIN_MODEL,
                     "agent_name": domain_identifier_agent.name,
-                    "output_schema": DomainSchema.__name__,
+                    "output_schema": DomainResultSchema.__name__,
                     "timestamp_utc": datetime.now(timezone.utc).isoformat(),
                 }
                 domain_output_content["trace_information"] = {
@@ -111,7 +111,7 @@ async def identify_domain(
                 domain_data = None
         else:
             logger.error(
-                "Step 1 FAILED: Could not extract valid DomainSchema output. Skipping subsequent steps."
+                "Step 1 FAILED: Could not extract valid DomainResultSchema output. Skipping subsequent steps."
             )
             print(
                 "\nError: Failed to identify the primary domain in Step 1. Cannot proceed."
