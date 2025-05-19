@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 # --- SDK Imports ---
 try:
-    from agents import trace  # type: ignore[attr-defined]
+    from agents import gen_trace_id, trace  # type: ignore[attr-defined]
 except ImportError:
     logger.critical(
         "CRITICAL Error: 'agents' SDK library not found or incomplete. Cannot define orchestrator.",
@@ -97,6 +97,47 @@ from .steps import (  # noqa: E402
 )
 
 
+# --- Helper to Run Steps with Individual Traces ---
+from typing import Callable, Awaitable
+
+
+async def run_step_with_trace(
+    step_func: Callable[..., Awaitable[Any] | Any],
+    step_name: str,
+    overall_group_id: str,
+    *args: Any,
+    **kwargs: Any,
+) -> tuple[Any, str]:
+    """Run a workflow step wrapped in its own trace span.
+
+    Args:
+        step_func: The step function to execute.
+        step_name: Name of the workflow step.
+        overall_group_id: Group ID linking all step traces.
+        *args: Positional arguments for the step.
+        **kwargs: Keyword arguments for the step.
+
+    Returns:
+        Tuple containing the step's output and its trace ID.
+    """
+
+    step_trace_id = gen_trace_id()
+    metadata = {"workflow_step": step_name}
+    logger.info(f"Starting {step_name} (Trace ID: {step_trace_id})")
+    with trace(
+        workflow_name=step_name,
+        group_id=overall_group_id,
+        trace_id=step_trace_id,
+        metadata=metadata,
+    ):
+        result_obj = step_func(*args, overall_trace_id=step_trace_id, **kwargs)
+        if asyncio.iscoroutine(result_obj):
+            result_val = await result_obj
+        else:
+            result_val = result_obj
+    return result_val, step_trace_id
+
+
 # --- Main Execution Logic (Combined Workflow in Single Trace) ---
 async def run_combined_workflow(content: str) -> None:
     """Runs domain, sub-domain, topic, entity, ontology, event, statement, evidence,
@@ -133,6 +174,9 @@ async def run_combined_workflow(content: str) -> None:
     relationship_instance_data = None
     primary_domain = None
 
+    # Generate a group ID to link all step traces
+    overall_group_id = gen_trace_id()
+
     # Metadata for the single overall trace
     overall_trace_metadata = {
         "workflow_name": "Document Analysis",
@@ -168,7 +212,9 @@ async def run_combined_workflow(content: str) -> None:
     try:
         # Use the SDK's trace context manager to wrap the entire workflow
         with trace(
-            overall_trace_metadata["workflow_name"], metadata=overall_trace_metadata
+            overall_trace_metadata["workflow_name"],
+            group_id=overall_group_id,
+            metadata=overall_trace_metadata,
         ) as overall_span:
             # Attempt to get the trace ID and construct the URL
             if overall_span and hasattr(overall_span, "trace_id"):
@@ -183,9 +229,14 @@ async def run_combined_workflow(content: str) -> None:
                 print("Overall Workflow Trace ID not available.")
 
             # === Step 1: Identify Primary Domain (with Confidence) ===
-            domain_only_data = await identify_domain(
-                content, overall_trace_id, save_output=False
+            domain_result = await run_step_with_trace(
+                identify_domain,
+                "step1_domain",
+                overall_group_id,
+                content,
+                save_output=False,
             )
+            domain_only_data, step1_trace_id = domain_result
 
             if domain_only_data:
                 conf_data, rel_data, clar_data = await run_parallel_scoring(
@@ -262,20 +313,35 @@ async def run_combined_workflow(content: str) -> None:
                 primary_domain = None
 
             # === Step 2: Identify Sub-Domains (with Relevance) ===
-            sub_domain_data = (
-                await identify_subdomains(content, primary_domain, overall_trace_id)
+            sub_domain_result = (
+                await run_step_with_trace(
+                    identify_subdomains,
+                    "step2_subdomains",
+                    overall_group_id,
+                    content,
+                    primary_domain,
+                )
                 if primary_domain
                 else None
             )
+            sub_domain_data, step2_trace_id = (
+                sub_domain_result if sub_domain_result else (None, "")
+            )
 
             # === Step 3: Identify Topics in PARALLEL for each Sub-Domain (with Relevance) ===
-            topic_data = (
-                await identify_topics(
-                    content, primary_domain, sub_domain_data, overall_trace_id
+            topic_result = (
+                await run_step_with_trace(
+                    identify_topics,
+                    "step3_topics",
+                    overall_group_id,
+                    content,
+                    primary_domain,
+                    sub_domain_data,
                 )
                 if primary_domain and sub_domain_data
                 else None
             )
+            topic_data, step3_trace_id = topic_result if topic_result else (None, "")
 
             # === Step 4: Parallel Identification (Entities, Ontology, Events, Statements, Evidence, Measurements, Modalities) ===
             if primary_domain and sub_domain_data and topic_data:
@@ -284,54 +350,68 @@ async def run_combined_workflow(content: str) -> None:
                 )
                 print("\n--- Starting Step 4: Parallel Identification ---")
                 step4_tasks = [
-                    identify_entity_types(
+                    run_step_with_trace(
+                        identify_entity_types,
+                        "step4a_entity_types",
+                        overall_group_id,
                         content,
                         primary_domain,
                         sub_domain_data,
                         topic_data,
-                        overall_trace_id,
                     ),
-                    identify_ontology_types(
+                    run_step_with_trace(
+                        identify_ontology_types,
+                        "step4b_ontology_types",
+                        overall_group_id,
                         content,
                         primary_domain,
                         sub_domain_data,
                         topic_data,
-                        overall_trace_id,
                     ),
-                    identify_event_types(
+                    run_step_with_trace(
+                        identify_event_types,
+                        "step4c_event_types",
+                        overall_group_id,
                         content,
                         primary_domain,
                         sub_domain_data,
                         topic_data,
-                        overall_trace_id,
                     ),
-                    identify_statement_types(
+                    run_step_with_trace(
+                        identify_statement_types,
+                        "step4d_statement_types",
+                        overall_group_id,
                         content,
                         primary_domain,
                         sub_domain_data,
                         topic_data,
-                        overall_trace_id,
                     ),
-                    identify_evidence_types(
+                    run_step_with_trace(
+                        identify_evidence_types,
+                        "step4e_evidence_types",
+                        overall_group_id,
                         content,
                         primary_domain,
                         sub_domain_data,
                         topic_data,
-                        overall_trace_id,
                     ),
-                    identify_measurement_types(
+                    run_step_with_trace(
+                        identify_measurement_types,
+                        "step4f_measurement_types",
+                        overall_group_id,
                         content,
                         primary_domain,
                         sub_domain_data,
                         topic_data,
-                        overall_trace_id,
                     ),
-                    identify_modality_types(
+                    run_step_with_trace(
+                        identify_modality_types,
+                        "step4g_modality_types",
+                        overall_group_id,
                         content,
                         primary_domain,
                         sub_domain_data,
                         topic_data,
-                        overall_trace_id,
                     ),  # New task (4g)
                 ]
                 # The return type annotation is tricky here because gather returns a list of results OR exceptions
@@ -341,13 +421,59 @@ async def run_combined_workflow(content: str) -> None:
                 )
 
                 # Process results safely
-                potential_entity_data = step4_results[0]
-                potential_ontology_data = step4_results[1]
-                potential_event_data = step4_results[2]
-                potential_statement_data = step4_results[3]
-                potential_evidence_data = step4_results[4]
-                potential_measurement_data = step4_results[5]
-                potential_modality_data = step4_results[6]  # New result (4g)
+                potential_entity_result = step4_results[0]
+                potential_ontology_result = step4_results[1]
+                potential_event_result = step4_results[2]
+                potential_statement_result = step4_results[3]
+                potential_evidence_result = step4_results[4]
+                potential_measurement_result = step4_results[5]
+                potential_modality_result = step4_results[6]  # New result (4g)
+
+                if isinstance(potential_entity_result, Exception):
+                    potential_entity_data = potential_entity_result
+                    step4a_trace_id = ""
+                else:
+                    potential_entity_data, step4a_trace_id = potential_entity_result
+
+                if isinstance(potential_ontology_result, Exception):
+                    potential_ontology_data = potential_ontology_result
+                    step4b_trace_id = ""
+                else:
+                    potential_ontology_data, step4b_trace_id = potential_ontology_result
+
+                if isinstance(potential_event_result, Exception):
+                    potential_event_data = potential_event_result
+                    step4c_trace_id = ""
+                else:
+                    potential_event_data, step4c_trace_id = potential_event_result
+
+                if isinstance(potential_statement_result, Exception):
+                    potential_statement_data = potential_statement_result
+                    step4d_trace_id = ""
+                else:
+                    potential_statement_data, step4d_trace_id = (
+                        potential_statement_result
+                    )
+
+                if isinstance(potential_evidence_result, Exception):
+                    potential_evidence_data = potential_evidence_result
+                    step4e_trace_id = ""
+                else:
+                    potential_evidence_data, step4e_trace_id = potential_evidence_result
+
+                if isinstance(potential_measurement_result, Exception):
+                    potential_measurement_data = potential_measurement_result
+                    step4f_trace_id = ""
+                else:
+                    potential_measurement_data, step4f_trace_id = (
+                        potential_measurement_result
+                    )
+
+                if isinstance(potential_modality_result, Exception):
+                    potential_modality_data = potential_modality_result
+                    step4g_trace_id = ""
+                else:
+                    potential_modality_data, step4g_trace_id = potential_modality_result
 
                 # Entity Data Processing
                 if isinstance(potential_entity_data, Exception):
@@ -505,84 +631,111 @@ async def run_combined_workflow(content: str) -> None:
                 print("Skipping Step 4 (Parallel ID) due to missing prior results.")
 
             # === Step 5a: Extract Specific Entity Instances ===
-            instance_data = (
-                await identify_entity_instances(
+            instance_result = (
+                await run_step_with_trace(
+                    identify_entity_instances,
+                    "step5a_entity_instances",
+                    overall_group_id,
                     content,
                     primary_domain,
                     sub_domain_data,
                     topic_data,
                     entity_data,
-                    overall_trace_id,
                 )
                 if primary_domain and sub_domain_data and topic_data and entity_data
                 else None
             )
+            instance_data, step5a_trace_id = (
+                instance_result if instance_result else (None, "")
+            )
 
             # === Step 5b: Extract Ontology Concept Instances ===
-            ontology_instance_data = (
-                await identify_ontology_instances(
+            ontology_instance_result = (
+                await run_step_with_trace(
+                    identify_ontology_instances,
+                    "step5b_ontology_instances",
+                    overall_group_id,
                     content,
                     primary_domain,
                     sub_domain_data,
                     topic_data,
                     ontology_data,
-                    overall_trace_id,
                 )
                 if primary_domain and sub_domain_data and topic_data and ontology_data
                 else None
             )
+            ontology_instance_data, step5b_trace_id = (
+                ontology_instance_result if ontology_instance_result else (None, "")
+            )
 
             # === Step 5c: Extract Event Instances ===
-            event_instance_data = (
-                await identify_event_instances(
+            event_instance_result = (
+                await run_step_with_trace(
+                    identify_event_instances,
+                    "step5c_event_instances",
+                    overall_group_id,
                     content,
                     primary_domain,
                     sub_domain_data,
                     topic_data,
                     event_data,
-                    overall_trace_id,
                 )
                 if primary_domain and sub_domain_data and topic_data and event_data
                 else None
             )
+            event_instance_data, step5c_trace_id = (
+                event_instance_result if event_instance_result else (None, "")
+            )
 
             # === Step 5d: Extract Statement Instances ===
-            statement_instance_data = (
-                await identify_statement_instances(
+            statement_instance_result = (
+                await run_step_with_trace(
+                    identify_statement_instances,
+                    "step5d_statement_instances",
+                    overall_group_id,
                     content,
                     primary_domain,
                     sub_domain_data,
                     topic_data,
                     statement_data,
-                    overall_trace_id,
                 )
                 if primary_domain and sub_domain_data and topic_data and statement_data
                 else None
             )
+            statement_instance_data, step5d_trace_id = (
+                statement_instance_result if statement_instance_result else (None, "")
+            )
 
             # === Step 5e: Extract Evidence Instances ===
-            evidence_instance_data = (
-                await identify_evidence_instances(
+            evidence_instance_result = (
+                await run_step_with_trace(
+                    identify_evidence_instances,
+                    "step5e_evidence_instances",
+                    overall_group_id,
                     content,
                     primary_domain,
                     sub_domain_data,
                     topic_data,
                     evidence_data,
-                    overall_trace_id,
                 )
                 if primary_domain and sub_domain_data and topic_data and evidence_data
                 else None
             )
+            evidence_instance_data, step5e_trace_id = (
+                evidence_instance_result if evidence_instance_result else (None, "")
+            )
 
             # === Step 5f: Extract Measurement Instances ===
-            measurement_instance_data = (
-                await identify_measurement_instances(
+            measurement_instance_result = (
+                await run_step_with_trace(
+                    identify_measurement_instances,
+                    "step5f_measurement_instances",
+                    overall_group_id,
                     content,
                     primary_domain,
                     sub_domain_data,
                     topic_data,
                     measurement_data,
-                    overall_trace_id,
                 )
                 if primary_domain
                 and sub_domain_data
@@ -590,51 +743,76 @@ async def run_combined_workflow(content: str) -> None:
                 and measurement_data
                 else None
             )
+            measurement_instance_data, step5f_trace_id = (
+                measurement_instance_result
+                if measurement_instance_result
+                else (None, "")
+            )
 
             # === Step 5g: Extract Modality Instances ===
-            modality_instance_data = (
-                await identify_modality_instances(
+            modality_instance_result = (
+                await run_step_with_trace(
+                    identify_modality_instances,
+                    "step5g_modality_instances",
+                    overall_group_id,
                     content,
                     primary_domain,
                     sub_domain_data,
                     topic_data,
                     modality_data,
-                    overall_trace_id,
                 )
                 if primary_domain and sub_domain_data and topic_data and modality_data
                 else None
+            )
+            modality_instance_data, step5g_trace_id = (
+                modality_instance_result if modality_instance_result else (None, "")
             )
 
             # === Step 6: Identify Relationships in PARALLEL for each Entity Type (Based on Context) ===
             # Note: This step currently only uses entity_data. If relationships involving other types were needed,
             # the step would require modification to accept and use that data.
-            relationship_data = (
-                await identify_relationship_types(
+            relationship_result = (
+                await run_step_with_trace(
+                    identify_relationship_types,
+                    "step6a_relationship_types",
+                    overall_group_id,
                     content,
                     primary_domain,
                     sub_domain_data,
                     topic_data,
                     entity_data,
-                    overall_trace_id,
                 )
                 if primary_domain and sub_domain_data and topic_data and entity_data
                 else None
             )
+            relationship_data, step6a_trace_id = (
+                relationship_result if relationship_result else (None, "")
+            )
 
-            relationship_instance_data = (
-                await identify_relationship_instances(
+            relationship_instance_result = (
+                await run_step_with_trace(
+                    identify_relationship_instances,
+                    "step6b_relationship_instances",
+                    overall_group_id,
                     content,
                     primary_domain,
                     sub_domain_data,
                     relationship_data,
-                    overall_trace_id,
                 )
                 if primary_domain and sub_domain_data and relationship_data
                 else None
             )
+            relationship_instance_data, step6b_trace_id = (
+                relationship_instance_result
+                if relationship_instance_result
+                else (None, "")
+            )
 
             # === Aggregate Extracted Instances (Steps 5a-5g + Relationships) ===
-            aggregated_instance_data = aggregate_extracted_instances(
+            agg_result, step6c_trace_id = await run_step_with_trace(
+                aggregate_extracted_instances,
+                "step6c_aggregate_instances",
+                overall_group_id,
                 primary_domain,
                 sub_domain_data,
                 instance_data,
@@ -645,8 +823,8 @@ async def run_combined_workflow(content: str) -> None:
                 measurement_instance_data,
                 modality_instance_data,
                 relationship_instance_data,
-                overall_trace_id,
             )
+            aggregated_instance_data = agg_result
 
             # Log completion status of individual steps (optional)
             logger.info(
