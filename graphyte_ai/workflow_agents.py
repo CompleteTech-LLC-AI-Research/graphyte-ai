@@ -122,13 +122,17 @@ scoring_orchestration_agent = Agent(
     name="ScoringOrchestrationAgent",
     instructions=(
         "Obtain confidence, relevance, and clarity scores for the provided domain "
-        "by handing off to the confidence_score_agent, relevance_score_agent, "
-        "and clarity_score_agent. After receiving the scores, output ONLY JSON "
-        "matching the ScoringResultSchema."
+        "by sequentially transferring to the scoring agents. "
+        "First call transfer_to_confidence_score_agent and wait for its result. "
+        "Then call transfer_to_relevance_score_agent, and finally "
+        "transfer_to_clarity_score_agent. Invoke only one handoff at a time. "
+        "After gathering all scores, output ONLY JSON matching the "
+        "ScoringResultSchema."
     ),
     model=DEFAULT_MODEL,
     handoffs=[confidence_score_agent, relevance_score_agent, clarity_score_agent],
     output_type=ScoringResultSchema,
+    model_settings=ModelSettings(tool_choice="required"),
 )
 
 # Ensure score agents return control to the orchestration agent
