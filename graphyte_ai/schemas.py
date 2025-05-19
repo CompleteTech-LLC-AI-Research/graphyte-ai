@@ -62,6 +62,21 @@ class ClarityScoreSchema(BaseModel):
     )
 
 
+# Schema containing all three scoring metrics
+class ScoringResultSchema(BaseModel):
+    """Represents confidence, relevance, and clarity scores."""
+
+    confidence_score: float = Field(
+        description="Confidence score between 0.0 and 1.0.",
+    )
+    relevance_score: float = Field(
+        description="Relevance score between 0.0 and 1.0.",
+    )
+    clarity_score: float = Field(
+        description="Clarity score between 0.0 and 1.0.",
+    )
+
+
 # Nested schema for a sub-domain
 class SubDomainDetail(BaseModel):
     """Represents a single identified sub-domain."""
