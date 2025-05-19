@@ -212,9 +212,9 @@ The workflow progresses through several key phases:
     * Determines relevant **Sub-Domains**...
     * Extracts key **Topics**...
 
-    After establishing the domain context, the **Domain Agent**'s output is
-    scored using `run_scoring_agents`. This helper sequentially calls the
-    confidence, relevance, and clarity scoring agents and aggregates their
+    After establishing the domain context, the **Domain Agent** hands off
+    control to a *scoring orchestrator*. This orchestrator then performs its own
+    set of handoffs to the individual scoring agents and aggregates their
     results before returning to the main workflow. For details on the handoff
     mechanism, see the [Agents SDK documentation on
     handoffs](graphyte_ai/agent-sdk-docs-examples/docs/handoffs.md#handoffs).
