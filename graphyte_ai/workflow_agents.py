@@ -134,9 +134,10 @@ clarity_score = base_scoring_agent.clone(
 async def run_confidence_score(item: str, context: str) -> str:
     """Run the confidence scoring agent on an item and its document context."""
 
+    text_input = f"Item: {item}\n\nContext:\n{context}"
     result = await Runner.run(
         confidence_score,
-        input={"item": item, "context": context},
+        input=text_input,
     )
     return str(result.final_output)
 
@@ -145,9 +146,10 @@ async def run_confidence_score(item: str, context: str) -> str:
 async def run_relevance_score(item: str, context: str) -> str:
     """Run the relevance scoring agent on an item and its document context."""
 
+    text_input = f"Item: {item}\n\nContext:\n{context}"
     result = await Runner.run(
         relevance_score,
-        input={"item": item, "context": context},
+        input=text_input,
     )
     return str(result.final_output)
 
@@ -156,9 +158,10 @@ async def run_relevance_score(item: str, context: str) -> str:
 async def run_clarity_score(item: str, context: str) -> str:
     """Run the clarity scoring agent on an item and its document context."""
 
+    text_input = f"Item: {item}\n\nContext:\n{context}"
     result = await Runner.run(
         clarity_score,
-        input={"item": item, "context": context},
+        input=text_input,
     )
     return str(result.final_output)
 
@@ -531,9 +534,9 @@ all_agents = {
     "evidence_instance_extractor": evidence_instance_extractor_agent,
     "measurement_instance_extractor": measurement_instance_extractor_agent,
     "modality_instance_extractor": modality_instance_extractor_agent,
-    "confidence_score": confidence_score,
-    "relevance_score": relevance_score,
-    "clarity_score": clarity_score,
+    "confidence_score": run_confidence_score,
+    "relevance_score": run_relevance_score,
+    "clarity_score": run_clarity_score,
     "relationship_identifier": relationship_type_identifier_agent,
     "relationship_instance_extractor": relationship_extractor_agent,
     # Note: Base agent is not typically included here unless used directly
