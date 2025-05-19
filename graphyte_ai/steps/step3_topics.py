@@ -2,12 +2,18 @@
 
 import asyncio
 import logging
+import re
 from datetime import datetime, timezone
 from typing import List, Optional
 
 from pydantic import ValidationError
 
-from agents import RunConfig, RunResult, TResponseInputItem  # type: ignore[attr-defined]
+from agents import (
+    RunConfig,
+    RunResult,
+    TResponseInputItem,
+    gen_trace_id,
+)  # type: ignore[attr-defined]
 
 from ..workflow_agents import topic_identifier_agent, topic_result_agent
 from ..config import TOPIC_MODEL, TOPIC_OUTPUT_DIR, TOPIC_OUTPUT_FILENAME
@@ -60,9 +66,8 @@ async def identify_topics(
     print(f"\n--- Running Step 3: PARALLEL Topic ID using model: {TOPIC_MODEL} ---")
 
     topic_tasks = []
-    sub_domains_being_processed = (
-        []
-    )  # Keep track of which sub-domain corresponds to which task/result
+    sub_domains_being_processed: List[str] = []  # Track sub-domain for each task
+    subdomain_trace_ids: List[str] = []  # Track trace ID for each sub-domain
     aggregated_topic_results: List[SingleSubDomainTopicSchema] = []
 
     # --- Prepare tasks for parallel execution ---
@@ -74,7 +79,10 @@ async def identify_topics(
             continue
 
         logger.debug(
-            f"Preparing task for Step 3 ({index+1}/{len(sub_domains_list_for_step3)}): Sub-Domain '{current_sub_domain}'"
+            "Preparing task for Step 3 (%s/%s) for sub-domain '%s'",
+            index + 1,
+            len(sub_domains_list_for_step3),
+            current_sub_domain,
         )
 
         display_sub_domain = (
@@ -91,13 +99,22 @@ async def identify_topics(
             "batch_index": str(index + 1),
             "batch_size": str(len(sub_domains_list_for_step3)),
         }
+
+        subdomain_trace_id = gen_trace_id()
+        slug = re.sub(r"[^a-z0-9]+", "_", current_sub_domain.lower())
         step3_iter_run_config = RunConfig(
-            workflow_name="step3_topics",
-            trace_id=trace_id,
+            workflow_name=f"step3_topics_{slug}",
+            trace_id=subdomain_trace_id,
             group_id=group_id,
             trace_metadata={
                 k: str(v) for k, v in step3_iter_metadata_for_trace.items()
             },
+        )
+        logger.debug(
+            "Prepared RunConfig for sub-domain '%s' with workflow '%s' and trace ID '%s'",
+            current_sub_domain,
+            step3_iter_run_config.workflow_name,
+            subdomain_trace_id,
         )
 
         step3_iter_input_list: List[TResponseInputItem] = [
@@ -118,12 +135,13 @@ async def identify_topics(
                 input_data=step3_iter_input_list,
                 config=step3_iter_run_config,
             ),
-            name=f"TopicTask_{current_sub_domain[:20]}",  # Optional: name task for debugging
+            name=f"TopicTask_{slug[:20]}",  # Optional: name task for debugging
         )
         topic_tasks.append(task)
         sub_domains_being_processed.append(
             current_sub_domain
         )  # Track the sub-domain for this task
+        subdomain_trace_ids.append(subdomain_trace_id)
 
     # --- Execute tasks in parallel ---
     if not topic_tasks:
@@ -147,16 +165,18 @@ async def identify_topics(
 
     # --- Process results from parallel execution ---
     for index, step3_iter_result_or_exc in enumerate(step3_results_list):
-        current_sub_domain = sub_domains_being_processed[
-            index
-        ]  # Get corresponding sub-domain
+        current_sub_domain = sub_domains_being_processed[index]
+        current_trace_id = subdomain_trace_ids[index]
 
         try:
             # Check if an exception was returned by gather
             if isinstance(step3_iter_result_or_exc, Exception):
                 logger.error(
-                    f"Step 3 task for '{current_sub_domain}' failed with exception: {step3_iter_result_or_exc}",
+                    "Step 3 task for '%s' failed with exception: %s",
+                    current_sub_domain,
+                    step3_iter_result_or_exc,
                     exc_info=step3_iter_result_or_exc,
+                    extra={"trace_id": current_trace_id},
                 )
                 print(
                     f"  - Error processing sub-domain '{current_sub_domain}': {type(step3_iter_result_or_exc).__name__}: {step3_iter_result_or_exc}"
@@ -173,7 +193,9 @@ async def identify_topics(
                 if isinstance(potential_output_iter, SingleSubDomainTopicSchema):
                     single_topic_data = potential_output_iter
                     logger.info(
-                        f"Successfully extracted SingleSubDomainTopicSchema for '{current_sub_domain}'."
+                        "Successfully extracted SingleSubDomainTopicSchema for '%s'",
+                        current_sub_domain,
+                        extra={"trace_id": current_trace_id},
                     )
                 elif isinstance(potential_output_iter, dict):
                     try:
@@ -181,15 +203,24 @@ async def identify_topics(
                             potential_output_iter
                         )
                         logger.info(
-                            f"Successfully validated SingleSubDomainTopicSchema from dict for '{current_sub_domain}'."
+                            "Successfully validated SingleSubDomainTopicSchema from dict for '%s'",
+                            current_sub_domain,
+                            extra={"trace_id": current_trace_id},
                         )
                     except ValidationError as e:
                         logger.warning(
-                            f"Dict output for '{current_sub_domain}' failed SingleSubDomainTopicSchema validation: {e}"
+                            "Dict output for '%s' failed SingleSubDomainTopicSchema validation: %s",
+                            current_sub_domain,
+                            e,
+                            extra={"trace_id": current_trace_id},
                         )
                 else:
                     logger.warning(
-                        f"Output for '{current_sub_domain}' was not SingleSubDomainTopicSchema or dict (type: {type(potential_output_iter)}). Raw: {potential_output_iter}"
+                        "Output for '%s' was not SingleSubDomainTopicSchema or dict (type: %s). Raw: %s",
+                        current_sub_domain,
+                        type(potential_output_iter),
+                        potential_output_iter,
+                        extra={"trace_id": current_trace_id},
                     )
 
                 if single_topic_data:
@@ -208,7 +239,10 @@ async def identify_topics(
                         for item in single_topic_data.identified_topics
                     ]
                     logger.info(
-                        f"Step 3 Result for '{current_sub_domain}': Identified Topics = [{', '.join(topic_names)}]"
+                        "Step 3 Result for '%s': Identified Topics = [%s]",
+                        current_sub_domain,
+                        ", ".join(topic_names),
+                        extra={"trace_id": current_trace_id},
                     )
                     print(f"\n  --- Topics for Sub-Domain: '{current_sub_domain}' ---")
                     if topic_names:
@@ -222,14 +256,19 @@ async def identify_topics(
                     aggregated_topic_results.append(single_topic_data)
                 else:
                     logger.warning(
-                        f"Could not extract valid topic data for sub-domain '{current_sub_domain}'. Raw output: {potential_output_iter}"
+                        "Could not extract valid topic data for sub-domain '%s'. Raw output: %s",
+                        current_sub_domain,
+                        potential_output_iter,
+                        extra={"trace_id": current_trace_id},
                     )
                     print(
                         f"  - Warning: Failed to get structured topics for '{current_sub_domain}'."
                     )
             else:
                 logger.error(
-                    f"Step 3 task for '{current_sub_domain}' returned no result object (result was None or Falsy)."
+                    "Step 3 task for '%s' returned no result object (result was None or Falsy).",
+                    current_sub_domain,
+                    extra={"trace_id": current_trace_id},
                 )
                 print(
                     f"  - Error: Failed to get result object for sub-domain '{current_sub_domain}'."
@@ -237,8 +276,10 @@ async def identify_topics(
 
         except (ValidationError, TypeError) as e:
             logger.exception(
-                f"Validation or Type error processing result for '{current_sub_domain}'. Error: {e}",
-                extra={"trace_id": trace_id or "N/A"},
+                "Validation or Type error processing result for '%s'. Error: %s",
+                current_sub_domain,
+                e,
+                extra={"trace_id": current_trace_id},
             )
             print(
                 f"\nError: A data validation or type issue occurred processing result for sub-domain '{current_sub_domain}'."
@@ -246,8 +287,9 @@ async def identify_topics(
             print(f"Error details: {e}")
         except Exception as e:
             logger.exception(
-                f"An unexpected error occurred processing result for '{current_sub_domain}'.",
-                extra={"trace_id": trace_id or "N/A"},
+                "An unexpected error occurred processing result for '%s'.",
+                current_sub_domain,
+                extra={"trace_id": current_trace_id},
             )
             print(
                 f"\nAn unexpected error occurred processing result for sub-domain '{current_sub_domain}': {type(e).__name__}: {e}"
