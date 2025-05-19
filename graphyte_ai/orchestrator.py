@@ -54,6 +54,7 @@ from .schemas import (  # noqa: E402
     MeasurementTypeSchema,
     ModalityTypeSchema,
 )
+from .utils import run_parallel_scoring  # noqa: E402
 
 # Import steps
 from .steps import (  # noqa: E402
@@ -167,6 +168,21 @@ async def run_combined_workflow(content: str) -> None:
             # === Step 1: Identify Primary Domain (with Confidence) ===
             domain_data = await identify_domain(content, overall_trace_id)
             primary_domain = domain_data.domain.strip() if domain_data else None
+
+            if domain_data:
+                conf_data, rel_data, clar_data = await run_parallel_scoring(content)
+                if conf_data:
+                    domain_data.confidence_score = conf_data.confidence_score
+                if rel_data:
+                    domain_data.relevance_score = rel_data.relevance_score
+                if clar_data:
+                    domain_data.clarity_score = clar_data.clarity_score
+                logger.info(
+                    "Parallel scoring results - confidence: %s, relevance: %s, clarity: %s",
+                    domain_data.confidence_score,
+                    domain_data.relevance_score,
+                    domain_data.clarity_score,
+                )
 
             # === Step 2: Identify Sub-Domains (with Relevance) ===
             sub_domain_data = (

@@ -6,6 +6,8 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
+from pydantic import ValidationError
+
 # Conditional Imports for Optional Features
 try:
     import fitz  # PyMuPDF
@@ -45,6 +47,16 @@ from .config import (
     LOGS_DIR,
     PROJECT_ROOT,
     BINARY_FILE_EXTENSIONS,
+)
+from .workflow_agents import (
+    confidence_score_agent,
+    relevance_score_agent,
+    clarity_score_agent,
+)
+from .schemas import (
+    ConfidenceScoreSchema,
+    RelevanceScoreSchema,
+    ClarityScoreSchema,
 )
 
 # Get logger for utils module
@@ -362,3 +374,94 @@ else:
         return await Runner.run(
             starting_agent=agent, input=input_data, run_config=config
         )
+
+
+# --- Parallel Scoring Utility ---
+async def run_parallel_scoring(
+    text: str,
+) -> tuple[
+    Optional[ConfidenceScoreSchema],
+    Optional[RelevanceScoreSchema],
+    Optional[ClarityScoreSchema],
+]:
+    """Run scoring agents concurrently and return their validated outputs.
+
+    Args:
+        text: The input text to evaluate.
+
+    Returns:
+        A tuple containing the confidence, relevance, and clarity score schemas.
+        Any element may be ``None`` if the corresponding agent failed or
+        produced invalid output.
+    """
+
+    score_tasks = [
+        run_agent_with_retry(confidence_score_agent, text),
+        run_agent_with_retry(relevance_score_agent, text),
+        run_agent_with_retry(clarity_score_agent, text),
+    ]
+
+    results = await asyncio.gather(*score_tasks, return_exceptions=True)
+
+    confidence_data: Optional[ConfidenceScoreSchema] = None
+    relevance_data: Optional[RelevanceScoreSchema] = None
+    clarity_data: Optional[ClarityScoreSchema] = None
+
+    # Confidence score processing
+    conf_result = results[0]
+    if isinstance(conf_result, Exception):
+        logger.error("Confidence scoring failed", exc_info=conf_result)
+    else:
+        potential_output = getattr(conf_result, "final_output", None)
+        if isinstance(potential_output, ConfidenceScoreSchema):
+            confidence_data = potential_output
+        elif isinstance(potential_output, dict):
+            try:
+                confidence_data = ConfidenceScoreSchema.model_validate(potential_output)
+            except ValidationError as e:
+                logger.warning("ConfidenceScoreSchema validation error: %s", e)
+        else:
+            logger.error(
+                "Unexpected confidence score output type: %s",
+                type(potential_output),
+            )
+
+    # Relevance score processing
+    rel_result = results[1]
+    if isinstance(rel_result, Exception):
+        logger.error("Relevance scoring failed", exc_info=rel_result)
+    else:
+        potential_output = getattr(rel_result, "final_output", None)
+        if isinstance(potential_output, RelevanceScoreSchema):
+            relevance_data = potential_output
+        elif isinstance(potential_output, dict):
+            try:
+                relevance_data = RelevanceScoreSchema.model_validate(potential_output)
+            except ValidationError as e:
+                logger.warning("RelevanceScoreSchema validation error: %s", e)
+        else:
+            logger.error(
+                "Unexpected relevance score output type: %s",
+                type(potential_output),
+            )
+
+    # Clarity score processing
+    clar_result = results[2]
+    if isinstance(clar_result, Exception):
+        logger.error("Clarity scoring failed", exc_info=clar_result)
+    else:
+        potential_output = getattr(clar_result, "final_output", None)
+        if isinstance(potential_output, ClarityScoreSchema):
+            clarity_data = potential_output
+        elif isinstance(potential_output, dict):
+            try:
+                clarity_data = ClarityScoreSchema.model_validate(potential_output)
+            except ValidationError as e:
+                logger.warning("ClarityScoreSchema validation error: %s", e)
+        else:
+            logger.error(
+                "Unexpected clarity score output type: %s",
+                type(potential_output),
+            )
+
+    return confidence_data, relevance_data, clarity_data
