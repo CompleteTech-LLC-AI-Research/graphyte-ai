@@ -4,9 +4,9 @@ from pydantic import BaseModel, Field
 # --- Schemas for Existing Agents (1-3) ---
 
 
-# Schema for primary domain output (Agent 1)
+# Schema for the primary domain identifier
 class DomainSchema(BaseModel):
-    """Schema defining the expected output: the primary domain."""
+    """Schema containing only the identified domain."""
 
     domain: str = Field(
         description=(
@@ -14,6 +14,11 @@ class DomainSchema(BaseModel):
             "(e.g., Technology, Finance, Healthcare, Arts, Science, Entertainment, Sports, Politics)."
         )
     )
+
+
+# Schema for primary domain output with scoring (Agent 1)
+class DomainResultSchema(DomainSchema):
+    """Schema defining the domain result along with optional scores."""
 
     confidence_score: Optional[float] = Field(
         None,
