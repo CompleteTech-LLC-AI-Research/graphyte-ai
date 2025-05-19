@@ -2,7 +2,7 @@
 from typing import Any
 
 try:
-    from agents import Agent  # type: ignore[attr-defined]
+    from agents import Agent, ModelSettings  # type: ignore[attr-defined]
 except ImportError:
     print("Error: 'agents' SDK library not found or incomplete. Cannot define agents.")
     # Depending on execution context, might want `sys.exit(1)` here,
@@ -32,6 +32,7 @@ from .schemas import (
     ConfidenceScoreSchema,
     RelevanceScoreSchema,
     ClarityScoreSchema,
+    ScoringResultSchema,
 )
 from .config import (
     DOMAIN_MODEL,
@@ -116,18 +117,18 @@ clarity_score_agent = base_scoring_agent.clone(
 )
 
 # --- Scoring Orchestration Agent ---
-# Coordinates calling all three scoring agents and outputs the combined DomainSchema.
+# Coordinates calling all three scoring agents and outputs the combined scoring result.
 scoring_orchestration_agent = Agent(
     name="ScoringOrchestrationAgent",
     instructions=(
         "Obtain confidence, relevance, and clarity scores for the provided domain "
         "by handing off to the confidence_score_agent, relevance_score_agent, "
-        "and clarity_score_agent. After receiving the scores, combine them with "
-        "the domain value and output ONLY JSON matching DomainSchema."
+        "and clarity_score_agent. After receiving the scores, output ONLY JSON "
+        "matching the ScoringResultSchema."
     ),
     model=DEFAULT_MODEL,
     handoffs=[confidence_score_agent, relevance_score_agent, clarity_score_agent],
-    output_type=DomainSchema,
+    output_type=ScoringResultSchema,
 )
 
 # Ensure score agents return control to the orchestration agent
