@@ -115,28 +115,6 @@ clarity_score_agent = base_scoring_agent.clone(
     output_type=ClarityScoreSchema,
 )
 
-# --- Scoring Orchestration Agent ---
-# Coordinates obtaining confidence, relevance and clarity scores
-# through handoffs to the specialized scoring agents.
-scoring_orchestration_agent = Agent(
-    name="ScoringOrchestrationAgent",
-    instructions=(
-        "Receive a domain label and obtain confidence, relevance, and clarity "
-        "scores for it. Delegate to the ConfidenceScoreAgent, "
-        "RelevanceScoreAgent, and ClarityScoreAgent using handoffs. "
-        "Combine the domain with all scores and output ONLY JSON matching "
-        "DomainSchema."
-    ),
-    model=DEFAULT_MODEL,
-    tools=[],
-    handoffs=[
-        confidence_score_agent,
-        relevance_score_agent,
-        clarity_score_agent,
-    ],
-    output_type=DomainSchema,
-)
-
 # --- Agent 1: Domain Identifier ---
 domain_identifier_agent = Agent(
     name="DomainIdentifierAgent",
@@ -146,13 +124,26 @@ domain_identifier_agent = Agent(
         "Politics, Education, Environment, Business, Lifestyle, Travel, etc. "
         "Focus on the *primary* topic. The 'domain' field must contain a single concise label representing this dominant topic.\n"
         "If several potential domains appear in the text, select the one with the greatest overall coverage.\n"
-        "After identifying the domain, delegate scoring to the ScoringOrchestrationAgent via handoff.\n"
-        "Include the returned confidence_score, relevance_score, and clarity_score in the final JSON output conforming to DomainSchema."
+        "Call the confidence_score, relevance_score, and clarity_score tools to generate scores before producing the final output.\n"
+        "Output ONLY valid JSON matching the DomainSchema. The result MUST include 'confidence_score', 'relevance_score', and 'clarity_score'."
     ),
     model=DOMAIN_MODEL,
     output_type=DomainSchema,
-    tools=[],
-    handoffs=[scoring_orchestration_agent],
+    tools=[
+        confidence_score_agent.as_tool(
+            tool_name="confidence_score",
+            tool_description="Evaluate confidence between 0.0 and 1.0",
+        ),
+        relevance_score_agent.as_tool(
+            tool_name="relevance_score",
+            tool_description="Judge relevance between 0.0 and 1.0",
+        ),
+        clarity_score_agent.as_tool(
+            tool_name="clarity_score",
+            tool_description="Assess clarity between 0.0 and 1.0",
+        ),
+    ],
+    handoffs=[],
 )
 
 # --- Agent 2: Sub-Domain Identifier ---
@@ -567,7 +558,6 @@ all_agents = {
     "confidence_score": confidence_score_agent,
     "relevance_score": relevance_score_agent,
     "clarity_score": clarity_score_agent,
-    "scoring_orchestration": scoring_orchestration_agent,
     "relationship_identifier": relationship_type_identifier_agent,
     "relationship_instance_extractor": relationship_extractor_agent,
     # Note: Base agent is not typically included here unless used directly
