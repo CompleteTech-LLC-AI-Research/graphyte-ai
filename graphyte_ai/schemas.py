@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import List, Optional
 from pydantic import BaseModel, Field
 
@@ -146,6 +148,132 @@ class TopicSchema(BaseModel):
 # --- Schemas for Step 4 Agents (4a, 4b, 4c, 4d, 4e, 4f, 4g) ---
 
 
+# Per sub-domain result schema used during Step 4 processing
+class SingleSubDomainEntityTypeSchema(BaseModel):
+    """Entity types identified for one sub-domain."""
+
+    sub_domain: str = Field(description="The sub-domain these entity types relate to.")
+    topics: List[TopicDetail] = Field(
+        description="Topics considered for this sub-domain."
+    )
+    identified_entities: List[EntityTypeDetail] = Field(
+        description="Entity types extracted while analyzing the sub-domain and topics."
+    )
+    analysis_summary: Optional[str] = Field(
+        None,
+        description="Optional notes about the entity type analysis for this sub-domain.",
+    )
+
+
+class SingleSubDomainOntologyTypeSchema(BaseModel):
+    """Ontology types identified for one sub-domain."""
+
+    sub_domain: str = Field(
+        description="The sub-domain these ontology types relate to."
+    )
+    topics: List[TopicDetail] = Field(
+        description="Topics considered for this sub-domain."
+    )
+    identified_ontology_types: List[OntologyTypeDetail] = Field(
+        description="Ontology types extracted while analyzing the sub-domain and topics."
+    )
+    analysis_summary: Optional[str] = Field(
+        None,
+        description="Optional notes about the ontology type analysis for this sub-domain.",
+    )
+
+
+class SingleSubDomainEventTypeSchema(BaseModel):
+    """Event types identified for one sub-domain."""
+
+    sub_domain: str = Field(description="The sub-domain these event types relate to.")
+    topics: List[TopicDetail] = Field(
+        description="Topics considered for this sub-domain."
+    )
+    identified_events: List[EventDetail] = Field(
+        description="Event types extracted while analyzing the sub-domain and topics."
+    )
+    analysis_summary: Optional[str] = Field(
+        None,
+        description="Optional notes about the event type analysis for this sub-domain.",
+    )
+
+
+class SingleSubDomainStatementTypeSchema(BaseModel):
+    """Statement types identified for one sub-domain."""
+
+    sub_domain: str = Field(
+        description="The sub-domain these statement types relate to."
+    )
+    topics: List[TopicDetail] = Field(
+        description="Topics considered for this sub-domain."
+    )
+    identified_statements: List[StatementDetail] = Field(
+        description="Statement types extracted while analyzing the sub-domain and topics."
+    )
+    analysis_summary: Optional[str] = Field(
+        None,
+        description="Optional notes about the statement type analysis for this sub-domain.",
+    )
+
+
+class SingleSubDomainEvidenceTypeSchema(BaseModel):
+    """Evidence types identified for one sub-domain."""
+
+    sub_domain: str = Field(
+        description="The sub-domain these evidence types relate to."
+    )
+    topics: List[TopicDetail] = Field(
+        description="Topics considered for this sub-domain."
+    )
+    identified_evidence: List[EvidenceDetail] = Field(
+        description="Evidence types extracted while analyzing the sub-domain and topics."
+    )
+    analysis_summary: Optional[str] = Field(
+        None,
+        description="Optional notes about the evidence type analysis for this sub-domain.",
+    )
+
+
+class SingleSubDomainMeasurementTypeSchema(BaseModel):
+    """Measurement types identified for one sub-domain."""
+
+    sub_domain: str = Field(
+        description="The sub-domain these measurement types relate to."
+    )
+    topics: List[TopicDetail] = Field(
+        description="Topics considered for this sub-domain."
+    )
+    identified_measurements: List[MeasurementDetail] = Field(
+        description="Measurement types extracted while analyzing the sub-domain and topics."
+    )
+    analysis_summary: Optional[str] = Field(
+        None,
+        description="Optional notes about the measurement type analysis for this sub-domain.",
+    )
+
+
+class SingleSubDomainModalityTypeSchema(BaseModel):
+    """Modality types identified for one sub-domain."""
+
+    sub_domain: str = Field(
+        description="The sub-domain these modality types relate to."
+    )
+    topics: List[TopicDetail] = Field(
+        description="Topics considered for this sub-domain."
+    )
+    identified_modalities: List[ModalityDetail] = Field(
+        description="Modality types extracted while analyzing the sub-domain and topics."
+    )
+    analysis_summary: Optional[str] = Field(
+        None,
+        description="Optional notes about the modality type analysis for this sub-domain.",
+    )
+
+
+# --- Schemas for Step 4 Agents (4a, 4b, 4c, 4d, 4e, 4f, 4g) ---
+
+
 # Nested schema for an entity type (Agent 4a)
 class EntityTypeDetail(BaseModel):
     """Represents an entity type with optional scoring information."""
@@ -182,6 +310,10 @@ class EntityTypeSchema(BaseModel):
     )
     identified_entities: List[EntityTypeDetail] = Field(
         description="A list of specific entity types identified within the text, relevant to the provided context."
+    )
+    sub_domain_entity_map: List[SingleSubDomainEntityTypeSchema] = Field(
+        default_factory=list,
+        description="Entity type results for each processed sub-domain.",
     )
     analysis_summary: Optional[str] = Field(
         None,
@@ -224,6 +356,10 @@ class OntologyTypeSchema(BaseModel):
     )
     identified_ontology_types: List[OntologyTypeDetail] = Field(
         description="A list of specific ontology types or concepts identified within the text, relevant to the provided context."
+    )
+    sub_domain_ontology_map: List[SingleSubDomainOntologyTypeSchema] = Field(
+        default_factory=list,
+        description="Ontology type results for each processed sub-domain.",
     )
     analysis_summary: Optional[str] = Field(
         None,
@@ -269,6 +405,10 @@ class EventTypeSchema(BaseModel):
     identified_events: List[EventDetail] = Field(
         description="A list of specific event types identified within the text, relevant to the provided context."
     )
+    sub_domain_event_map: List[SingleSubDomainEventTypeSchema] = Field(
+        default_factory=list,
+        description="Event type results for each processed sub-domain.",
+    )
     analysis_summary: Optional[str] = Field(
         None,
         description="A brief summary or commentary on the event identification analysis.",
@@ -313,6 +453,10 @@ class StatementTypeSchema(BaseModel):
     identified_statements: List[StatementDetail] = Field(
         description="A list of specific statement types identified within the text, relevant to the provided context."
     )
+    sub_domain_statement_map: List[SingleSubDomainStatementTypeSchema] = Field(
+        default_factory=list,
+        description="Statement type results for each processed sub-domain.",
+    )
     analysis_summary: Optional[str] = Field(
         None,
         description="A brief summary or commentary on the statement identification analysis.",
@@ -354,6 +498,10 @@ class EvidenceTypeSchema(BaseModel):
     )
     identified_evidence: List[EvidenceDetail] = Field(
         description="A list of specific evidence types identified within the text, relevant to the provided context."
+    )
+    sub_domain_evidence_map: List[SingleSubDomainEvidenceTypeSchema] = Field(
+        default_factory=list,
+        description="Evidence type results for each processed sub-domain.",
     )
     analysis_summary: Optional[str] = Field(
         None,
@@ -400,6 +548,10 @@ class MeasurementTypeSchema(BaseModel):
     identified_measurements: List[MeasurementDetail] = Field(
         description="A list of specific measurement types identified within the text, relevant to the provided context."
     )
+    sub_domain_measurement_map: List[SingleSubDomainMeasurementTypeSchema] = Field(
+        default_factory=list,
+        description="Measurement type results for each processed sub-domain.",
+    )
     analysis_summary: Optional[str] = Field(
         None,
         description="A brief summary or commentary on the measurement identification analysis.",
@@ -443,6 +595,10 @@ class ModalityTypeSchema(BaseModel):
     )
     identified_modalities: List[ModalityDetail] = Field(
         description="A list of specific modality types identified within the text, relevant to the provided context."
+    )
+    sub_domain_modality_map: List[SingleSubDomainModalityTypeSchema] = Field(
+        default_factory=list,
+        description="Modality type results for each processed sub-domain.",
     )
     analysis_summary: Optional[str] = Field(
         None,

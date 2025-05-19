@@ -14,7 +14,10 @@ from ..config import (
     ENTITY_TYPE_OUTPUT_DIR,
     ENTITY_TYPE_OUTPUT_FILENAME,
 )
-from ..schemas import EntityTypeSchema, SubDomainSchema, TopicSchema
+from ..schemas import (
+    SingleSubDomainTopicSchema,
+    SingleSubDomainEntityTypeSchema,
+)
 from ..utils import direct_save_json_output, run_agent_with_retry
 
 logger = logging.getLogger(__name__)
@@ -23,29 +26,25 @@ logger = logging.getLogger(__name__)
 async def identify_entity_types(
     content: str,
     primary_domain: str,
-    sub_domain_data: SubDomainSchema,
-    topic_data: TopicSchema,
+    topic_info: SingleSubDomainTopicSchema,
     overall_trace_id: Optional[str] = None,
-) -> Optional[EntityTypeSchema]:
+) -> Optional[SingleSubDomainEntityTypeSchema]:
     """Identify entity types based on domain, sub-domains, and topics.
 
     Args:
         content: The text content to analyze
         primary_domain: The primary domain identified in step 1
-        sub_domain_data: The SubDomainSchema from step 2
-        topic_data: The TopicSchema from step 3
+        topic_info: Topics for a single sub-domain from Step 3
         overall_trace_id: The trace ID for logging purposes
 
     Returns:
-        An EntityTypeSchema object if successful, None otherwise
+        A SingleSubDomainEntityTypeSchema object if successful, None otherwise
     """
-    if not primary_domain or not sub_domain_data or not topic_data:
+    if not primary_domain or not topic_info:
         logger.info("Skipping Step 4a because prerequisites were not identified.")
         if not primary_domain:
             print("Skipping Step 4a as primary domain was not identified.")
-        elif not sub_domain_data:
-            print("Skipping Step 4a as sub-domain identification failed.")
-        elif not topic_data:
+        elif not topic_info:
             print("Skipping Step 4a as topic identification failed.")
         return None
 
@@ -59,26 +58,20 @@ async def identify_entity_types(
         "agent_name": "Entity Type ID",
         "actual_agent": str(entity_type_identifier_agent.name),
         "primary_domain_input": primary_domain,
-        "sub_domains_analyzed_count": str(
-            len(sub_domain_data.identified_sub_domains)
-        ),  # Use count from successful step 2
-        "topics_aggregated_count": str(
-            sum(len(t.identified_topics) for t in topic_data.sub_domain_topic_map)
-        ),
+        "sub_domain": topic_info.sub_domain,
+        "topic_count": str(len(topic_info.identified_topics)),
     }
     step4_run_config = RunConfig(
         trace_metadata={k: str(v) for k, v in step4_metadata_for_trace.items()}
     )
     step4_result: Optional[RunResult] = None
-    entity_data: Optional[EntityTypeSchema] = None
+    entity_data: Optional[SingleSubDomainEntityTypeSchema] = None
 
     # Prepare context summary for the prompt
     context_summary_for_prompt = (
         f"Primary Domain: {primary_domain}\n"
-        f"Identified Sub-Domains: {', '.join(sd.sub_domain for sd in sub_domain_data.identified_sub_domains)}\n"
-        f"Previously identified topics (aggregated): {len(topic_data.sub_domain_topic_map)} sub-domains covered with topics."
-        # Optionally add more topic detail here if needed, but keep it concise
-        # Example: f"Example topics found for '{topic_data.sub_domain_topic_map[0].sub_domain}': {', '.join(t.topic for t in topic_data.sub_domain_topic_map[0].identified_topics[:2])}..."
+        f"Sub-Domain: {topic_info.sub_domain}\n"
+        f"Topics: {', '.join(t.topic for t in topic_info.identified_topics)}"
     )
 
     step4_input_list: List[TResponseInputItem] = [
@@ -89,7 +82,7 @@ async def identify_entity_types(
                 f"MONEY, PRODUCT, EVENT, TECHNOLOGY, SCIENTIFIC_CONCEPT, ECONOMIC_INDICATOR). "
                 f"Use the provided context:\n{context_summary_for_prompt}\n\n"
                 f"Identify entity types relevant to this overall context. "
-                f"Output ONLY using the required EntityTypeSchema, including the primary_domain and analyzed_sub_domains list in the output."
+                f"Output ONLY using the required SingleSubDomainEntityTypeSchema."
             ),
         },
         {
@@ -107,43 +100,35 @@ async def identify_entity_types(
 
         if step4_result:
             potential_output_step4 = getattr(step4_result, "final_output", None)
-            if isinstance(potential_output_step4, EntityTypeSchema):
+            if isinstance(potential_output_step4, SingleSubDomainEntityTypeSchema):
                 entity_data = potential_output_step4
                 logger.info(
-                    "Successfully extracted EntityTypeSchema from step4_result.final_output."
+                    "Successfully extracted SingleSubDomainEntityTypeSchema from step4_result.final_output."
                 )
             elif isinstance(potential_output_step4, dict):
                 try:
-                    entity_data = EntityTypeSchema.model_validate(
+                    entity_data = SingleSubDomainEntityTypeSchema.model_validate(
                         potential_output_step4
                     )
                     logger.info(
-                        "Successfully validated EntityTypeSchema from step4_result.final_output dict."
+                        "Successfully validated SingleSubDomainEntityTypeSchema from step4_result.final_output dict."
                     )
                 except ValidationError as e:
                     logger.warning(
-                        f"Step 4a dict output failed EntityTypeSchema validation: {e}"
+                        f"Step 4a dict output failed SingleSubDomainEntityTypeSchema validation: {e}"
                     )
             else:
                 logger.warning(
-                    f"Step 4a final_output was not EntityTypeSchema or dict (type: {type(potential_output_step4)})."
+                    f"Step 4a final_output was not SingleSubDomainEntityTypeSchema or dict (type: {type(potential_output_step4)})."
                 )
 
             if entity_data and entity_data.identified_entities:
                 # Ensure context fields in output schema match expectations
-                if entity_data.primary_domain != primary_domain:
+                if entity_data.sub_domain != topic_info.sub_domain:
                     logger.warning(
-                        f"Primary domain mismatch in Step 4a output ('{entity_data.primary_domain}'). Overwriting with Step 1's ('{primary_domain}')."
+                        f"Sub-domain mismatch in Step 4a output ('{entity_data.sub_domain}'). Overwriting with '{topic_info.sub_domain}'."
                     )
-                    entity_data.primary_domain = primary_domain
-                # Check sub-domains match input context (or regenerate if intended)
-                # For simplicity, we trust the agent output here but could add validation
-                if set(entity_data.analyzed_sub_domains) != set(
-                    sd.sub_domain for sd in sub_domain_data.identified_sub_domains
-                ):
-                    logger.warning(
-                        f"Analyzed sub-domains in Step 4a output {entity_data.analyzed_sub_domains} differs from Step 2 input { [sd.sub_domain for sd in sub_domain_data.identified_sub_domains]}. Using Step 4a's list."
-                    )
+                    entity_data.sub_domain = topic_info.sub_domain
                     # If strict matching is needed, correct it:
                     # entity_data.analyzed_sub_domains = [sd.sub_domain for sd in sub_domain_data.identified_sub_domains]
 
@@ -166,8 +151,8 @@ async def identify_entity_types(
                 logger.info("Saving entity type identifier output to file...")
                 print("\nSaving entity type output file...")
                 entity_type_output_content = {
-                    "primary_domain": entity_data.primary_domain,
-                    "analyzed_sub_domains": entity_data.analyzed_sub_domains,  # Use agent's output list
+                    "sub_domain": entity_data.sub_domain,
+                    "topics": [t.model_dump() for t in entity_data.topics],
                     "identified_entities": [
                         item.model_dump() for item in entity_data.identified_entities
                     ],
@@ -175,16 +160,11 @@ async def identify_entity_types(
                     "analysis_details": {
                         "source_text_length": len(content),
                         "primary_domain_context": primary_domain,
-                        "sub_domain_context_count": len(
-                            sub_domain_data.identified_sub_domains
-                        ),
-                        "topic_context_count": sum(
-                            len(t.identified_topics)
-                            for t in topic_data.sub_domain_topic_map
-                        ),
+                        "sub_domain": topic_info.sub_domain,
+                        "topic_count": len(topic_info.identified_topics),
                         "model_used": ENTITY_TYPE_MODEL,
                         "agent_name": entity_type_identifier_agent.name,
-                        "output_schema": EntityTypeSchema.__name__,
+                        "output_schema": SingleSubDomainEntityTypeSchema.__name__,
                         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
                     },
                     "trace_information": {
@@ -211,7 +191,7 @@ async def identify_entity_types(
                 entity_data = None  # Signal failure for next step
             else:  # entity_data is None or validation failed
                 logger.error(
-                    "Step 4a FAILED: Could not extract valid EntityTypeSchema output."
+                    "Step 4a FAILED: Could not extract valid SingleSubDomainEntityTypeSchema output."
                 )
                 print("\nError: Failed to identify entity types in Step 4a.")
                 entity_data = None  # Signal failure for next step
