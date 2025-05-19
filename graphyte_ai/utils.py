@@ -378,16 +378,18 @@ else:
 
 # --- Parallel Scoring Utility ---
 async def run_parallel_scoring(
-    text: str,
+    domain: str,
+    context_text: str,
 ) -> tuple[
     Optional[ConfidenceScoreSchema],
     Optional[RelevanceScoreSchema],
     Optional[ClarityScoreSchema],
 ]:
-    """Run scoring agents concurrently and return their validated outputs.
+    """Run scoring agents concurrently on the provided domain and context.
 
     Args:
-        text: The input text to evaluate.
+        domain: The domain string being evaluated.
+        context_text: The full text context to supply to the scoring agents.
 
     Returns:
         A tuple containing the confidence, relevance, and clarity score schemas.
@@ -395,10 +397,12 @@ async def run_parallel_scoring(
         produced invalid output.
     """
 
+    combined_input = f"Domain: {domain}\n\n{context_text}"
+
     score_tasks = [
-        run_agent_with_retry(confidence_score_agent, text),
-        run_agent_with_retry(relevance_score_agent, text),
-        run_agent_with_retry(clarity_score_agent, text),
+        run_agent_with_retry(confidence_score_agent, combined_input),
+        run_agent_with_retry(relevance_score_agent, combined_input),
+        run_agent_with_retry(clarity_score_agent, combined_input),
     ]
 
     results = await asyncio.gather(*score_tasks, return_exceptions=True)

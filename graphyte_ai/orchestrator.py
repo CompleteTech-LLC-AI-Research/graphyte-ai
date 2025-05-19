@@ -4,9 +4,12 @@ This module coordinates the workflow between different agent steps and handles t
 """
 
 import asyncio  # Added for gather
+import json
 import logging
 import sys
 from typing import Any, Optional, List
+
+from pydantic import ValidationError
 
 
 # Get logger for this module
@@ -55,7 +58,8 @@ from .schemas import (  # noqa: E402
     MeasurementTypeSchema,
     ModalityTypeSchema,
 )
-from .utils import run_parallel_scoring  # noqa: E402
+from .utils import run_parallel_scoring, run_agent_with_retry  # noqa: E402
+from .workflow_agents import domain_result_agent  # noqa: E402
 
 # Import steps
 from .steps import (  # noqa: E402
@@ -95,7 +99,7 @@ async def run_combined_workflow(content: str) -> None:
 
     # Initialize variables to store results from each step
     overall_trace_id: Optional[str] = None
-    domain_data = None
+    domain_data: Optional[DomainResultSchema] = None
     sub_domain_data = None
     topic_data = None
     entity_data = None
@@ -168,22 +172,55 @@ async def run_combined_workflow(content: str) -> None:
 
             # === Step 1: Identify Primary Domain (with Confidence) ===
             domain_data = await identify_domain(content, overall_trace_id)
-            primary_domain = domain_data.domain.strip() if domain_data else None
 
             if domain_data:
-                conf_data, rel_data, clar_data = await run_parallel_scoring(content)
-                if conf_data:
-                    domain_data.confidence_score = conf_data.confidence_score
-                if rel_data:
-                    domain_data.relevance_score = rel_data.relevance_score
-                if clar_data:
-                    domain_data.clarity_score = clar_data.clarity_score
+                conf_data, rel_data, clar_data = await run_parallel_scoring(
+                    domain_data.domain, content
+                )
+
+                payload = {
+                    "domain": domain_data.domain,
+                    "confidence_score": (
+                        conf_data.confidence_score if conf_data else None
+                    ),
+                    "relevance_score": (rel_data.relevance_score if rel_data else None),
+                    "clarity_score": (clar_data.clarity_score if clar_data else None),
+                }
+
+                result = await run_agent_with_retry(
+                    domain_result_agent, json.dumps(payload)
+                )
+
+                if result:
+                    output = getattr(result, "final_output", None)
+                    if isinstance(output, DomainResultSchema):
+                        domain_data = output
+                    elif isinstance(output, dict):
+                        try:
+                            domain_data = DomainResultSchema.model_validate(output)
+                        except ValidationError as e:
+                            logger.warning("DomainResultSchema validation error: %s", e)
+                            domain_data = DomainResultSchema.model_validate(payload)
+                    else:
+                        logger.error(
+                            "Unexpected domain result output type: %s", type(output)
+                        )
+                        domain_data = DomainResultSchema.model_validate(payload)
+                else:
+                    domain_data = DomainResultSchema.model_validate(payload)
+
+                assert domain_data is not None
+
                 logger.info(
                     "Parallel scoring results - confidence: %s, relevance: %s, clarity: %s",
                     domain_data.confidence_score,
                     domain_data.relevance_score,
                     domain_data.clarity_score,
                 )
+
+                primary_domain = domain_data.domain.strip()
+            else:
+                primary_domain = None
 
             # === Step 2: Identify Sub-Domains (with Relevance) ===
             sub_domain_data = (
