@@ -10,6 +10,7 @@ except ImportError:
     Agent = Any  # type: ignore[misc]
 
 from .schemas import (
+    DomainSchema,
     DomainResultSchema,
     SubDomainSchema,
     SingleSubDomainTopicSchema,
@@ -125,10 +126,10 @@ domain_identifier_agent = Agent(
         "Focus on the *primary* topic. The 'domain' field must contain a single concise label representing this dominant topic.\n"
         "If several potential domains appear in the text, select the one with the greatest overall coverage.\n"
         "Do **not** provide `confidence_score`, `relevance_score`, or `clarity_score`; these will be produced later.\n"
-        "Output ONLY valid JSON matching the DomainResultSchema."
+        "Output ONLY valid JSON matching the DomainSchema."
     ),
     model=DOMAIN_MODEL,
-    output_type=DomainResultSchema,
+    output_type=DomainSchema,
     tools=[],
     handoffs=[],
 )
