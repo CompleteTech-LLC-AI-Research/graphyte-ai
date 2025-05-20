@@ -2,7 +2,7 @@
 
 import logging
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import List, Optional, cast
 
 from pydantic import ValidationError
 
@@ -16,6 +16,7 @@ from ..config import (
 )
 from ..schemas import (
     EntityInstanceSchema,
+    EntityInstanceBaseSchema,
     SubDomainSchema,
     TopicSchema,
     EntityTypeSchema,
@@ -76,7 +77,7 @@ async def identify_entity_instances(
         trace_metadata={k: str(v) for k, v in step5a_metadata_for_trace.items()},
     )
     step5a_result: Optional[RunResult] = None
-    instance_data: Optional[EntityInstanceSchema] = None
+    instance_data: Optional[EntityInstanceBaseSchema | EntityInstanceSchema] = None
 
     context_summary_for_prompt = (
         f"Primary Domain: {primary_domain}\n"
@@ -107,20 +108,20 @@ async def identify_entity_instances(
 
         if step5a_result:
             potential_output = getattr(step5a_result, "final_output", None)
-            if isinstance(potential_output, EntityInstanceSchema):
+            if isinstance(potential_output, EntityInstanceBaseSchema):
                 instance_data = potential_output
             elif isinstance(potential_output, dict):
                 try:
-                    instance_data = EntityInstanceSchema.model_validate(
+                    instance_data = EntityInstanceBaseSchema.model_validate(
                         potential_output
                     )
                 except ValidationError as e:
                     logger.warning(
-                        f"Step 5a dict output failed EntityInstanceSchema validation: {e}"
+                        f"Step 5a dict output failed EntityInstanceBaseSchema validation: {e}"
                     )
             else:
                 logger.warning(
-                    f"Step 5a final_output was not EntityInstanceSchema or dict (type: {type(potential_output)})."
+                    f"Step 5a final_output was not EntityInstanceBaseSchema or dict (type: {type(potential_output)})."
                 )
 
             if instance_data and instance_data.identified_instances:
@@ -199,4 +200,4 @@ async def identify_entity_instances(
         print(f"\nAn unexpected error occurred during Step 5a: {type(e).__name__}: {e}")
         instance_data = None
 
-    return instance_data
+    return cast(Optional[EntityInstanceSchema], instance_data)
