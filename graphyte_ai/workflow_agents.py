@@ -10,27 +10,28 @@ except ImportError:
     Agent = Any  # type: ignore[misc]
 
 from .schemas import (
-    DomainSchema,
+    DomainIdentifierSchema,
     DomainResultSchema,
     SubDomainSchema,
-    SingleSubDomainTopicSchema,
+    SubDomainIdentifierSchema,
+    TopicIdentifierSchema,
     TopicSchema,
-    EntityTypeSchema,
-    OntologyTypeSchema,
-    EventTypeSchema,
-    StatementTypeSchema,
-    EvidenceTypeSchema,
-    MeasurementTypeSchema,
-    ModalityTypeSchema,
-    EntityInstanceSchema,
-    StatementInstanceSchema,
-    EvidenceInstanceSchema,
-    MeasurementInstanceSchema,
-    ModalityInstanceSchema,
-    SingleEntityTypeRelationshipSchema,
-    RelationshipInstanceSchema,
-    OntologyInstanceSchema,
-    EventInstanceSchema,
+    EntityTypeIdentifierSchema,
+    OntologyTypeIdentifierSchema,
+    EventTypeIdentifierSchema,
+    StatementTypeIdentifierSchema,
+    EvidenceTypeIdentifierSchema,
+    MeasurementTypeIdentifierSchema,
+    ModalityTypeIdentifierSchema,
+    EntityInstanceIdentifierSchema,
+    StatementInstanceIdentifierSchema,
+    EvidenceInstanceIdentifierSchema,
+    MeasurementInstanceIdentifierSchema,
+    ModalityInstanceIdentifierSchema,
+    RelationshipIdentifierSchema,
+    RelationshipInstanceIdentifierSchema,
+    OntologyInstanceIdentifierSchema,
+    EventInstanceIdentifierSchema,
     ConfidenceScoreSchema,
     RelevanceScoreSchema,
     ClarityScoreSchema,
@@ -171,7 +172,7 @@ domain_identifier_agent = Agent(
         "Output ONLY valid JSON matching the DomainSchema."
     ),
     model=DOMAIN_MODEL,
-    output_type=DomainSchema,
+    output_type=DomainIdentifierSchema,
     tools=[],
     handoffs=[],
 )
@@ -195,7 +196,7 @@ sub_domain_identifier_agent = Agent(
     model=SUB_DOMAIN_MODEL,
     tools=[],
     handoffs=[],
-    output_type=SubDomainSchema,
+    output_type=SubDomainIdentifierSchema,
 )
 
 # --- Agent 2b: Sub-Domain Result ---
@@ -230,7 +231,7 @@ topic_identifier_agent = Agent(
         ),
     ],
     handoffs=[],
-    output_type=SingleSubDomainTopicSchema,
+    output_type=TopicIdentifierSchema,
 )
 
 # --- Agent 3b: Topic Result ---
@@ -276,7 +277,7 @@ entity_type_identifier_agent = base_type_identifier_agent.clone(
         item_field_name="entity_type",
     ),
     model=ENTITY_TYPE_MODEL,
-    output_type=EntityTypeSchema,
+    output_type=EntityTypeIdentifierSchema,
 )
 
 # --- Agent 4b: Ontology Type Identifier ---
@@ -290,7 +291,7 @@ ontology_type_identifier_agent = base_type_identifier_agent.clone(
         item_field_name="ontology_type",
     ),
     model=ONTOLOGY_TYPE_MODEL,
-    output_type=OntologyTypeSchema,
+    output_type=OntologyTypeIdentifierSchema,
 )
 
 # --- Agent 4c: Event Type Identifier ---
@@ -304,7 +305,7 @@ event_type_identifier_agent = base_type_identifier_agent.clone(
         item_field_name="event_type",
     ),
     model=EVENT_TYPE_MODEL,
-    output_type=EventTypeSchema,
+    output_type=EventTypeIdentifierSchema,
 )
 
 # --- Agent 4d: Statement Type Identifier ---
@@ -318,7 +319,7 @@ statement_type_identifier_agent = base_type_identifier_agent.clone(
         item_field_name="statement_type",
     ),
     model=STATEMENT_TYPE_MODEL,
-    output_type=StatementTypeSchema,
+    output_type=StatementTypeIdentifierSchema,
 )
 
 # --- Agent 4e: Evidence Type Identifier ---
@@ -332,7 +333,7 @@ evidence_type_identifier_agent = base_type_identifier_agent.clone(
         item_field_name="evidence_type",
     ),
     model=EVIDENCE_TYPE_MODEL,
-    output_type=EvidenceTypeSchema,
+    output_type=EvidenceTypeIdentifierSchema,
 )
 
 # --- Agent 4f: Measurement Type Identifier ---
@@ -346,7 +347,7 @@ measurement_type_identifier_agent = base_type_identifier_agent.clone(
         item_field_name="measurement_type",
     ),
     model=MEASUREMENT_TYPE_MODEL,
-    output_type=MeasurementTypeSchema,
+    output_type=MeasurementTypeIdentifierSchema,
 )
 
 # --- Agent 4g: Modality Type Identifier ---
@@ -360,7 +361,7 @@ modality_type_identifier_agent = base_type_identifier_agent.clone(
         item_field_name="modality_type",
     ),
     model=MODALITY_TYPE_MODEL,
-    output_type=ModalityTypeSchema,
+    output_type=ModalityTypeIdentifierSchema,
 )
 
 
@@ -398,7 +399,7 @@ entity_instance_extractor_agent = base_instance_extractor_agent.clone(
         list_field="identified_instances",
     ),
     model=ENTITY_INSTANCE_MODEL,
-    output_type=EntityInstanceSchema,
+    output_type=EntityInstanceIdentifierSchema,
 )
 
 
@@ -414,7 +415,7 @@ ontology_instance_extractor_agent = base_instance_extractor_agent.clone(
         list_field="identified_instances",
     ),
     model=ONTOLOGY_INSTANCE_MODEL,
-    output_type=OntologyInstanceSchema,
+    output_type=OntologyInstanceIdentifierSchema,
 )
 
 
@@ -430,7 +431,7 @@ event_instance_extractor_agent = base_instance_extractor_agent.clone(
         list_field="identified_instances",
     ),
     model=EVENT_INSTANCE_MODEL,
-    output_type=EventInstanceSchema,
+    output_type=EventInstanceIdentifierSchema,
 )
 
 
@@ -446,7 +447,7 @@ statement_instance_extractor_agent = base_instance_extractor_agent.clone(
         list_field="identified_instances",
     ),
     model=STATEMENT_INSTANCE_MODEL,
-    output_type=StatementInstanceSchema,
+    output_type=StatementInstanceIdentifierSchema,
 )
 
 
@@ -462,7 +463,7 @@ evidence_instance_extractor_agent = base_instance_extractor_agent.clone(
         list_field="identified_instances",
     ),
     model=EVIDENCE_INSTANCE_MODEL,
-    output_type=EvidenceInstanceSchema,
+    output_type=EvidenceInstanceIdentifierSchema,
 )
 
 
@@ -478,7 +479,7 @@ measurement_instance_extractor_agent = base_instance_extractor_agent.clone(
         list_field="identified_instances",
     ),
     model=MEASUREMENT_INSTANCE_MODEL,
-    output_type=MeasurementInstanceSchema,
+    output_type=MeasurementInstanceIdentifierSchema,
 )
 
 
@@ -494,7 +495,7 @@ modality_instance_extractor_agent = base_instance_extractor_agent.clone(
         list_field="identified_instances",
     ),
     model=MODALITY_INSTANCE_MODEL,
-    output_type=ModalityInstanceSchema,
+    output_type=ModalityInstanceIdentifierSchema,
 )
 
 
@@ -510,7 +511,7 @@ relationship_type_identifier_agent = Agent(
         "Output ONLY the result using the provided SingleEntityTypeRelationshipSchema. Ensure the 'entity_type_focus' field matches the entity type you were asked to focus on."
     ),
     model=RELATIONSHIP_MODEL,
-    output_type=SingleEntityTypeRelationshipSchema,
+    output_type=RelationshipIdentifierSchema,
     tools=[],
     handoffs=[],
 )
@@ -527,7 +528,7 @@ relationship_extractor_agent = base_instance_extractor_agent.clone(
         list_field="identified_instances",
     ),
     model=RELATIONSHIP_INSTANCE_MODEL,
-    output_type=RelationshipInstanceSchema,
+    output_type=RelationshipInstanceIdentifierSchema,
 )
 
 # You can optionally create a list or dict to easily access all agents

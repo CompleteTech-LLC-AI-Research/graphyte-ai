@@ -1129,3 +1129,25 @@ class ExtractedInstancesSchema(BaseModel):
     analysis_summary: Optional[str] = Field(
         None, description="Optional summary describing the aggregated instance data."
     )
+
+
+# Identifier-only schema aliases
+DomainIdentifierSchema = DomainSchema
+SubDomainIdentifierSchema = SubDomainSchema
+TopicIdentifierSchema = SingleSubDomainTopicSchema
+EntityTypeIdentifierSchema = EntityTypeSchema
+OntologyTypeIdentifierSchema = OntologyTypeSchema
+EventTypeIdentifierSchema = EventTypeSchema
+StatementTypeIdentifierSchema = StatementTypeSchema
+EvidenceTypeIdentifierSchema = EvidenceTypeSchema
+MeasurementTypeIdentifierSchema = MeasurementTypeSchema
+ModalityTypeIdentifierSchema = ModalityTypeSchema
+EntityInstanceIdentifierSchema = EntityInstanceSchema
+OntologyInstanceIdentifierSchema = OntologyInstanceSchema
+EventInstanceIdentifierSchema = EventInstanceSchema
+StatementInstanceIdentifierSchema = StatementInstanceSchema
+EvidenceInstanceIdentifierSchema = EvidenceInstanceSchema
+MeasurementInstanceIdentifierSchema = MeasurementInstanceSchema
+ModalityInstanceIdentifierSchema = ModalityInstanceSchema
+RelationshipIdentifierSchema = SingleEntityTypeRelationshipSchema
+RelationshipInstanceIdentifierSchema = RelationshipInstanceSchema
