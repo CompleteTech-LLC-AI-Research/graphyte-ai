@@ -2,16 +2,13 @@
 
 import logging
 from datetime import datetime, timezone
-from typing import List, Optional, cast
+from typing import List, Optional
 
 from pydantic import ValidationError
 
 from agents import RunConfig, RunResult, TResponseInputItem  # type: ignore[attr-defined]
 
-from ..workflow_agents import (
-    measurement_instance_extractor_agent,
-    measurement_instance_result_agent,
-)
+from ..workflow_agents import measurement_instance_extractor_agent
 from ..config import (
     MEASUREMENT_INSTANCE_MODEL,
     MEASUREMENT_INSTANCE_OUTPUT_DIR,
@@ -132,8 +129,6 @@ async def identify_measurement_instances(
                 )
 
             if instance_data and instance_data.identified_instances:
-                assert instance_data is not None
-                instance_data = cast(MeasurementInstanceSchema, instance_data)
                 if instance_data.primary_domain != primary_domain:
                     instance_data.primary_domain = primary_domain
                 if not set(instance_data.analyzed_sub_domains):
@@ -143,44 +138,6 @@ async def identify_measurement_instances(
                 instance_data = await score_measurement_instances(
                     instance_data, content
                 )
-
-                scored_result = await run_agent_with_retry(
-                    measurement_instance_result_agent,
-                    instance_data.model_dump_json(),
-                )
-
-                if scored_result:
-                    potential_scored_output = getattr(
-                        scored_result, "final_output", None
-                    )
-                    if isinstance(potential_scored_output, MeasurementInstanceSchema):
-                        instance_data = potential_scored_output
-                    elif isinstance(potential_scored_output, dict):
-                        try:
-                            instance_data = MeasurementInstanceSchema.model_validate(
-                                potential_scored_output
-                            )
-                        except ValidationError as e:
-                            logger.warning(
-                                "MeasurementInstanceSchema validation error after scoring: %s",
-                                e,
-                            )
-                            instance_data = MeasurementInstanceSchema.model_validate(
-                                instance_data.model_dump()
-                            )
-                    else:
-                        logger.error(
-                            "Unexpected measurement instance result output type: %s",
-                            type(potential_scored_output),
-                        )
-                        instance_data = MeasurementInstanceSchema.model_validate(
-                            instance_data.model_dump()
-                        )
-                else:
-                    instance_data = MeasurementInstanceSchema.model_validate(
-                        instance_data.model_dump()
-                    )
-
                 logger.info(
                     f"Step 5f Result (Structured Instances):\n{instance_data.model_dump_json(indent=2)}"
                 )

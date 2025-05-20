@@ -2,16 +2,13 @@
 
 import logging
 from datetime import datetime, timezone
-from typing import List, Optional, cast
+from typing import List, Optional
 
 from pydantic import ValidationError
 
 from agents import RunConfig, RunResult, TResponseInputItem  # type: ignore[attr-defined]
 
-from ..workflow_agents import (
-    ontology_type_identifier_agent,
-    ontology_type_result_agent,
-)
+from ..workflow_agents import ontology_type_identifier_agent
 from ..config import (
     ONTOLOGY_TYPE_MODEL,
     ONTOLOGY_TYPE_OUTPUT_DIR,
@@ -140,8 +137,6 @@ async def identify_ontology_types(
                 )
 
             if ontology_data and ontology_data.identified_ontology_types:
-                assert ontology_data is not None
-                ontology_data = cast(OntologyTypeSchema, ontology_data)
                 # Ensure context fields in output schema match expectations
                 if ontology_data.primary_domain != primary_domain:
                     logger.warning(
@@ -158,43 +153,6 @@ async def identify_ontology_types(
                     )
 
                 ontology_data = await score_ontology_types(ontology_data, content)
-
-                scored_result = await run_agent_with_retry(
-                    ontology_type_result_agent,
-                    ontology_data.model_dump_json(),
-                )
-
-                if scored_result:
-                    potential_scored_output = getattr(
-                        scored_result, "final_output", None
-                    )
-                    if isinstance(potential_scored_output, OntologyTypeSchema):
-                        ontology_data = potential_scored_output
-                    elif isinstance(potential_scored_output, dict):
-                        try:
-                            ontology_data = OntologyTypeSchema.model_validate(
-                                potential_scored_output
-                            )
-                        except ValidationError as e:
-                            logger.warning(
-                                "OntologyTypeSchema validation error after scoring: %s",
-                                e,
-                            )
-                            ontology_data = OntologyTypeSchema.model_validate(
-                                ontology_data.model_dump()
-                            )
-                    else:
-                        logger.error(
-                            "Unexpected ontology type result output type: %s",
-                            type(potential_scored_output),
-                        )
-                        ontology_data = OntologyTypeSchema.model_validate(
-                            ontology_data.model_dump()
-                        )
-                else:
-                    ontology_data = OntologyTypeSchema.model_validate(
-                        ontology_data.model_dump()
-                    )
 
                 # Log and print results
                 ontology_log_items = [
