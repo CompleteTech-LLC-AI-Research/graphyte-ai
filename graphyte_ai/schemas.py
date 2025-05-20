@@ -66,6 +66,34 @@ class ClarityScoreSchema(BaseModel):
     )
 
 
+# --- New Schemas for Step 2 Identifier Output ---
+
+
+class SubDomainIdentifierDetail(BaseModel):
+    """Represents a single identified sub-domain without scores."""
+
+    sub_domain: str = Field(
+        description="The specific sub-domain identified within the text."
+    )
+
+
+class SubDomainIdentifierSchema(BaseModel):
+    """Schema defining the unscored sub-domain identification output."""
+
+    primary_domain: str = Field(
+        description="The primary domain that was provided as input."
+    )
+    identified_sub_domains: List[SubDomainIdentifierDetail] = Field(
+        description=(
+            "List of sub-domains identified within the text related to the primary domain."
+        )
+    )
+    analysis_summary: Optional[str] = Field(
+        None,
+        description="Optional brief summary of the sub-domain identification.",
+    )
+
+
 # Nested schema for a sub-domain
 class SubDomainDetail(BaseModel):
     """Represents a single identified sub-domain."""
