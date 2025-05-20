@@ -2,7 +2,7 @@
 
 import logging
 from datetime import datetime, timezone
-from typing import List, Optional, cast
+from typing import List, Optional
 
 from pydantic import ValidationError
 
@@ -13,10 +13,7 @@ except ImportError:
     print("Error: 'agents' SDK library not found or incomplete for step 4f.")
     raise
 
-from ..workflow_agents import (
-    measurement_type_identifier_agent,  # Import the new agent
-    measurement_type_result_agent,
-)
+from ..workflow_agents import measurement_type_identifier_agent  # Import the new agent
 from ..config import (
     MEASUREMENT_TYPE_MODEL,
     MEASUREMENT_TYPE_OUTPUT_DIR,
@@ -149,8 +146,6 @@ async def identify_measurement_types(
                 )
 
             if measurement_data and measurement_data.identified_measurements:
-                assert measurement_data is not None
-                measurement_data = cast(MeasurementTypeSchema, measurement_data)
                 # Ensure context fields match
                 if measurement_data.primary_domain != primary_domain:
                     logger.warning(
@@ -167,43 +162,6 @@ async def identify_measurement_types(
                 measurement_data = await score_measurement_types(
                     measurement_data, content
                 )
-
-                scored_result = await run_agent_with_retry(
-                    measurement_type_result_agent,
-                    measurement_data.model_dump_json(),
-                )
-
-                if scored_result:
-                    potential_scored_output = getattr(
-                        scored_result, "final_output", None
-                    )
-                    if isinstance(potential_scored_output, MeasurementTypeSchema):
-                        measurement_data = potential_scored_output
-                    elif isinstance(potential_scored_output, dict):
-                        try:
-                            measurement_data = MeasurementTypeSchema.model_validate(
-                                potential_scored_output
-                            )
-                        except ValidationError as e:
-                            logger.warning(
-                                "MeasurementTypeSchema validation error after scoring: %s",
-                                e,
-                            )
-                            measurement_data = MeasurementTypeSchema.model_validate(
-                                measurement_data.model_dump()
-                            )
-                    else:
-                        logger.error(
-                            "Unexpected measurement type result output type: %s",
-                            type(potential_scored_output),
-                        )
-                        measurement_data = MeasurementTypeSchema.model_validate(
-                            measurement_data.model_dump()
-                        )
-                else:
-                    measurement_data = MeasurementTypeSchema.model_validate(
-                        measurement_data.model_dump()
-                    )
 
                 # Log and print results
                 measurement_log_items = [
