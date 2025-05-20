@@ -13,10 +13,7 @@ except ImportError:
     print("Error: 'agents' SDK library not found or incomplete for step 4g.")
     raise
 
-from ..workflow_agents import (
-    modality_type_identifier_agent,  # Import the new agent
-    modality_type_result_agent,
-)
+from ..workflow_agents import modality_type_identifier_agent  # Import the new agent
 from ..config import (
     MODALITY_TYPE_MODEL,
     MODALITY_TYPE_OUTPUT_DIR,
@@ -163,43 +160,6 @@ async def identify_modality_types(
                     )
 
                 modality_data = await score_modality_types(modality_data, content)
-
-                scored_result = await run_agent_with_retry(
-                    modality_type_result_agent,
-                    modality_data.model_dump_json(),
-                )
-
-                if scored_result:
-                    potential_scored_output = getattr(
-                        scored_result, "final_output", None
-                    )
-                    if isinstance(potential_scored_output, ModalityTypeSchema):
-                        modality_data = potential_scored_output
-                    elif isinstance(potential_scored_output, dict):
-                        try:
-                            modality_data = ModalityTypeSchema.model_validate(
-                                potential_scored_output
-                            )
-                        except ValidationError as e:
-                            logger.warning(
-                                "ModalityTypeSchema validation error after scoring: %s",
-                                e,
-                            )
-                            modality_data = ModalityTypeSchema.model_validate(
-                                modality_data.model_dump()
-                            )
-                    else:
-                        logger.error(
-                            "Unexpected modality type result output type: %s",
-                            type(potential_scored_output),
-                        )
-                        modality_data = ModalityTypeSchema.model_validate(
-                            modality_data.model_dump()
-                        )
-                else:
-                    modality_data = ModalityTypeSchema.model_validate(
-                        modality_data.model_dump()
-                    )
 
                 # Log and print results
                 modality_log_items = [

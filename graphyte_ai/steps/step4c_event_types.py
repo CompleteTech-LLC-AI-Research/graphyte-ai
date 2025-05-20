@@ -8,10 +8,7 @@ from pydantic import ValidationError
 
 from agents import RunConfig, RunResult, TResponseInputItem  # type: ignore[attr-defined]
 
-from ..workflow_agents import (
-    event_type_identifier_agent,  # Import the new agent
-    event_type_result_agent,
-)
+from ..workflow_agents import event_type_identifier_agent  # Import the new agent
 from ..config import (
     EVENT_TYPE_MODEL,
     EVENT_TYPE_OUTPUT_DIR,
@@ -154,41 +151,6 @@ async def identify_event_types(
                     )
 
                 event_data = await score_event_types(event_data, content)
-
-                scored_result = await run_agent_with_retry(
-                    event_type_result_agent,
-                    event_data.model_dump_json(),
-                )
-
-                if scored_result:
-                    potential_scored_output = getattr(
-                        scored_result, "final_output", None
-                    )
-                    if isinstance(potential_scored_output, EventTypeSchema):
-                        event_data = potential_scored_output
-                    elif isinstance(potential_scored_output, dict):
-                        try:
-                            event_data = EventTypeSchema.model_validate(
-                                potential_scored_output
-                            )
-                        except ValidationError as e:
-                            logger.warning(
-                                "EventTypeSchema validation error after scoring: %s",
-                                e,
-                            )
-                            event_data = EventTypeSchema.model_validate(
-                                event_data.model_dump()
-                            )
-                    else:
-                        logger.error(
-                            "Unexpected event type result output type: %s",
-                            type(potential_scored_output),
-                        )
-                        event_data = EventTypeSchema.model_validate(
-                            event_data.model_dump()
-                        )
-                else:
-                    event_data = EventTypeSchema.model_validate(event_data.model_dump())
 
                 # Log and print results
                 event_log_items = [
