@@ -299,7 +299,7 @@ async def identify_topics(
         analysis_summary=f"Generated topics in parallel for {len(aggregated_topic_results)} sub-domains (out of {len(sub_domains_being_processed)} attempted).",  # Use processed count
     )
 
-    final_topic_data = await score_topics(final_topic_data, content, group_id)
+    final_topic_data = await score_topics(final_topic_data, content)
 
     scored_result = await run_agent_with_retry(
         topic_result_agent,
