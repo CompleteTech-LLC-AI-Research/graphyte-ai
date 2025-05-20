@@ -60,7 +60,7 @@ from .schemas import (
     SubDomainSchema,
     TopicSchema,
     TopicDetail,
-    SingleSubDomainEntityTypeSchema,
+    EntityTypeSchema,
     OntologyTypeSchema,
     EventTypeSchema,
     StatementTypeSchema,
@@ -591,20 +591,20 @@ async def score_topics(topic_data: TopicSchema, context_text: str) -> TopicSchem
 
 
 async def score_entity_types(
-    entity_data: SingleSubDomainEntityTypeSchema, context_text: str
-) -> SingleSubDomainEntityTypeSchema:
+    entity_data: EntityTypeSchema, context_text: str
+) -> EntityTypeSchema:
     """Score each entity type within ``entity_data``.
 
     Parameters
     ----------
     entity_data:
-        The entity type analysis output for a single sub-domain.
+        The aggregated entity type analysis output.
     context_text:
         The original text content used for scoring.
 
     Returns
     -------
-    SingleSubDomainEntityTypeSchema
+    EntityTypeSchema
         The updated schema with scores populated on each entity type.
     """
 
