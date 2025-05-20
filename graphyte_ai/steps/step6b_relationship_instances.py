@@ -8,10 +8,7 @@ from pydantic import ValidationError
 
 from agents import RunConfig, RunResult, TResponseInputItem  # type: ignore[attr-defined]
 
-from ..workflow_agents import (
-    relationship_extractor_agent,
-    relationship_instance_result_agent,
-)
+from ..workflow_agents import relationship_extractor_agent
 from ..config import (
     RELATIONSHIP_INSTANCE_MODEL,
     RELATIONSHIP_INSTANCE_OUTPUT_DIR,
@@ -120,39 +117,6 @@ async def identify_relationship_instances(
             if final.primary_domain != primary_domain:
                 final.primary_domain = primary_domain
             final = await score_relationship_instances(final, content)
-
-            scored_result = await run_agent_with_retry(
-                relationship_instance_result_agent,
-                final.model_dump_json(),
-            )
-
-            if scored_result:
-                potential_scored_output = getattr(scored_result, "final_output", None)
-                if isinstance(potential_scored_output, RelationshipInstanceSchema):
-                    final = potential_scored_output
-                elif isinstance(potential_scored_output, dict):
-                    try:
-                        final = RelationshipInstanceSchema.model_validate(
-                            potential_scored_output
-                        )
-                    except ValidationError as e:
-                        logger.warning(
-                            "RelationshipInstanceSchema validation error after scoring: %s",
-                            e,
-                        )
-                        final = RelationshipInstanceSchema.model_validate(
-                            final.model_dump()
-                        )
-                else:
-                    logger.error(
-                        "Unexpected relationship instance result output type: %s",
-                        type(potential_scored_output),
-                    )
-                    final = RelationshipInstanceSchema.model_validate(
-                        final.model_dump()
-                    )
-            else:
-                final = RelationshipInstanceSchema.model_validate(final.model_dump())
             logger.info("Step 6b result:\n%s", final.model_dump_json(indent=2))
             print("\n--- Relationship Instances Extracted (Structured Output) ---")
             print(final.model_dump_json(indent=2))
