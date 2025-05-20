@@ -58,25 +58,42 @@ from .schemas import (
     RelevanceScoreSchema,
     ClarityScoreSchema,
     SubDomainSchema,
+    SubDomainBaseSchema,
     TopicSchema,
     TopicDetail,
     EntityTypeSchema,
+    EntityTypeBaseSchema,
     OntologyTypeSchema,
+    OntologyTypeBaseSchema,
     EventTypeSchema,
+    EventTypeBaseSchema,
     StatementTypeSchema,
+    StatementTypeBaseSchema,
     EvidenceTypeSchema,
+    EvidenceTypeBaseSchema,
     MeasurementTypeSchema,
+    MeasurementTypeBaseSchema,
     ModalityTypeSchema,
+    ModalityTypeBaseSchema,
     EntityInstanceSchema,
+    EntityInstanceBaseSchema,
     OntologyInstanceSchema,
+    OntologyInstanceBaseSchema,
     EventInstanceSchema,
+    EventInstanceBaseSchema,
     StatementInstanceSchema,
+    StatementInstanceBaseSchema,
     EvidenceInstanceSchema,
+    EvidenceInstanceBaseSchema,
     MeasurementInstanceSchema,
+    MeasurementInstanceBaseSchema,
     ModalityInstanceSchema,
+    ModalityInstanceBaseSchema,
     RelationshipSchema,
+    RelationshipBaseSchema,
     RelationshipDetail,
     RelationshipInstanceSchema,
+    RelationshipInstanceBaseSchema,
 )
 
 # Get logger for utils module
@@ -492,7 +509,7 @@ async def run_parallel_scoring(
 
 
 async def score_sub_domains(
-    sub_domain_data: SubDomainSchema, context_text: str
+    sub_domain_data: SubDomainBaseSchema | SubDomainSchema, context_text: str
 ) -> SubDomainSchema:
     """Score each sub-domain within ``sub_domain_data``.
 
@@ -512,14 +529,18 @@ async def score_sub_domains(
         The updated schema with scores populated on each sub-domain.
     """
 
+    scored_data = SubDomainSchema.model_validate(
+        cast(Any, sub_domain_data).model_dump()
+    )
+
     tasks = [
         run_parallel_scoring(item.sub_domain, context_text)
-        for item in sub_domain_data.identified_sub_domains
+        for item in scored_data.identified_sub_domains
     ]
 
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
-    for item, result in zip(sub_domain_data.identified_sub_domains, results):
+    for item, result in zip(scored_data.identified_sub_domains, results):
         if isinstance(result, Exception):
             logger.error(
                 "Scoring failed for sub-domain '%s'", item.sub_domain, exc_info=result
@@ -538,7 +559,7 @@ async def score_sub_domains(
         item.relevance_score = rel_data.relevance_score if rel_data else None
         item.clarity_score = clar_data.clarity_score if clar_data else None
 
-    return sub_domain_data
+    return scored_data
 
 
 async def score_topics(topic_data: TopicSchema, context_text: str) -> TopicSchema:
@@ -594,7 +615,7 @@ async def score_topics(topic_data: TopicSchema, context_text: str) -> TopicSchem
 
 
 async def score_entity_types(
-    entity_data: EntityTypeSchema, context_text: str
+    entity_data: EntityTypeBaseSchema | EntityTypeSchema, context_text: str
 ) -> EntityTypeSchema:
     """Score each entity type within ``entity_data``.
 
@@ -611,14 +632,16 @@ async def score_entity_types(
         The updated schema with scores populated on each entity type.
     """
 
+    scored_data = EntityTypeSchema.model_validate(cast(Any, entity_data).model_dump())
+
     tasks = [
         run_parallel_scoring(item.entity_type, context_text)
-        for item in entity_data.identified_entities
+        for item in scored_data.identified_entities
     ]
 
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
-    for item, result in zip(entity_data.identified_entities, results):
+    for item, result in zip(scored_data.identified_entities, results):
         if isinstance(result, Exception):
             logger.error(
                 "Scoring failed for entity type '%s'", item.entity_type, exc_info=result
@@ -637,22 +660,26 @@ async def score_entity_types(
         item.relevance_score = rel_data.relevance_score if rel_data else None
         item.clarity_score = clar_data.clarity_score if clar_data else None
 
-    return entity_data
+    return scored_data
 
 
 async def score_ontology_types(
-    ontology_data: OntologyTypeSchema, context_text: str
+    ontology_data: OntologyTypeBaseSchema | OntologyTypeSchema, context_text: str
 ) -> OntologyTypeSchema:
     """Score each ontology type within ``ontology_data``."""
 
+    scored_data = OntologyTypeSchema.model_validate(
+        cast(Any, ontology_data).model_dump()
+    )
+
     tasks = [
         run_parallel_scoring(item.ontology_type, context_text)
-        for item in ontology_data.identified_ontology_types
+        for item in scored_data.identified_ontology_types
     ]
 
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
-    for item, result in zip(ontology_data.identified_ontology_types, results):
+    for item, result in zip(scored_data.identified_ontology_types, results):
         if isinstance(result, Exception):
             logger.error(
                 "Scoring failed for ontology type '%s'",
@@ -673,22 +700,24 @@ async def score_ontology_types(
         item.relevance_score = rel_data.relevance_score if rel_data else None
         item.clarity_score = clar_data.clarity_score if clar_data else None
 
-    return ontology_data
+    return scored_data
 
 
 async def score_event_types(
-    event_data: EventTypeSchema, context_text: str
+    event_data: EventTypeBaseSchema | EventTypeSchema, context_text: str
 ) -> EventTypeSchema:
     """Score each event type within ``event_data``."""
 
+    scored_data = EventTypeSchema.model_validate(cast(Any, event_data).model_dump())
+
     tasks = [
         run_parallel_scoring(item.event_type, context_text)
-        for item in event_data.identified_events
+        for item in scored_data.identified_events
     ]
 
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
-    for item, result in zip(event_data.identified_events, results):
+    for item, result in zip(scored_data.identified_events, results):
         if isinstance(result, Exception):
             logger.error(
                 "Scoring failed for event type '%s'", item.event_type, exc_info=result
@@ -707,22 +736,26 @@ async def score_event_types(
         item.relevance_score = rel_data.relevance_score if rel_data else None
         item.clarity_score = clar_data.clarity_score if clar_data else None
 
-    return event_data
+    return scored_data
 
 
 async def score_statement_types(
-    statement_data: StatementTypeSchema, context_text: str
+    statement_data: StatementTypeBaseSchema | StatementTypeSchema, context_text: str
 ) -> StatementTypeSchema:
     """Score each statement type within ``statement_data``."""
 
+    scored_data = StatementTypeSchema.model_validate(
+        cast(Any, statement_data).model_dump()
+    )
+
     tasks = [
         run_parallel_scoring(item.statement_type, context_text)
-        for item in statement_data.identified_statements
+        for item in scored_data.identified_statements
     ]
 
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
-    for item, result in zip(statement_data.identified_statements, results):
+    for item, result in zip(scored_data.identified_statements, results):
         if isinstance(result, Exception):
             logger.error(
                 "Scoring failed for statement type '%s'",
@@ -743,22 +776,26 @@ async def score_statement_types(
         item.relevance_score = rel_data.relevance_score if rel_data else None
         item.clarity_score = clar_data.clarity_score if clar_data else None
 
-    return statement_data
+    return scored_data
 
 
 async def score_evidence_types(
-    evidence_data: EvidenceTypeSchema, context_text: str
+    evidence_data: EvidenceTypeBaseSchema | EvidenceTypeSchema, context_text: str
 ) -> EvidenceTypeSchema:
     """Score each evidence type within ``evidence_data``."""
 
+    scored_data = EvidenceTypeSchema.model_validate(
+        cast(Any, evidence_data).model_dump()
+    )
+
     tasks = [
         run_parallel_scoring(item.evidence_type, context_text)
-        for item in evidence_data.identified_evidence
+        for item in scored_data.identified_evidence
     ]
 
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
-    for item, result in zip(evidence_data.identified_evidence, results):
+    for item, result in zip(scored_data.identified_evidence, results):
         if isinstance(result, Exception):
             logger.error(
                 "Scoring failed for evidence type '%s'",
@@ -779,22 +816,27 @@ async def score_evidence_types(
         item.relevance_score = rel_data.relevance_score if rel_data else None
         item.clarity_score = clar_data.clarity_score if clar_data else None
 
-    return evidence_data
+    return scored_data
 
 
 async def score_measurement_types(
-    measurement_data: MeasurementTypeSchema, context_text: str
+    measurement_data: MeasurementTypeBaseSchema | MeasurementTypeSchema,
+    context_text: str,
 ) -> MeasurementTypeSchema:
     """Score each measurement type within ``measurement_data``."""
 
+    scored_data = MeasurementTypeSchema.model_validate(
+        cast(Any, measurement_data).model_dump()
+    )
+
     tasks = [
         run_parallel_scoring(item.measurement_type, context_text)
-        for item in measurement_data.identified_measurements
+        for item in scored_data.identified_measurements
     ]
 
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
-    for item, result in zip(measurement_data.identified_measurements, results):
+    for item, result in zip(scored_data.identified_measurements, results):
         if isinstance(result, Exception):
             logger.error(
                 "Scoring failed for measurement type '%s'",
@@ -815,22 +857,26 @@ async def score_measurement_types(
         item.relevance_score = rel_data.relevance_score if rel_data else None
         item.clarity_score = clar_data.clarity_score if clar_data else None
 
-    return measurement_data
+    return scored_data
 
 
 async def score_modality_types(
-    modality_data: ModalityTypeSchema, context_text: str
+    modality_data: ModalityTypeBaseSchema | ModalityTypeSchema, context_text: str
 ) -> ModalityTypeSchema:
     """Score each modality type within ``modality_data``."""
 
+    scored_data = ModalityTypeSchema.model_validate(
+        cast(Any, modality_data).model_dump()
+    )
+
     tasks = [
         run_parallel_scoring(item.modality_type, context_text)
-        for item in modality_data.identified_modalities
+        for item in scored_data.identified_modalities
     ]
 
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
-    for item, result in zip(modality_data.identified_modalities, results):
+    for item, result in zip(scored_data.identified_modalities, results):
         if isinstance(result, Exception):
             logger.error(
                 "Scoring failed for modality type '%s'",
@@ -851,24 +897,28 @@ async def score_modality_types(
         item.relevance_score = rel_data.relevance_score if rel_data else None
         item.clarity_score = clar_data.clarity_score if clar_data else None
 
-    return modality_data
+    return scored_data
 
 
 async def score_relationship_types(
-    relationship_data: RelationshipSchema, context_text: str
+    relationship_data: RelationshipBaseSchema | RelationshipSchema, context_text: str
 ) -> RelationshipSchema:
     """Score each relationship type within ``relationship_data``."""
+
+    scored_data = RelationshipSchema.model_validate(
+        cast(Any, relationship_data).model_dump()
+    )
 
     tasks = []
     rel_items: List[RelationshipDetail] = []
 
-    for mapping in relationship_data.entity_relationships_map:
+    for mapping in scored_data.entity_relationships_map:
         for rel in mapping.identified_relationships:
             tasks.append(run_parallel_scoring(rel.relationship_type, context_text))
             rel_items.append(rel)
 
     if not tasks:
-        return relationship_data
+        return scored_data
 
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
@@ -893,22 +943,26 @@ async def score_relationship_types(
         item.relevance_score = rel_data.relevance_score if rel_data else None
         item.clarity_score = clar_data.clarity_score if clar_data else None
 
-    return relationship_data
+    return scored_data
 
 
 async def score_entity_instances(
-    instance_data: EntityInstanceSchema, context_text: str
+    instance_data: EntityInstanceBaseSchema | EntityInstanceSchema, context_text: str
 ) -> EntityInstanceSchema:
     """Score each entity instance within ``instance_data``."""
 
+    scored_data = EntityInstanceSchema.model_validate(
+        cast(Any, instance_data).model_dump()
+    )
+
     tasks = [
         run_parallel_scoring(item.text_span, context_text)
-        for item in instance_data.identified_instances
+        for item in scored_data.identified_instances
     ]
 
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
-    for item, result in zip(instance_data.identified_instances, results):
+    for item, result in zip(scored_data.identified_instances, results):
         if isinstance(result, Exception):
             logger.error(
                 "Scoring failed for entity instance '%s'",
@@ -929,22 +983,27 @@ async def score_entity_instances(
         item.relevance_score = rel_data.relevance_score if rel_data else None
         item.clarity_score = clar_data.clarity_score if clar_data else None
 
-    return instance_data
+    return scored_data
 
 
 async def score_ontology_instances(
-    instance_data: OntologyInstanceSchema, context_text: str
+    instance_data: OntologyInstanceBaseSchema | OntologyInstanceSchema,
+    context_text: str,
 ) -> OntologyInstanceSchema:
     """Score each ontology instance within ``instance_data``."""
 
+    scored_data = OntologyInstanceSchema.model_validate(
+        cast(Any, instance_data).model_dump()
+    )
+
     tasks = [
         run_parallel_scoring(item.text_span, context_text)
-        for item in instance_data.identified_instances
+        for item in scored_data.identified_instances
     ]
 
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
-    for item, result in zip(instance_data.identified_instances, results):
+    for item, result in zip(scored_data.identified_instances, results):
         if isinstance(result, Exception):
             logger.error(
                 "Scoring failed for ontology instance '%s'",
@@ -965,22 +1024,26 @@ async def score_ontology_instances(
         item.relevance_score = rel_data.relevance_score if rel_data else None
         item.clarity_score = clar_data.clarity_score if clar_data else None
 
-    return instance_data
+    return scored_data
 
 
 async def score_event_instances(
-    instance_data: EventInstanceSchema, context_text: str
+    instance_data: EventInstanceBaseSchema | EventInstanceSchema, context_text: str
 ) -> EventInstanceSchema:
     """Score each event instance within ``instance_data``."""
 
+    scored_data = EventInstanceSchema.model_validate(
+        cast(Any, instance_data).model_dump()
+    )
+
     tasks = [
         run_parallel_scoring(item.text_span, context_text)
-        for item in instance_data.identified_instances
+        for item in scored_data.identified_instances
     ]
 
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
-    for item, result in zip(instance_data.identified_instances, results):
+    for item, result in zip(scored_data.identified_instances, results):
         if isinstance(result, Exception):
             logger.error(
                 "Scoring failed for event instance '%s'",
@@ -1001,22 +1064,27 @@ async def score_event_instances(
         item.relevance_score = rel_data.relevance_score if rel_data else None
         item.clarity_score = clar_data.clarity_score if clar_data else None
 
-    return instance_data
+    return scored_data
 
 
 async def score_statement_instances(
-    instance_data: StatementInstanceSchema, context_text: str
+    instance_data: StatementInstanceBaseSchema | StatementInstanceSchema,
+    context_text: str,
 ) -> StatementInstanceSchema:
     """Score each statement instance within ``instance_data``."""
 
+    scored_data = StatementInstanceSchema.model_validate(
+        cast(Any, instance_data).model_dump()
+    )
+
     tasks = [
         run_parallel_scoring(item.text_span, context_text)
-        for item in instance_data.identified_instances
+        for item in scored_data.identified_instances
     ]
 
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
-    for item, result in zip(instance_data.identified_instances, results):
+    for item, result in zip(scored_data.identified_instances, results):
         if isinstance(result, Exception):
             logger.error(
                 "Scoring failed for statement instance '%s'",
@@ -1037,22 +1105,27 @@ async def score_statement_instances(
         item.relevance_score = rel_data.relevance_score if rel_data else None
         item.clarity_score = clar_data.clarity_score if clar_data else None
 
-    return instance_data
+    return scored_data
 
 
 async def score_evidence_instances(
-    instance_data: EvidenceInstanceSchema, context_text: str
+    instance_data: EvidenceInstanceBaseSchema | EvidenceInstanceSchema,
+    context_text: str,
 ) -> EvidenceInstanceSchema:
     """Score each evidence instance within ``instance_data``."""
 
+    scored_data = EvidenceInstanceSchema.model_validate(
+        cast(Any, instance_data).model_dump()
+    )
+
     tasks = [
         run_parallel_scoring(item.text_span, context_text)
-        for item in instance_data.identified_instances
+        for item in scored_data.identified_instances
     ]
 
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
-    for item, result in zip(instance_data.identified_instances, results):
+    for item, result in zip(scored_data.identified_instances, results):
         if isinstance(result, Exception):
             logger.error(
                 "Scoring failed for evidence instance '%s'",
@@ -1073,22 +1146,27 @@ async def score_evidence_instances(
         item.relevance_score = rel_data.relevance_score if rel_data else None
         item.clarity_score = clar_data.clarity_score if clar_data else None
 
-    return instance_data
+    return scored_data
 
 
 async def score_measurement_instances(
-    instance_data: MeasurementInstanceSchema, context_text: str
+    instance_data: MeasurementInstanceBaseSchema | MeasurementInstanceSchema,
+    context_text: str,
 ) -> MeasurementInstanceSchema:
     """Score each measurement instance within ``instance_data``."""
 
+    scored_data = MeasurementInstanceSchema.model_validate(
+        cast(Any, instance_data).model_dump()
+    )
+
     tasks = [
         run_parallel_scoring(item.text_span, context_text)
-        for item in instance_data.identified_instances
+        for item in scored_data.identified_instances
     ]
 
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
-    for item, result in zip(instance_data.identified_instances, results):
+    for item, result in zip(scored_data.identified_instances, results):
         if isinstance(result, Exception):
             logger.error(
                 "Scoring failed for measurement instance '%s'",
@@ -1109,22 +1187,27 @@ async def score_measurement_instances(
         item.relevance_score = rel_data.relevance_score if rel_data else None
         item.clarity_score = clar_data.clarity_score if clar_data else None
 
-    return instance_data
+    return scored_data
 
 
 async def score_modality_instances(
-    instance_data: ModalityInstanceSchema, context_text: str
+    instance_data: ModalityInstanceBaseSchema | ModalityInstanceSchema,
+    context_text: str,
 ) -> ModalityInstanceSchema:
     """Score each modality instance within ``instance_data``."""
 
+    scored_data = ModalityInstanceSchema.model_validate(
+        cast(Any, instance_data).model_dump()
+    )
+
     tasks = [
         run_parallel_scoring(item.text_span, context_text)
-        for item in instance_data.identified_instances
+        for item in scored_data.identified_instances
     ]
 
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
-    for item, result in zip(instance_data.identified_instances, results):
+    for item, result in zip(scored_data.identified_instances, results):
         if isinstance(result, Exception):
             logger.error(
                 "Scoring failed for modality instance '%s'",
@@ -1145,13 +1228,18 @@ async def score_modality_instances(
         item.relevance_score = rel_data.relevance_score if rel_data else None
         item.clarity_score = clar_data.clarity_score if clar_data else None
 
-    return instance_data
+    return scored_data
 
 
 async def score_relationship_instances(
-    instance_data: RelationshipInstanceSchema, context_text: str
+    instance_data: RelationshipInstanceBaseSchema | RelationshipInstanceSchema,
+    context_text: str,
 ) -> RelationshipInstanceSchema:
     """Score each relationship instance within ``instance_data``."""
+
+    scored_data = RelationshipInstanceSchema.model_validate(
+        cast(Any, instance_data).model_dump()
+    )
 
     tasks = [
         run_parallel_scoring(
@@ -1162,12 +1250,12 @@ async def score_relationship_instances(
             ),
             context_text,
         )
-        for item in instance_data.identified_instances
+        for item in scored_data.identified_instances
     ]
 
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
-    for item, result in zip(instance_data.identified_instances, results):
+    for item, result in zip(scored_data.identified_instances, results):
         if isinstance(result, Exception):
             logger.error(
                 "Scoring failed for relationship instance '%s - %s - %s'",
@@ -1190,4 +1278,4 @@ async def score_relationship_instances(
         item.relevance_score = rel_data.relevance_score if rel_data else None
         item.clarity_score = clar_data.clarity_score if clar_data else None
 
-    return instance_data
+    return scored_data

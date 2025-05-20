@@ -2,7 +2,7 @@
 
 import logging
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import List, Optional, cast
 
 from pydantic import ValidationError
 
@@ -18,6 +18,7 @@ from ..schemas import (
     SubDomainSchema,
     TopicSchema,
     EntityTypeSchema,
+    EntityTypeBaseSchema,
 )
 from ..utils import (
     direct_save_json_output,
@@ -81,7 +82,7 @@ async def identify_entity_types(
         trace_metadata={k: str(v) for k, v in step4_metadata_for_trace.items()},
     )
     step4_result: Optional[RunResult] = None
-    entity_data: Optional[EntityTypeSchema] = None
+    entity_data: Optional[EntityTypeBaseSchema | EntityTypeSchema] = None
 
     # Prepare context summary for the prompt
     context_summary_for_prompt = (
@@ -116,26 +117,26 @@ async def identify_entity_types(
 
         if step4_result:
             potential_output_step4 = getattr(step4_result, "final_output", None)
-            if isinstance(potential_output_step4, EntityTypeSchema):
+            if isinstance(potential_output_step4, EntityTypeBaseSchema):
                 entity_data = potential_output_step4
                 logger.info(
-                    "Successfully extracted EntityTypeSchema from step4_result.final_output."
+                    "Successfully extracted EntityTypeBaseSchema from step4_result.final_output."
                 )
             elif isinstance(potential_output_step4, dict):
                 try:
-                    entity_data = EntityTypeSchema.model_validate(
+                    entity_data = EntityTypeBaseSchema.model_validate(
                         potential_output_step4
                     )
                     logger.info(
-                        "Successfully validated EntityTypeSchema from step4_result.final_output dict."
+                        "Successfully validated EntityTypeBaseSchema from step4_result.final_output dict."
                     )
                 except ValidationError as e:
                     logger.warning(
-                        f"Step 4a dict output failed EntityTypeSchema validation: {e}"
+                        f"Step 4a dict output failed EntityTypeBaseSchema validation: {e}"
                     )
             else:
                 logger.warning(
-                    f"Step 4a final_output was not EntityTypeSchema or dict (type: {type(potential_output_step4)})."
+                    f"Step 4a final_output was not EntityTypeBaseSchema or dict (type: {type(potential_output_step4)})."
                 )
 
             if entity_data and entity_data.identified_entities:
@@ -153,7 +154,8 @@ async def identify_entity_types(
                         f"Analyzed sub-domains in Step 4a output {entity_data.analyzed_sub_domains} differs from Step 2 input { [sd.sub_domain for sd in sub_domain_data.identified_sub_domains]}. Using Step 4a's list."
                     )
 
-                entity_data = await score_entity_types(entity_data, content)
+                scored_entity_data = await score_entity_types(entity_data, content)
+                entity_data = scored_entity_data
 
                 # Log and print results
                 entity_log_items = [
@@ -250,4 +252,4 @@ async def identify_entity_types(
         print(f"\nAn unexpected error occurred during Step 4a: {type(e).__name__}: {e}")
         entity_data = None
 
-    return entity_data
+    return cast(Optional[EntityTypeSchema], entity_data)
