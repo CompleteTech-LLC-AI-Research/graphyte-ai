@@ -13,24 +13,25 @@ from .schemas import (
     DomainSchema,
     DomainResultSchema,
     SubDomainSchema,
+    SubDomainBaseSchema,
     SingleSubDomainTopicSchema,
     TopicSchema,
-    EntityTypeSchema,
-    OntologyTypeSchema,
-    EventTypeSchema,
-    StatementTypeSchema,
-    EvidenceTypeSchema,
-    MeasurementTypeSchema,
-    ModalityTypeSchema,
-    EntityInstanceSchema,
-    StatementInstanceSchema,
-    EvidenceInstanceSchema,
-    MeasurementInstanceSchema,
-    ModalityInstanceSchema,
-    SingleEntityTypeRelationshipSchema,
-    RelationshipInstanceSchema,
-    OntologyInstanceSchema,
-    EventInstanceSchema,
+    EntityTypeBaseSchema,
+    OntologyTypeBaseSchema,
+    EventTypeBaseSchema,
+    StatementTypeBaseSchema,
+    EvidenceTypeBaseSchema,
+    MeasurementTypeBaseSchema,
+    ModalityTypeBaseSchema,
+    EntityInstanceBaseSchema,
+    StatementInstanceBaseSchema,
+    EvidenceInstanceBaseSchema,
+    MeasurementInstanceBaseSchema,
+    ModalityInstanceBaseSchema,
+    SingleEntityTypeRelationshipBaseSchema,
+    RelationshipInstanceBaseSchema,
+    OntologyInstanceBaseSchema,
+    EventInstanceBaseSchema,
     ConfidenceScoreSchema,
     RelevanceScoreSchema,
     ClarityScoreSchema,
@@ -190,12 +191,12 @@ sub_domain_identifier_agent = Agent(
         "You are given text content and its primary domain. Your task is to identify specific sub-domains "
         "within the text related to the primary domain. "
         "Also provide a brief overall analysis summary.\n"
-        "Output ONLY the result using the provided SubDomainSchema."
+        "Output ONLY the result using the provided SubDomainBaseSchema."
     ),
     model=SUB_DOMAIN_MODEL,
     tools=[],
     handoffs=[],
-    output_type=SubDomainSchema,
+    output_type=SubDomainBaseSchema,
 )
 
 # --- Agent 2b: Sub-Domain Result ---
@@ -276,7 +277,7 @@ entity_type_identifier_agent = base_type_identifier_agent.clone(
         item_field_name="entity_type",
     ),
     model=ENTITY_TYPE_MODEL,
-    output_type=EntityTypeSchema,
+    output_type=EntityTypeBaseSchema,
 )
 
 # --- Agent 4b: Ontology Type Identifier ---
@@ -290,7 +291,7 @@ ontology_type_identifier_agent = base_type_identifier_agent.clone(
         item_field_name="ontology_type",
     ),
     model=ONTOLOGY_TYPE_MODEL,
-    output_type=OntologyTypeSchema,
+    output_type=OntologyTypeBaseSchema,
 )
 
 # --- Agent 4c: Event Type Identifier ---
@@ -304,7 +305,7 @@ event_type_identifier_agent = base_type_identifier_agent.clone(
         item_field_name="event_type",
     ),
     model=EVENT_TYPE_MODEL,
-    output_type=EventTypeSchema,
+    output_type=EventTypeBaseSchema,
 )
 
 # --- Agent 4d: Statement Type Identifier ---
@@ -318,7 +319,7 @@ statement_type_identifier_agent = base_type_identifier_agent.clone(
         item_field_name="statement_type",
     ),
     model=STATEMENT_TYPE_MODEL,
-    output_type=StatementTypeSchema,
+    output_type=StatementTypeBaseSchema,
 )
 
 # --- Agent 4e: Evidence Type Identifier ---
@@ -332,7 +333,7 @@ evidence_type_identifier_agent = base_type_identifier_agent.clone(
         item_field_name="evidence_type",
     ),
     model=EVIDENCE_TYPE_MODEL,
-    output_type=EvidenceTypeSchema,
+    output_type=EvidenceTypeBaseSchema,
 )
 
 # --- Agent 4f: Measurement Type Identifier ---
@@ -346,7 +347,7 @@ measurement_type_identifier_agent = base_type_identifier_agent.clone(
         item_field_name="measurement_type",
     ),
     model=MEASUREMENT_TYPE_MODEL,
-    output_type=MeasurementTypeSchema,
+    output_type=MeasurementTypeBaseSchema,
 )
 
 # --- Agent 4g: Modality Type Identifier ---
@@ -360,7 +361,7 @@ modality_type_identifier_agent = base_type_identifier_agent.clone(
         item_field_name="modality_type",
     ),
     model=MODALITY_TYPE_MODEL,
-    output_type=ModalityTypeSchema,
+    output_type=ModalityTypeBaseSchema,
 )
 
 
@@ -398,7 +399,7 @@ entity_instance_extractor_agent = base_instance_extractor_agent.clone(
         list_field="identified_instances",
     ),
     model=ENTITY_INSTANCE_MODEL,
-    output_type=EntityInstanceSchema,
+    output_type=EntityInstanceBaseSchema,
 )
 
 
@@ -414,7 +415,7 @@ ontology_instance_extractor_agent = base_instance_extractor_agent.clone(
         list_field="identified_instances",
     ),
     model=ONTOLOGY_INSTANCE_MODEL,
-    output_type=OntologyInstanceSchema,
+    output_type=OntologyInstanceBaseSchema,
 )
 
 
@@ -430,7 +431,7 @@ event_instance_extractor_agent = base_instance_extractor_agent.clone(
         list_field="identified_instances",
     ),
     model=EVENT_INSTANCE_MODEL,
-    output_type=EventInstanceSchema,
+    output_type=EventInstanceBaseSchema,
 )
 
 
@@ -446,7 +447,7 @@ statement_instance_extractor_agent = base_instance_extractor_agent.clone(
         list_field="identified_instances",
     ),
     model=STATEMENT_INSTANCE_MODEL,
-    output_type=StatementInstanceSchema,
+    output_type=StatementInstanceBaseSchema,
 )
 
 
@@ -462,7 +463,7 @@ evidence_instance_extractor_agent = base_instance_extractor_agent.clone(
         list_field="identified_instances",
     ),
     model=EVIDENCE_INSTANCE_MODEL,
-    output_type=EvidenceInstanceSchema,
+    output_type=EvidenceInstanceBaseSchema,
 )
 
 
@@ -478,7 +479,7 @@ measurement_instance_extractor_agent = base_instance_extractor_agent.clone(
         list_field="identified_instances",
     ),
     model=MEASUREMENT_INSTANCE_MODEL,
-    output_type=MeasurementInstanceSchema,
+    output_type=MeasurementInstanceBaseSchema,
 )
 
 
@@ -494,7 +495,7 @@ modality_instance_extractor_agent = base_instance_extractor_agent.clone(
         list_field="identified_instances",
     ),
     model=MODALITY_INSTANCE_MODEL,
-    output_type=ModalityInstanceSchema,
+    output_type=ModalityInstanceBaseSchema,
 )
 
 
@@ -507,10 +508,10 @@ relationship_type_identifier_agent = Agent(
         "Identify explicit or strongly implied relationships mentioned in the text where the **focus entity type** is involved as one of the participants.\n"
         "Examples of relationships: WORKS_FOR, LOCATED_IN, ACQUIRED, PARTNERED_WITH, COMPETES_WITH, FOUNDED_BY, MANUFACTURES, USES_TECHNOLOGY, etc.\n"
         "For EACH identified relationship involving the focus entity type, state the unique type of relationship found.\n"
-        "Output ONLY the result using the provided SingleEntityTypeRelationshipSchema. Ensure the 'entity_type_focus' field matches the entity type you were asked to focus on."
+        "Output ONLY the result using the provided SingleEntityTypeRelationshipBaseSchema. Ensure the 'entity_type_focus' field matches the entity type you were asked to focus on."
     ),
     model=RELATIONSHIP_MODEL,
-    output_type=SingleEntityTypeRelationshipSchema,
+    output_type=SingleEntityTypeRelationshipBaseSchema,
     tools=[],
     handoffs=[],
 )
@@ -527,7 +528,7 @@ relationship_extractor_agent = base_instance_extractor_agent.clone(
         list_field="identified_instances",
     ),
     model=RELATIONSHIP_INSTANCE_MODEL,
-    output_type=RelationshipInstanceSchema,
+    output_type=RelationshipInstanceBaseSchema,
 )
 
 # You can optionally create a list or dict to easily access all agents
