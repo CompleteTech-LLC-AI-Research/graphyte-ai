@@ -21,6 +21,8 @@ from ..config import (
 )  # Import new config vars
 from ..schemas import (
     EvidenceTypeSchema,
+    EvidenceTypeIdentifierSchema,
+    EvidenceDetail,
     SubDomainSchema,
     TopicSchema,
 )  # Import new output schema
@@ -89,6 +91,7 @@ async def identify_evidence_types(
     )
     step4e_result: Optional[RunResult] = None
     evidence_data: Optional[EvidenceTypeSchema] = None
+    identifier_data: Optional[EvidenceTypeIdentifierSchema] = None
 
     # Prepare context summary for the prompt
     context_summary_for_prompt = (
@@ -105,7 +108,7 @@ async def identify_evidence_types(
                 f"Analyze the following text to identify key EVIDENCE types (e.g., Testimony, Document, Statistic, Anecdote, Expert Opinion). "
                 f"Use the provided context:\n{context_summary_for_prompt}\n\n"
                 f"Identify evidence types relevant to this overall context. "
-                f"Output ONLY using the required EvidenceTypeSchema, including the primary_domain and analyzed_sub_domains list in the output."
+                f"Output ONLY using the required EvidenceTypeIdentifierSchema, including the primary_domain and analyzed_sub_domains list in the output."
             ),
         },
         {
@@ -123,26 +126,42 @@ async def identify_evidence_types(
 
         if step4e_result:
             potential_output_step4e = getattr(step4e_result, "final_output", None)
-            if isinstance(potential_output_step4e, EvidenceTypeSchema):
-                evidence_data = potential_output_step4e
+            if isinstance(potential_output_step4e, EvidenceTypeIdentifierSchema):
+                identifier_data = potential_output_step4e
                 logger.info(
-                    "Successfully extracted EvidenceTypeSchema from step4e_result.final_output."
+                    "Successfully extracted EvidenceTypeIdentifierSchema from step4e_result.final_output."
                 )
             elif isinstance(potential_output_step4e, dict):
                 try:
-                    evidence_data = EvidenceTypeSchema.model_validate(
+                    identifier_data = EvidenceTypeIdentifierSchema.model_validate(
                         potential_output_step4e
                     )
                     logger.info(
-                        "Successfully validated EvidenceTypeSchema from step4e_result.final_output dict."
+                        "Successfully validated EvidenceTypeIdentifierSchema from step4e_result.final_output dict."
                     )
                 except ValidationError as e:
                     logger.warning(
-                        f"Step 4e dict output failed EvidenceTypeSchema validation: {e}"
+                        f"Step 4e dict output failed EvidenceTypeIdentifierSchema validation: {e}"
                     )
             else:
                 logger.warning(
-                    f"Step 4e final_output was not EvidenceTypeSchema or dict (type: {type(potential_output_step4e)})."
+                    f"Step 4e final_output was not EvidenceTypeIdentifierSchema or dict (type: {type(potential_output_step4e)})."
+                )
+
+            if identifier_data and identifier_data.identified_evidence:
+                evidence_data = EvidenceTypeSchema(
+                    primary_domain=identifier_data.primary_domain,
+                    analyzed_sub_domains=identifier_data.analyzed_sub_domains,
+                    identified_evidence=[
+                        EvidenceDetail(
+                            evidence_type=item.evidence_type,
+                            confidence_score=None,
+                            relevance_score=None,
+                            clarity_score=None,
+                        )
+                        for item in identifier_data.identified_evidence
+                    ],
+                    analysis_summary=identifier_data.analysis_summary,
                 )
 
             if evidence_data and evidence_data.identified_evidence:

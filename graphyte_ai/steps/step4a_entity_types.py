@@ -18,6 +18,8 @@ from ..schemas import (
     SubDomainSchema,
     TopicSchema,
     EntityTypeSchema,
+    EntityTypeIdentifierSchema,
+    EntityTypeDetail,
 )
 from ..utils import (
     direct_save_json_output,
@@ -82,6 +84,7 @@ async def identify_entity_types(
     )
     step4_result: Optional[RunResult] = None
     entity_data: Optional[EntityTypeSchema] = None
+    identifier_data: Optional[EntityTypeIdentifierSchema] = None
 
     # Prepare context summary for the prompt
     context_summary_for_prompt = (
@@ -98,7 +101,7 @@ async def identify_entity_types(
                 f"MONEY, PRODUCT, EVENT, TECHNOLOGY, SCIENTIFIC_CONCEPT, ECONOMIC_INDICATOR). "
                 f"Use the provided context:\n{context_summary_for_prompt}\n\n"
                 f"Identify entity types relevant to this overall context. "
-                f"Output ONLY using the required EntityTypeSchema, including the primary_domain and analyzed_sub_domains list in the output."
+                f"Output ONLY using the required EntityTypeIdentifierSchema, including the primary_domain and analyzed_sub_domains list in the output."
             ),
         },
         {
@@ -116,26 +119,42 @@ async def identify_entity_types(
 
         if step4_result:
             potential_output_step4 = getattr(step4_result, "final_output", None)
-            if isinstance(potential_output_step4, EntityTypeSchema):
-                entity_data = potential_output_step4
+            if isinstance(potential_output_step4, EntityTypeIdentifierSchema):
+                identifier_data = potential_output_step4
                 logger.info(
-                    "Successfully extracted EntityTypeSchema from step4_result.final_output."
+                    "Successfully extracted EntityTypeIdentifierSchema from step4_result.final_output."
                 )
             elif isinstance(potential_output_step4, dict):
                 try:
-                    entity_data = EntityTypeSchema.model_validate(
+                    identifier_data = EntityTypeIdentifierSchema.model_validate(
                         potential_output_step4
                     )
                     logger.info(
-                        "Successfully validated EntityTypeSchema from step4_result.final_output dict."
+                        "Successfully validated EntityTypeIdentifierSchema from step4_result.final_output dict."
                     )
                 except ValidationError as e:
                     logger.warning(
-                        f"Step 4a dict output failed EntityTypeSchema validation: {e}"
+                        f"Step 4a dict output failed EntityTypeIdentifierSchema validation: {e}"
                     )
             else:
                 logger.warning(
-                    f"Step 4a final_output was not EntityTypeSchema or dict (type: {type(potential_output_step4)})."
+                    f"Step 4a final_output was not EntityTypeIdentifierSchema or dict (type: {type(potential_output_step4)})."
+                )
+
+            if identifier_data and identifier_data.identified_entities:
+                entity_data = EntityTypeSchema(
+                    primary_domain=identifier_data.primary_domain,
+                    analyzed_sub_domains=identifier_data.analyzed_sub_domains,
+                    identified_entities=[
+                        EntityTypeDetail(
+                            entity_type=item.entity_type,
+                            confidence_score=None,
+                            relevance_score=None,
+                            clarity_score=None,
+                        )
+                        for item in identifier_data.identified_entities
+                    ],
+                    analysis_summary=identifier_data.analysis_summary,
                 )
 
             if entity_data and entity_data.identified_entities:

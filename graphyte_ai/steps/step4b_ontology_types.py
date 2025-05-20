@@ -14,7 +14,13 @@ from ..config import (
     ONTOLOGY_TYPE_OUTPUT_DIR,
     ONTOLOGY_TYPE_OUTPUT_FILENAME,
 )
-from ..schemas import OntologyTypeSchema, SubDomainSchema, TopicSchema
+from ..schemas import (
+    OntologyTypeSchema,
+    OntologyTypeIdentifierSchema,
+    OntologyTypeDetail,
+    SubDomainSchema,
+    TopicSchema,
+)
 from ..utils import (
     direct_save_json_output,
     run_agent_with_retry,
@@ -80,6 +86,7 @@ async def identify_ontology_types(
     )
     step4b_result: Optional[RunResult] = None
     ontology_data: Optional[OntologyTypeSchema] = None
+    identifier_data: Optional[OntologyTypeIdentifierSchema] = None
 
     # Prepare context summary for the prompt
     context_summary_for_prompt = (
@@ -96,7 +103,7 @@ async def identify_ontology_types(
                 f"(like Schema.org, FIBO, domain-specific ones) where applicable. "
                 f"Use the provided context:\n{context_summary_for_prompt}\n\n"
                 f"Identify ontology types/concepts relevant to this overall context. "
-                f"Output ONLY using the required OntologyTypeSchema, including the primary_domain and analyzed_sub_domains list in the output."
+                f"Output ONLY using the required OntologyTypeIdentifierSchema, including the primary_domain and analyzed_sub_domains list in the output."
             ),
         },
         {
@@ -114,26 +121,42 @@ async def identify_ontology_types(
 
         if step4b_result:
             potential_output_step4b = getattr(step4b_result, "final_output", None)
-            if isinstance(potential_output_step4b, OntologyTypeSchema):
-                ontology_data = potential_output_step4b
+            if isinstance(potential_output_step4b, OntologyTypeIdentifierSchema):
+                identifier_data = potential_output_step4b
                 logger.info(
-                    "Successfully extracted OntologyTypeSchema from step4b_result.final_output."
+                    "Successfully extracted OntologyTypeIdentifierSchema from step4b_result.final_output."
                 )
             elif isinstance(potential_output_step4b, dict):
                 try:
-                    ontology_data = OntologyTypeSchema.model_validate(
+                    identifier_data = OntologyTypeIdentifierSchema.model_validate(
                         potential_output_step4b
                     )
                     logger.info(
-                        "Successfully validated OntologyTypeSchema from step4b_result.final_output dict."
+                        "Successfully validated OntologyTypeIdentifierSchema from step4b_result.final_output dict."
                     )
                 except ValidationError as e:
                     logger.warning(
-                        f"Step 4b dict output failed OntologyTypeSchema validation: {e}"
+                        f"Step 4b dict output failed OntologyTypeIdentifierSchema validation: {e}"
                     )
             else:
                 logger.warning(
-                    f"Step 4b final_output was not OntologyTypeSchema or dict (type: {type(potential_output_step4b)})."
+                    f"Step 4b final_output was not OntologyTypeIdentifierSchema or dict (type: {type(potential_output_step4b)})."
+                )
+
+            if identifier_data and identifier_data.identified_ontology_types:
+                ontology_data = OntologyTypeSchema(
+                    primary_domain=identifier_data.primary_domain,
+                    analyzed_sub_domains=identifier_data.analyzed_sub_domains,
+                    identified_ontology_types=[
+                        OntologyTypeDetail(
+                            ontology_type=item.ontology_type,
+                            confidence_score=None,
+                            relevance_score=None,
+                            clarity_score=None,
+                        )
+                        for item in identifier_data.identified_ontology_types
+                    ],
+                    analysis_summary=identifier_data.analysis_summary,
                 )
 
             if ontology_data and ontology_data.identified_ontology_types:

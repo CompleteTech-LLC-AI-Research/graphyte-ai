@@ -21,6 +21,8 @@ from ..config import (
 )  # Import new config vars
 from ..schemas import (
     ModalityTypeSchema,
+    ModalityTypeIdentifierSchema,
+    ModalityDetail,
     SubDomainSchema,
     TopicSchema,
 )  # Import new output schema
@@ -89,6 +91,7 @@ async def identify_modality_types(
     )
     step4g_result: Optional[RunResult] = None
     modality_data: Optional[ModalityTypeSchema] = None
+    identifier_data: Optional[ModalityTypeIdentifierSchema] = None
 
     # Prepare context summary for the prompt
     context_summary_for_prompt = (
@@ -105,7 +108,7 @@ async def identify_modality_types(
                 f"Analyze the following text to identify key MODALITY types (e.g., Text, Image, Video, Audio, Table, Chart, Code Snippet, Formula). "
                 f"Use the provided context:\n{context_summary_for_prompt}\n\n"
                 f"Identify modality types relevant to this overall context. "
-                f"Output ONLY using the required ModalityTypeSchema, including the primary_domain and analyzed_sub_domains list in the output."
+                f"Output ONLY using the required ModalityTypeIdentifierSchema, including the primary_domain and analyzed_sub_domains list in the output."
             ),
         },
         {
@@ -123,26 +126,42 @@ async def identify_modality_types(
 
         if step4g_result:
             potential_output_step4g = getattr(step4g_result, "final_output", None)
-            if isinstance(potential_output_step4g, ModalityTypeSchema):
-                modality_data = potential_output_step4g
+            if isinstance(potential_output_step4g, ModalityTypeIdentifierSchema):
+                identifier_data = potential_output_step4g
                 logger.info(
-                    "Successfully extracted ModalityTypeSchema from step4g_result.final_output."
+                    "Successfully extracted ModalityTypeIdentifierSchema from step4g_result.final_output."
                 )
             elif isinstance(potential_output_step4g, dict):
                 try:
-                    modality_data = ModalityTypeSchema.model_validate(
+                    identifier_data = ModalityTypeIdentifierSchema.model_validate(
                         potential_output_step4g
                     )
                     logger.info(
-                        "Successfully validated ModalityTypeSchema from step4g_result.final_output dict."
+                        "Successfully validated ModalityTypeIdentifierSchema from step4g_result.final_output dict."
                     )
                 except ValidationError as e:
                     logger.warning(
-                        f"Step 4g dict output failed ModalityTypeSchema validation: {e}"
+                        f"Step 4g dict output failed ModalityTypeIdentifierSchema validation: {e}"
                     )
             else:
                 logger.warning(
-                    f"Step 4g final_output was not ModalityTypeSchema or dict (type: {type(potential_output_step4g)})."
+                    f"Step 4g final_output was not ModalityTypeIdentifierSchema or dict (type: {type(potential_output_step4g)})."
+                )
+
+            if identifier_data and identifier_data.identified_modalities:
+                modality_data = ModalityTypeSchema(
+                    primary_domain=identifier_data.primary_domain,
+                    analyzed_sub_domains=identifier_data.analyzed_sub_domains,
+                    identified_modalities=[
+                        ModalityDetail(
+                            modality_type=item.modality_type,
+                            confidence_score=None,
+                            relevance_score=None,
+                            clarity_score=None,
+                        )
+                        for item in identifier_data.identified_modalities
+                    ],
+                    analysis_summary=identifier_data.analysis_summary,
                 )
 
             if modality_data and modality_data.identified_modalities:
