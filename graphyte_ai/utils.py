@@ -37,6 +37,8 @@ try:
         TResponseInputItem,
         RunResult,
         AgentsException,  # Import base SDK exception for retry
+        custom_span,
+        gen_trace_id,
     )
 except ImportError:
     print("Error: 'agents' SDK library not found or incomplete. Cannot define utils.")
@@ -397,6 +399,9 @@ else:
 async def run_parallel_scoring(
     domain: str,
     context_text: str,
+    workflow_name: str | None = None,
+    group_id: str | None = None,
+    metadata: Optional[dict[str, str]] = None,
 ) -> tuple[
     Optional[ConfidenceScoreSchema],
     Optional[RelevanceScoreSchema],
@@ -416,13 +421,21 @@ async def run_parallel_scoring(
 
     combined_input = f"Domain: {domain}\n\n{context_text}"
 
-    score_tasks = [
-        run_agent_with_retry(confidence_score_agent, combined_input),
-        run_agent_with_retry(relevance_score_agent, combined_input),
-        run_agent_with_retry(clarity_score_agent, combined_input),
-    ]
+    run_config = RunConfig(
+        workflow_name=workflow_name or "parallel_scoring",
+        trace_id=gen_trace_id(),
+        group_id=group_id,
+        trace_metadata={k: str(v) for k, v in (metadata or {}).items()},
+    )
 
-    results = await asyncio.gather(*score_tasks, return_exceptions=True)
+    with custom_span(f"Score {domain}"):
+        score_tasks = [
+            run_agent_with_retry(confidence_score_agent, combined_input, run_config),
+            run_agent_with_retry(relevance_score_agent, combined_input, run_config),
+            run_agent_with_retry(clarity_score_agent, combined_input, run_config),
+        ]
+
+        results = await asyncio.gather(*score_tasks, return_exceptions=True)
 
     confidence_data: Optional[ConfidenceScoreSchema] = None
     relevance_data: Optional[RelevanceScoreSchema] = None
@@ -489,7 +502,9 @@ async def run_parallel_scoring(
 
 
 async def score_sub_domains(
-    sub_domain_data: SubDomainSchema, context_text: str
+    sub_domain_data: SubDomainSchema,
+    context_text: str,
+    group_id: str | None = None,
 ) -> SubDomainSchema:
     """Score each sub-domain within ``sub_domain_data``.
 
@@ -510,7 +525,13 @@ async def score_sub_domains(
     """
 
     tasks = [
-        run_parallel_scoring(item.sub_domain, context_text)
+        run_parallel_scoring(
+            item.sub_domain,
+            context_text,
+            workflow_name="score_sub_domains",
+            group_id=group_id,
+            metadata={"sub_domain": item.sub_domain},
+        )
         for item in sub_domain_data.identified_sub_domains
     ]
 
@@ -538,7 +559,11 @@ async def score_sub_domains(
     return sub_domain_data
 
 
-async def score_topics(topic_data: TopicSchema, context_text: str) -> TopicSchema:
+async def score_topics(
+    topic_data: TopicSchema,
+    context_text: str,
+    group_id: str | None = None,
+) -> TopicSchema:
     """Score each topic within ``topic_data``.
 
     Each :class:`TopicDetail` item will receive confidence, relevance,
@@ -562,7 +587,18 @@ async def score_topics(topic_data: TopicSchema, context_text: str) -> TopicSchem
 
     for sub_domain in topic_data.sub_domain_topic_map:
         for topic in sub_domain.identified_topics:
-            tasks.append(run_parallel_scoring(topic.topic, context_text))
+            tasks.append(
+                run_parallel_scoring(
+                    topic.topic,
+                    context_text,
+                    workflow_name="score_topics",
+                    group_id=group_id,
+                    metadata={
+                        "topic": topic.topic,
+                        "sub_domain": sub_domain.sub_domain,
+                    },
+                )
+            )
             topic_items.append(topic)
 
     if not tasks:
