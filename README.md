@@ -65,7 +65,6 @@ Graphyte AI offers a novel approach using collaborative AI agents:
 * **Conflict Resolution:** Identifies and resolves contradictions with existing knowledge.
 * **Modular Design:** Allows for easy extension and customization of the agent workflow.
 * **Structured Output:** Generates verified knowledge triples ready for integration into graph databases (e.g., Neo4j, RDF stores).
-* **Scoring Utilities:** All type and instance extractions are run through post-processing functions that assign confidence, relevance, and clarity scores.
 
 ## How It Works: Multi-Agent Architecture
 
@@ -216,17 +215,14 @@ The workflow progresses through several key phases:
 
 2.  **Type Identification (Step 4 - Parallel):**
     * Leverages the established context to identify various conceptual **Types**...
-    * Each type extraction is followed by a post-processing scoring step to assign confidence, relevance, and clarity.
 
 3.  **Instance Extraction (Steps 5a-5g - Parallel):**
     * Extracts specific **Instances** or mentions...
-    * All instance outputs are scored in the same manner as the type results.
     * After **relationship instance extraction (Step 6b)**, these results are aggregated into a unified `ExtractedInstances` node for later steps. The aggregated output now includes relationship instances.
 
 4.  **Relationship Identification (Step 6 - Parallel):**
     * Identifies potential **Relationships**...
-    * **Step 6a** detects candidate relationship types, then applies the new `score_relationship_types` utility.
-    * **Step 6b** extracts subject-object pairs as **Relationship Instances** and runs them through `score_relationship_instances`.
+    * Extracts specific subject-object pairs as **Relationship Instances** using the detected types.
 
 5.  **Knowledge Enrichment & Verification (Steps 7-9 - KARMA Inspired):**
     * **Schema Alignment (Step 7):** Aligns the extracted instances...
