@@ -22,7 +22,11 @@ from ..schemas import (
     TopicSchema,
     EntityTypeSchema,
 )
-from ..utils import direct_save_json_output, run_agent_with_retry
+from ..utils import (
+    direct_save_json_output,
+    run_agent_with_retry,
+    score_relationship_types,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -347,6 +351,8 @@ async def identify_relationship_types(
         entity_relationships_map=aggregated_relationship_results,  # List of successful results
         analysis_summary=f"Generated relationships in parallel focusing on {len(aggregated_relationship_results)} entity types (out of {len(entity_types_being_processed)} attempted).",
     )
+
+    relationship_data = await score_relationship_types(relationship_data, content)
 
     logger.info(
         f"Final Aggregated Relationships (Structured):\n{relationship_data.model_dump_json(indent=2)}"
