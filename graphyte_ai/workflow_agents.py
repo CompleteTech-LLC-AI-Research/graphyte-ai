@@ -364,6 +364,49 @@ modality_type_identifier_agent = base_type_identifier_agent.clone(
 )
 
 
+# --- Result Agents for Type Identification (4a-4g) ---
+entity_type_result_agent = create_result_agent(
+    base_agent=entity_type_identifier_agent,
+    schema=EntityTypeSchema,
+    item_description="entity type analysis result",
+)
+
+ontology_type_result_agent = create_result_agent(
+    base_agent=ontology_type_identifier_agent,
+    schema=OntologyTypeSchema,
+    item_description="ontology type analysis result",
+)
+
+event_type_result_agent = create_result_agent(
+    base_agent=event_type_identifier_agent,
+    schema=EventTypeSchema,
+    item_description="event type analysis result",
+)
+
+statement_type_result_agent = create_result_agent(
+    base_agent=statement_type_identifier_agent,
+    schema=StatementTypeSchema,
+    item_description="statement type analysis result",
+)
+
+evidence_type_result_agent = create_result_agent(
+    base_agent=evidence_type_identifier_agent,
+    schema=EvidenceTypeSchema,
+    item_description="evidence type analysis result",
+)
+
+measurement_type_result_agent = create_result_agent(
+    base_agent=measurement_type_identifier_agent,
+    schema=MeasurementTypeSchema,
+    item_description="measurement type analysis result",
+)
+
+modality_type_result_agent = create_result_agent(
+    base_agent=modality_type_identifier_agent,
+    schema=ModalityTypeSchema,
+    item_description="modality type analysis result",
+)
+
 # --- Base Agent for Instance Extraction (Agents 5a-5g & 6b) ---
 # Provides a reusable template for extracting specific instances of the previously
 # identified types. Specific extractor agents clone this base and customize the
@@ -498,6 +541,50 @@ modality_instance_extractor_agent = base_instance_extractor_agent.clone(
 )
 
 
+# --- Result Agents for Instance Extraction (5a-5g) ---
+entity_instance_result_agent = create_result_agent(
+    base_agent=entity_instance_extractor_agent,
+    schema=EntityInstanceSchema,
+    item_description="entity instance extraction result",
+)
+
+ontology_instance_result_agent = create_result_agent(
+    base_agent=ontology_instance_extractor_agent,
+    schema=OntologyInstanceSchema,
+    item_description="ontology instance extraction result",
+)
+
+event_instance_result_agent = create_result_agent(
+    base_agent=event_instance_extractor_agent,
+    schema=EventInstanceSchema,
+    item_description="event instance extraction result",
+)
+
+statement_instance_result_agent = create_result_agent(
+    base_agent=statement_instance_extractor_agent,
+    schema=StatementInstanceSchema,
+    item_description="statement instance extraction result",
+)
+
+evidence_instance_result_agent = create_result_agent(
+    base_agent=evidence_instance_extractor_agent,
+    schema=EvidenceInstanceSchema,
+    item_description="evidence instance extraction result",
+)
+
+measurement_instance_result_agent = create_result_agent(
+    base_agent=measurement_instance_extractor_agent,
+    schema=MeasurementInstanceSchema,
+    item_description="measurement instance extraction result",
+)
+
+modality_instance_result_agent = create_result_agent(
+    base_agent=modality_instance_extractor_agent,
+    schema=ModalityInstanceSchema,
+    item_description="modality instance extraction result",
+)
+
+
 # --- Agent 6: Relationship Identifier (for one entity type) ---
 relationship_type_identifier_agent = Agent(
     name="RelationshipTypeIdentifierAgent",
@@ -553,6 +640,13 @@ all_agents = {
     "sub_domain_result": sub_domain_result_agent,
     "topic_identifier": topic_identifier_agent,
     "topic_result": topic_result_agent,
+    "entity_type_result": entity_type_result_agent,
+    "ontology_type_result": ontology_type_result_agent,
+    "event_type_result": event_type_result_agent,
+    "statement_type_result": statement_type_result_agent,
+    "evidence_type_result": evidence_type_result_agent,
+    "measurement_type_result": measurement_type_result_agent,
+    "modality_type_result": modality_type_result_agent,
     "entity_type_identifier": entity_type_identifier_agent,
     "ontology_type_identifier": ontology_type_identifier_agent,
     "event_type_identifier": event_type_identifier_agent,
@@ -567,6 +661,13 @@ all_agents = {
     "evidence_instance_extractor": evidence_instance_extractor_agent,
     "measurement_instance_extractor": measurement_instance_extractor_agent,
     "modality_instance_extractor": modality_instance_extractor_agent,
+    "entity_instance_result": entity_instance_result_agent,
+    "ontology_instance_result": ontology_instance_result_agent,
+    "event_instance_result": event_instance_result_agent,
+    "statement_instance_result": statement_instance_result_agent,
+    "evidence_instance_result": evidence_instance_result_agent,
+    "measurement_instance_result": measurement_instance_result_agent,
+    "modality_instance_result": modality_instance_result_agent,
     "confidence_score": confidence_score_agent,
     "relevance_score": relevance_score_agent,
     "clarity_score": clarity_score_agent,
@@ -580,3 +681,17 @@ if "__all__" in globals():
     __all_list.append("domain_result_agent")
     __all_list.append("sub_domain_result_agent")
     __all_list.append("topic_result_agent")
+    __all_list.append("entity_type_result_agent")
+    __all_list.append("ontology_type_result_agent")
+    __all_list.append("event_type_result_agent")
+    __all_list.append("statement_type_result_agent")
+    __all_list.append("evidence_type_result_agent")
+    __all_list.append("measurement_type_result_agent")
+    __all_list.append("modality_type_result_agent")
+    __all_list.append("entity_instance_result_agent")
+    __all_list.append("ontology_instance_result_agent")
+    __all_list.append("event_instance_result_agent")
+    __all_list.append("statement_instance_result_agent")
+    __all_list.append("evidence_instance_result_agent")
+    __all_list.append("measurement_instance_result_agent")
+    __all_list.append("modality_instance_result_agent")
