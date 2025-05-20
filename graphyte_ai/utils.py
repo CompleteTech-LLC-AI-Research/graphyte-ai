@@ -67,6 +67,13 @@ from .schemas import (
     EvidenceTypeSchema,
     MeasurementTypeSchema,
     ModalityTypeSchema,
+    EntityInstanceSchema,
+    OntologyInstanceSchema,
+    EventInstanceSchema,
+    StatementInstanceSchema,
+    EvidenceInstanceSchema,
+    MeasurementInstanceSchema,
+    ModalityInstanceSchema,
 )
 
 # Get logger for utils module
@@ -842,3 +849,255 @@ async def score_modality_types(
         item.clarity_score = clar_data.clarity_score if clar_data else None
 
     return modality_data
+
+
+async def score_entity_instances(
+    instance_data: EntityInstanceSchema, context_text: str
+) -> EntityInstanceSchema:
+    """Score each entity instance within ``instance_data``."""
+
+    tasks = [
+        run_parallel_scoring(item.text_span, context_text)
+        for item in instance_data.identified_instances
+    ]
+
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    for item, result in zip(instance_data.identified_instances, results):
+        if isinstance(result, Exception):
+            logger.error(
+                "Scoring failed for entity instance '%s'",
+                item.text_span,
+                exc_info=result,
+            )
+            continue
+
+        conf_data, rel_data, clar_data = cast(
+            tuple[
+                Optional[ConfidenceScoreSchema],
+                Optional[RelevanceScoreSchema],
+                Optional[ClarityScoreSchema],
+            ],
+            result,
+        )
+        item.confidence_score = conf_data.confidence_score if conf_data else None
+        item.relevance_score = rel_data.relevance_score if rel_data else None
+        item.clarity_score = clar_data.clarity_score if clar_data else None
+
+    return instance_data
+
+
+async def score_ontology_instances(
+    instance_data: OntologyInstanceSchema, context_text: str
+) -> OntologyInstanceSchema:
+    """Score each ontology instance within ``instance_data``."""
+
+    tasks = [
+        run_parallel_scoring(item.text_span, context_text)
+        for item in instance_data.identified_instances
+    ]
+
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    for item, result in zip(instance_data.identified_instances, results):
+        if isinstance(result, Exception):
+            logger.error(
+                "Scoring failed for ontology instance '%s'",
+                item.text_span,
+                exc_info=result,
+            )
+            continue
+
+        conf_data, rel_data, clar_data = cast(
+            tuple[
+                Optional[ConfidenceScoreSchema],
+                Optional[RelevanceScoreSchema],
+                Optional[ClarityScoreSchema],
+            ],
+            result,
+        )
+        item.confidence_score = conf_data.confidence_score if conf_data else None
+        item.relevance_score = rel_data.relevance_score if rel_data else None
+        item.clarity_score = clar_data.clarity_score if clar_data else None
+
+    return instance_data
+
+
+async def score_event_instances(
+    instance_data: EventInstanceSchema, context_text: str
+) -> EventInstanceSchema:
+    """Score each event instance within ``instance_data``."""
+
+    tasks = [
+        run_parallel_scoring(item.text_span, context_text)
+        for item in instance_data.identified_instances
+    ]
+
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    for item, result in zip(instance_data.identified_instances, results):
+        if isinstance(result, Exception):
+            logger.error(
+                "Scoring failed for event instance '%s'",
+                item.text_span,
+                exc_info=result,
+            )
+            continue
+
+        conf_data, rel_data, clar_data = cast(
+            tuple[
+                Optional[ConfidenceScoreSchema],
+                Optional[RelevanceScoreSchema],
+                Optional[ClarityScoreSchema],
+            ],
+            result,
+        )
+        item.confidence_score = conf_data.confidence_score if conf_data else None
+        item.relevance_score = rel_data.relevance_score if rel_data else None
+        item.clarity_score = clar_data.clarity_score if clar_data else None
+
+    return instance_data
+
+
+async def score_statement_instances(
+    instance_data: StatementInstanceSchema, context_text: str
+) -> StatementInstanceSchema:
+    """Score each statement instance within ``instance_data``."""
+
+    tasks = [
+        run_parallel_scoring(item.text_span, context_text)
+        for item in instance_data.identified_instances
+    ]
+
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    for item, result in zip(instance_data.identified_instances, results):
+        if isinstance(result, Exception):
+            logger.error(
+                "Scoring failed for statement instance '%s'",
+                item.text_span,
+                exc_info=result,
+            )
+            continue
+
+        conf_data, rel_data, clar_data = cast(
+            tuple[
+                Optional[ConfidenceScoreSchema],
+                Optional[RelevanceScoreSchema],
+                Optional[ClarityScoreSchema],
+            ],
+            result,
+        )
+        item.confidence_score = conf_data.confidence_score if conf_data else None
+        item.relevance_score = rel_data.relevance_score if rel_data else None
+        item.clarity_score = clar_data.clarity_score if clar_data else None
+
+    return instance_data
+
+
+async def score_evidence_instances(
+    instance_data: EvidenceInstanceSchema, context_text: str
+) -> EvidenceInstanceSchema:
+    """Score each evidence instance within ``instance_data``."""
+
+    tasks = [
+        run_parallel_scoring(item.text_span, context_text)
+        for item in instance_data.identified_instances
+    ]
+
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    for item, result in zip(instance_data.identified_instances, results):
+        if isinstance(result, Exception):
+            logger.error(
+                "Scoring failed for evidence instance '%s'",
+                item.text_span,
+                exc_info=result,
+            )
+            continue
+
+        conf_data, rel_data, clar_data = cast(
+            tuple[
+                Optional[ConfidenceScoreSchema],
+                Optional[RelevanceScoreSchema],
+                Optional[ClarityScoreSchema],
+            ],
+            result,
+        )
+        item.confidence_score = conf_data.confidence_score if conf_data else None
+        item.relevance_score = rel_data.relevance_score if rel_data else None
+        item.clarity_score = clar_data.clarity_score if clar_data else None
+
+    return instance_data
+
+
+async def score_measurement_instances(
+    instance_data: MeasurementInstanceSchema, context_text: str
+) -> MeasurementInstanceSchema:
+    """Score each measurement instance within ``instance_data``."""
+
+    tasks = [
+        run_parallel_scoring(item.text_span, context_text)
+        for item in instance_data.identified_instances
+    ]
+
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    for item, result in zip(instance_data.identified_instances, results):
+        if isinstance(result, Exception):
+            logger.error(
+                "Scoring failed for measurement instance '%s'",
+                item.text_span,
+                exc_info=result,
+            )
+            continue
+
+        conf_data, rel_data, clar_data = cast(
+            tuple[
+                Optional[ConfidenceScoreSchema],
+                Optional[RelevanceScoreSchema],
+                Optional[ClarityScoreSchema],
+            ],
+            result,
+        )
+        item.confidence_score = conf_data.confidence_score if conf_data else None
+        item.relevance_score = rel_data.relevance_score if rel_data else None
+        item.clarity_score = clar_data.clarity_score if clar_data else None
+
+    return instance_data
+
+
+async def score_modality_instances(
+    instance_data: ModalityInstanceSchema, context_text: str
+) -> ModalityInstanceSchema:
+    """Score each modality instance within ``instance_data``."""
+
+    tasks = [
+        run_parallel_scoring(item.text_span, context_text)
+        for item in instance_data.identified_instances
+    ]
+
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    for item, result in zip(instance_data.identified_instances, results):
+        if isinstance(result, Exception):
+            logger.error(
+                "Scoring failed for modality instance '%s'",
+                item.text_span,
+                exc_info=result,
+            )
+            continue
+
+        conf_data, rel_data, clar_data = cast(
+            tuple[
+                Optional[ConfidenceScoreSchema],
+                Optional[RelevanceScoreSchema],
+                Optional[ClarityScoreSchema],
+            ],
+            result,
+        )
+        item.confidence_score = conf_data.confidence_score if conf_data else None
+        item.relevance_score = rel_data.relevance_score if rel_data else None
+        item.clarity_score = clar_data.clarity_score if clar_data else None
+
+    return instance_data

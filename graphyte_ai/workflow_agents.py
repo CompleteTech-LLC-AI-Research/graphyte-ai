@@ -373,8 +373,7 @@ base_instance_extractor_instructions_template = (
     "Extract specific {concept_description} from the provided text. "
     "Use the context of domain, sub-domains, topics and identified {type_list_name} to guide relevance. "
     "For each extracted instance provide the {instance_field} and {span_field}. "
-    "Call the confidence_score_agent, relevance_score_agent, and clarity_score_agent tools for each instance before producing the final output. "
-    "Every item MUST include 'confidence_score', 'relevance_score', and 'clarity_score'. "
+    "Do **not** include scoring fields such as 'confidence_score', 'relevance_score', or 'clarity_score'. "
     "Output ONLY the result using the provided schema structure. "
     "Ensure the '{list_field}' field contains all extracted items and include the 'primary_domain' and 'analyzed_sub_domains' fields from the context."
 )
@@ -382,20 +381,7 @@ base_instance_extractor_instructions_template = (
 base_instance_extractor_agent = Agent(
     name="BaseInstanceExtractorAgent",  # Generic name, overridden in clones
     instructions=base_instance_extractor_instructions_template,  # Formatted in clones
-    tools=[
-        confidence_score_agent.as_tool(
-            tool_name="confidence_score",
-            tool_description="Evaluate confidence between 0.0 and 1.0",
-        ),
-        relevance_score_agent.as_tool(
-            tool_name="relevance_score",
-            tool_description="Judge relevance between 0.0 and 1.0",
-        ),
-        clarity_score_agent.as_tool(
-            tool_name="clarity_score",
-            tool_description="Assess clarity between 0.0 and 1.0",
-        ),
-    ],
+    tools=[],
     handoffs=[],
 )
 
