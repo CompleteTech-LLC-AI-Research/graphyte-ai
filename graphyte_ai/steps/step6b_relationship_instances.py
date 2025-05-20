@@ -19,11 +19,7 @@ from ..schemas import (
     SubDomainSchema,
     RelationshipSchema,
 )
-from ..utils import (
-    direct_save_json_output,
-    run_agent_with_retry,
-    score_relationship_instances,
-)
+from ..utils import direct_save_json_output, run_agent_with_retry
 
 logger = logging.getLogger(__name__)
 
@@ -116,7 +112,6 @@ async def identify_relationship_instances(
                 ]
             if final.primary_domain != primary_domain:
                 final.primary_domain = primary_domain
-            final = await score_relationship_instances(final, content)
             logger.info("Step 6b result:\n%s", final.model_dump_json(indent=2))
             print("\n--- Relationship Instances Extracted (Structured Output) ---")
             print(final.model_dump_json(indent=2))
