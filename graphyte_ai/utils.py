@@ -74,6 +74,8 @@ from .schemas import (
     EvidenceInstanceSchema,
     MeasurementInstanceSchema,
     ModalityInstanceSchema,
+    RelationshipSchema,
+    RelationshipDetail,
     RelationshipInstanceSchema,
 )
 
@@ -850,6 +852,48 @@ async def score_modality_types(
         item.clarity_score = clar_data.clarity_score if clar_data else None
 
     return modality_data
+
+
+async def score_relationship_types(
+    relationship_data: RelationshipSchema, context_text: str
+) -> RelationshipSchema:
+    """Score each relationship type within ``relationship_data``."""
+
+    tasks = []
+    rel_items: List[RelationshipDetail] = []
+
+    for mapping in relationship_data.entity_relationships_map:
+        for rel in mapping.identified_relationships:
+            tasks.append(run_parallel_scoring(rel.relationship_type, context_text))
+            rel_items.append(rel)
+
+    if not tasks:
+        return relationship_data
+
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    for item, result in zip(rel_items, results):
+        if isinstance(result, Exception):
+            logger.error(
+                "Scoring failed for relationship type '%s'",
+                item.relationship_type,
+                exc_info=result,
+            )
+            continue
+
+        conf_data, rel_data, clar_data = cast(
+            tuple[
+                Optional[ConfidenceScoreSchema],
+                Optional[RelevanceScoreSchema],
+                Optional[ClarityScoreSchema],
+            ],
+            result,
+        )
+        item.confidence_score = conf_data.confidence_score if conf_data else None
+        item.relevance_score = rel_data.relevance_score if rel_data else None
+        item.clarity_score = clar_data.clarity_score if clar_data else None
+
+    return relationship_data
 
 
 async def score_entity_instances(
