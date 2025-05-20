@@ -14,7 +14,7 @@ from .schemas import (
     DomainResultSchema,
     SubDomainIdentifierSchema,
     SubDomainSchema,
-    SingleSubDomainTopicSchema,
+    SingleSubDomainTopicIdentifierSchema,
     TopicSchema,
     EntityTypeSchema,
     OntologyTypeSchema,
@@ -211,14 +211,14 @@ topic_identifier_agent = Agent(
     name="TopicIdentifierAgent",
     instructions=(
         "You are provided with text, its primary domain, and ONE specific sub-domain. "
-        "Your task: Analyze the *full text* and identify specific, relevant topics mentioned within the text that fall under the provided single sub-domain. "
-        "Call the confidence_score, relevance_score, and clarity_score tools for each identified topic before producing the final output.\n"
-        "Output the results ONLY using the provided SingleSubDomainTopicSchema. Every item in identified_topics MUST include the topic string plus 'confidence_score', 'relevance_score', and 'clarity_score'."
+        "Analyze the *full text* and identify specific, relevant topics mentioned that fall under this sub-domain. "
+        "Do NOT call any scoring tools.\n"
+        "Return ONLY valid JSON using the SingleSubDomainTopicIdentifierSchema."
     ),
     model=TOPIC_MODEL,
     tools=[],
     handoffs=[],
-    output_type=SingleSubDomainTopicSchema,
+    output_type=SingleSubDomainTopicIdentifierSchema,
 )
 
 # --- Agent 3b: Topic Result ---

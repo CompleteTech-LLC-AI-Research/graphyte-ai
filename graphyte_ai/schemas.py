@@ -130,6 +130,24 @@ class SubDomainSchema(BaseModel):
     )
 
 
+# --- New Schemas for Step 3 Topic Identifier Output ---
+
+
+class TopicIdentifierDetail(BaseModel):
+    """Represents a single identified topic without scores."""
+
+    topic: str = Field(description="The specific topic identified within the text.")
+
+
+class SingleSubDomainTopicIdentifierSchema(BaseModel):
+    """Schema defining unscored topic identification for one sub-domain."""
+
+    sub_domain: str = Field(description="The sub-domain being analyzed.")
+    identified_topics: List[TopicIdentifierDetail] = Field(
+        description="List of topics identified within the text relevant to this sub-domain."
+    )
+
+
 # Nested schema for a topic
 class TopicDetail(BaseModel):
     """Represents a single identified topic."""
