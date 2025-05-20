@@ -9,7 +9,10 @@ from pydantic import ValidationError
 
 from agents import RunConfig, RunResult, TResponseInputItem  # type: ignore[attr-defined]
 
-from ..workflow_agents import relationship_type_identifier_agent
+from ..workflow_agents import (
+    relationship_type_identifier_agent,
+    relationship_result_agent,
+)
 from ..config import (
     RELATIONSHIP_MODEL,
     RELATIONSHIP_OUTPUT_DIR,
@@ -353,6 +356,40 @@ async def identify_relationship_types(
     )
 
     relationship_data = await score_relationship_types(relationship_data, content)
+
+    scored_result = await run_agent_with_retry(
+        relationship_result_agent,
+        relationship_data.model_dump_json(),
+    )
+
+    if scored_result:
+        potential_scored_output = getattr(scored_result, "final_output", None)
+        if isinstance(potential_scored_output, RelationshipSchema):
+            relationship_data = potential_scored_output
+        elif isinstance(potential_scored_output, dict):
+            try:
+                relationship_data = RelationshipSchema.model_validate(
+                    potential_scored_output
+                )
+            except ValidationError as e:
+                logger.warning(
+                    "RelationshipSchema validation error after scoring: %s", e
+                )
+                relationship_data = RelationshipSchema.model_validate(
+                    relationship_data.model_dump()
+                )
+        else:
+            logger.error(
+                "Unexpected relationship result output type: %s",
+                type(potential_scored_output),
+            )
+            relationship_data = RelationshipSchema.model_validate(
+                relationship_data.model_dump()
+            )
+    else:
+        relationship_data = RelationshipSchema.model_validate(
+            relationship_data.model_dump()
+        )
 
     logger.info(
         f"Final Aggregated Relationships (Structured):\n{relationship_data.model_dump_json(indent=2)}"

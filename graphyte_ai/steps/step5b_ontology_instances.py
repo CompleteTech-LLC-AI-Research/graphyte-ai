@@ -8,7 +8,10 @@ from pydantic import ValidationError
 
 from agents import RunConfig, RunResult, TResponseInputItem  # type: ignore[attr-defined]
 
-from ..workflow_agents import ontology_instance_extractor_agent
+from ..workflow_agents import (
+    ontology_instance_extractor_agent,
+    ontology_instance_result_agent,
+)
 from ..config import (
     ONTOLOGY_INSTANCE_MODEL,
     ONTOLOGY_INSTANCE_OUTPUT_DIR,
@@ -131,6 +134,43 @@ async def identify_ontology_instances(
                         sd.sub_domain for sd in sub_domain_data.identified_sub_domains
                     ]
                 instance_data = await score_ontology_instances(instance_data, content)
+
+                scored_result = await run_agent_with_retry(
+                    ontology_instance_result_agent,
+                    instance_data.model_dump_json(),
+                )
+
+                if scored_result:
+                    potential_scored_output = getattr(
+                        scored_result, "final_output", None
+                    )
+                    if isinstance(potential_scored_output, OntologyInstanceSchema):
+                        instance_data = potential_scored_output
+                    elif isinstance(potential_scored_output, dict):
+                        try:
+                            instance_data = OntologyInstanceSchema.model_validate(
+                                potential_scored_output
+                            )
+                        except ValidationError as e:
+                            logger.warning(
+                                "OntologyInstanceSchema validation error after scoring: %s",
+                                e,
+                            )
+                            instance_data = OntologyInstanceSchema.model_validate(
+                                instance_data.model_dump()
+                            )
+                    else:
+                        logger.error(
+                            "Unexpected ontology instance result output type: %s",
+                            type(potential_scored_output),
+                        )
+                        instance_data = OntologyInstanceSchema.model_validate(
+                            instance_data.model_dump()
+                        )
+                else:
+                    instance_data = OntologyInstanceSchema.model_validate(
+                        instance_data.model_dump()
+                    )
                 logger.info(
                     f"Step 5b Result (Structured Instances):\n{instance_data.model_dump_json(indent=2)}"
                 )
