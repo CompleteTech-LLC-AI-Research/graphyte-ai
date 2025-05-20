@@ -21,6 +21,8 @@ from ..config import (
 )  # Import new config vars
 from ..schemas import (
     StatementTypeSchema,
+    StatementTypeIdentifierSchema,
+    StatementDetail,
     SubDomainSchema,
     TopicSchema,
 )  # Import new output schema
@@ -89,6 +91,7 @@ async def identify_statement_types(
     )
     step4d_result: Optional[RunResult] = None
     statement_data: Optional[StatementTypeSchema] = None
+    identifier_data: Optional[StatementTypeIdentifierSchema] = None
 
     # Prepare context summary for the prompt
     context_summary_for_prompt = (
@@ -105,7 +108,7 @@ async def identify_statement_types(
                 f"Analyze the following text to identify key STATEMENT types (e.g., Fact, Claim, Opinion, Question, Instruction). "
                 f"Use the provided context:\n{context_summary_for_prompt}\n\n"
                 f"Identify statement types relevant to this overall context. "
-                f"Output ONLY using the required StatementTypeSchema, including the primary_domain and analyzed_sub_domains list in the output."
+                f"Output ONLY using the required StatementTypeIdentifierSchema, including the primary_domain and analyzed_sub_domains list in the output."
             ),
         },
         {
@@ -123,26 +126,42 @@ async def identify_statement_types(
 
         if step4d_result:
             potential_output_step4d = getattr(step4d_result, "final_output", None)
-            if isinstance(potential_output_step4d, StatementTypeSchema):
-                statement_data = potential_output_step4d
+            if isinstance(potential_output_step4d, StatementTypeIdentifierSchema):
+                identifier_data = potential_output_step4d
                 logger.info(
-                    "Successfully extracted StatementTypeSchema from step4d_result.final_output."
+                    "Successfully extracted StatementTypeIdentifierSchema from step4d_result.final_output."
                 )
             elif isinstance(potential_output_step4d, dict):
                 try:
-                    statement_data = StatementTypeSchema.model_validate(
+                    identifier_data = StatementTypeIdentifierSchema.model_validate(
                         potential_output_step4d
                     )
                     logger.info(
-                        "Successfully validated StatementTypeSchema from step4d_result.final_output dict."
+                        "Successfully validated StatementTypeIdentifierSchema from step4d_result.final_output dict."
                     )
                 except ValidationError as e:
                     logger.warning(
-                        f"Step 4d dict output failed StatementTypeSchema validation: {e}"
+                        f"Step 4d dict output failed StatementTypeIdentifierSchema validation: {e}"
                     )
             else:
                 logger.warning(
-                    f"Step 4d final_output was not StatementTypeSchema or dict (type: {type(potential_output_step4d)})."
+                    f"Step 4d final_output was not StatementTypeIdentifierSchema or dict (type: {type(potential_output_step4d)})."
+                )
+
+            if identifier_data and identifier_data.identified_statements:
+                statement_data = StatementTypeSchema(
+                    primary_domain=identifier_data.primary_domain,
+                    analyzed_sub_domains=identifier_data.analyzed_sub_domains,
+                    identified_statements=[
+                        StatementDetail(
+                            statement_type=item.statement_type,
+                            confidence_score=None,
+                            relevance_score=None,
+                            clarity_score=None,
+                        )
+                        for item in identifier_data.identified_statements
+                    ],
+                    analysis_summary=identifier_data.analysis_summary,
                 )
 
             if statement_data and statement_data.identified_statements:

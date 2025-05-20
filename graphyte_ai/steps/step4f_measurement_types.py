@@ -21,6 +21,8 @@ from ..config import (
 )  # Import new config vars
 from ..schemas import (
     MeasurementTypeSchema,
+    MeasurementTypeIdentifierSchema,
+    MeasurementDetail,
     SubDomainSchema,
     TopicSchema,
 )  # Import new output schema
@@ -89,6 +91,7 @@ async def identify_measurement_types(
     )
     step4f_result: Optional[RunResult] = None
     measurement_data: Optional[MeasurementTypeSchema] = None
+    identifier_data: Optional[MeasurementTypeIdentifierSchema] = None
 
     # Prepare context summary for the prompt
     context_summary_for_prompt = (
@@ -105,7 +108,7 @@ async def identify_measurement_types(
                 f"Analyze the following text to identify key MEASUREMENT types (e.g., Financial Metric, Physical Quantity, Performance Indicator, Survey Result, Count, Ratio, Percentage). "
                 f"Use the provided context:\n{context_summary_for_prompt}\n\n"
                 f"Identify measurement types relevant to this overall context. "
-                f"Output ONLY using the required MeasurementTypeSchema, including the primary_domain and analyzed_sub_domains list in the output."
+                f"Output ONLY using the required MeasurementTypeIdentifierSchema, including the primary_domain and analyzed_sub_domains list in the output."
             ),
         },
         {
@@ -123,26 +126,42 @@ async def identify_measurement_types(
 
         if step4f_result:
             potential_output_step4f = getattr(step4f_result, "final_output", None)
-            if isinstance(potential_output_step4f, MeasurementTypeSchema):
-                measurement_data = potential_output_step4f
+            if isinstance(potential_output_step4f, MeasurementTypeIdentifierSchema):
+                identifier_data = potential_output_step4f
                 logger.info(
-                    "Successfully extracted MeasurementTypeSchema from step4f_result.final_output."
+                    "Successfully extracted MeasurementTypeIdentifierSchema from step4f_result.final_output."
                 )
             elif isinstance(potential_output_step4f, dict):
                 try:
-                    measurement_data = MeasurementTypeSchema.model_validate(
+                    identifier_data = MeasurementTypeIdentifierSchema.model_validate(
                         potential_output_step4f
                     )
                     logger.info(
-                        "Successfully validated MeasurementTypeSchema from step4f_result.final_output dict."
+                        "Successfully validated MeasurementTypeIdentifierSchema from step4f_result.final_output dict."
                     )
                 except ValidationError as e:
                     logger.warning(
-                        f"Step 4f dict output failed MeasurementTypeSchema validation: {e}"
+                        f"Step 4f dict output failed MeasurementTypeIdentifierSchema validation: {e}"
                     )
             else:
                 logger.warning(
-                    f"Step 4f final_output was not MeasurementTypeSchema or dict (type: {type(potential_output_step4f)})."
+                    f"Step 4f final_output was not MeasurementTypeIdentifierSchema or dict (type: {type(potential_output_step4f)})."
+                )
+
+            if identifier_data and identifier_data.identified_measurements:
+                measurement_data = MeasurementTypeSchema(
+                    primary_domain=identifier_data.primary_domain,
+                    analyzed_sub_domains=identifier_data.analyzed_sub_domains,
+                    identified_measurements=[
+                        MeasurementDetail(
+                            measurement_type=item.measurement_type,
+                            confidence_score=None,
+                            relevance_score=None,
+                            clarity_score=None,
+                        )
+                        for item in identifier_data.identified_measurements
+                    ],
+                    analysis_summary=identifier_data.analysis_summary,
                 )
 
             if measurement_data and measurement_data.identified_measurements:
