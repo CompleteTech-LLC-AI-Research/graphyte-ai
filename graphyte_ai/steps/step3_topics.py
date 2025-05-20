@@ -11,7 +11,13 @@ from agents import RunConfig, RunResult, TResponseInputItem  # type: ignore[attr
 
 from ..workflow_agents import topic_identifier_agent, topic_result_agent
 from ..config import TOPIC_MODEL, TOPIC_OUTPUT_DIR, TOPIC_OUTPUT_FILENAME
-from ..schemas import TopicSchema, SingleSubDomainTopicSchema, SubDomainSchema
+from ..schemas import (
+    TopicSchema,
+    SingleSubDomainTopicSchema,
+    SingleSubDomainTopicIdentifierSchema,
+    SubDomainSchema,
+    TopicDetail,
+)
 from ..utils import direct_save_json_output, run_agent_with_retry, score_topics
 
 logger = logging.getLogger(__name__)
@@ -103,7 +109,7 @@ async def identify_topics(
         step3_iter_input_list: List[TResponseInputItem] = [
             {
                 "role": "user",
-                "content": f"The primary domain is '{primary_domain}'. Focus ONLY on the sub-domain: '{current_sub_domain}'. Based ONLY on the following text, identify specific topics mentioned within the text relevant ONLY to this sub-domain ('{current_sub_domain}'). Output using the required SingleSubDomainTopicSchema.",
+                "content": f"The primary domain is '{primary_domain}'. Focus ONLY on the sub-domain: '{current_sub_domain}'. Based ONLY on the following text, identify specific topics mentioned within the text relevant ONLY to this sub-domain ('{current_sub_domain}'). Output using the required SingleSubDomainTopicIdentifierSchema.",
             },
             {
                 "role": "user",
@@ -169,27 +175,46 @@ async def identify_topics(
             if step3_iter_result:
                 potential_output_iter = getattr(step3_iter_result, "final_output", None)
                 single_topic_data: Optional[SingleSubDomainTopicSchema] = None
+                raw_topic_data: Optional[SingleSubDomainTopicIdentifierSchema] = None
 
-                if isinstance(potential_output_iter, SingleSubDomainTopicSchema):
-                    single_topic_data = potential_output_iter
+                if isinstance(
+                    potential_output_iter, SingleSubDomainTopicIdentifierSchema
+                ):
+                    raw_topic_data = potential_output_iter
                     logger.info(
-                        f"Successfully extracted SingleSubDomainTopicSchema for '{current_sub_domain}'."
+                        f"Successfully extracted SingleSubDomainTopicIdentifierSchema for '{current_sub_domain}'."
                     )
                 elif isinstance(potential_output_iter, dict):
                     try:
-                        single_topic_data = SingleSubDomainTopicSchema.model_validate(
-                            potential_output_iter
+                        raw_topic_data = (
+                            SingleSubDomainTopicIdentifierSchema.model_validate(
+                                potential_output_iter
+                            )
                         )
                         logger.info(
-                            f"Successfully validated SingleSubDomainTopicSchema from dict for '{current_sub_domain}'."
+                            f"Successfully validated SingleSubDomainTopicIdentifierSchema from dict for '{current_sub_domain}'."
                         )
                     except ValidationError as e:
                         logger.warning(
-                            f"Dict output for '{current_sub_domain}' failed SingleSubDomainTopicSchema validation: {e}"
+                            f"Dict output for '{current_sub_domain}' failed SingleSubDomainTopicIdentifierSchema validation: {e}"
                         )
                 else:
                     logger.warning(
-                        f"Output for '{current_sub_domain}' was not SingleSubDomainTopicSchema or dict (type: {type(potential_output_iter)}). Raw: {potential_output_iter}"
+                        f"Output for '{current_sub_domain}' was not SingleSubDomainTopicIdentifierSchema or dict (type: {type(potential_output_iter)}). Raw: {potential_output_iter}"
+                    )
+
+                if raw_topic_data:
+                    single_topic_data = SingleSubDomainTopicSchema(
+                        sub_domain=raw_topic_data.sub_domain,
+                        identified_topics=[
+                            TopicDetail(
+                                topic=item.topic,
+                                confidence_score=None,
+                                relevance_score=None,
+                                clarity_score=None,
+                            )
+                            for item in raw_topic_data.identified_topics
+                        ],
                     )
 
                 if single_topic_data:
@@ -331,7 +356,7 @@ async def identify_topics(
             "model_used_per_topic_call": TOPIC_MODEL,
             "agent_name_per_topic_call": topic_identifier_agent.name,
             "output_schema_final": TopicSchema.__name__,
-            "output_schema_per_call": SingleSubDomainTopicSchema.__name__,
+            "output_schema_per_call": SingleSubDomainTopicIdentifierSchema.__name__,
             "timestamp_utc": datetime.now(timezone.utc).isoformat(),
         },
         "trace_information": {
