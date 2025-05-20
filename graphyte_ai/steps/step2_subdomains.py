@@ -13,7 +13,7 @@ from ..workflow_agents import (
     sub_domain_result_agent,
 )
 from ..config import SUB_DOMAIN_MODEL, SUB_DOMAIN_OUTPUT_DIR, SUB_DOMAIN_OUTPUT_FILENAME
-from ..schemas import SubDomainSchema, SubDomainBaseSchema
+from ..schemas import SubDomainSchema
 from ..utils import direct_save_json_output, run_agent_with_retry, score_sub_domains
 
 logger = logging.getLogger(__name__)
@@ -61,7 +61,7 @@ async def identify_subdomains(
         trace_metadata={k: str(v) for k, v in step2_metadata_for_trace.items()},
     )
     step2_result: Optional[RunResult] = None
-    sub_domain_data: Optional[SubDomainBaseSchema | SubDomainSchema] = None
+    sub_domain_data: Optional[SubDomainSchema] = None
 
     step2_input_list: List[TResponseInputItem] = [
         {
@@ -90,49 +90,46 @@ async def identify_subdomains(
             print(f"\nStep 2 finished. Final agent: {final_agent_name_step2}")
 
             potential_output_step2 = getattr(step2_result, "final_output", None)
-            if isinstance(potential_output_step2, SubDomainBaseSchema):
+            if isinstance(potential_output_step2, SubDomainSchema):
                 sub_domain_data = potential_output_step2
                 logger.info(
-                    "Successfully extracted SubDomainBaseSchema from step2_result.final_output."
+                    "Successfully extracted SubDomainSchema from step2_result.final_output."
                 )
             elif isinstance(potential_output_step2, dict):
                 try:
-                    sub_domain_data = SubDomainBaseSchema.model_validate(
+                    sub_domain_data = SubDomainSchema.model_validate(
                         potential_output_step2
                     )
                     logger.info(
-                        "Successfully validated SubDomainBaseSchema from step2_result.final_output dict."
+                        "Successfully validated SubDomainSchema from step2_result.final_output dict."
                     )
                 except ValidationError as e:
                     logger.warning(
-                        f"Step 2 dict output failed SubDomainBaseSchema validation: {e}"
+                        f"Step 2 dict output failed SubDomainSchema validation: {e}"
                     )
             else:
                 logger.warning(
-                    f"Step 2 final_output was not SubDomainBaseSchema or dict (type: {type(potential_output_step2)})."
+                    f"Step 2 final_output was not SubDomainSchema or dict (type: {type(potential_output_step2)})."
                 )
 
             if sub_domain_data and sub_domain_data.identified_sub_domains:
-                sub_domain_data = cast(SubDomainBaseSchema, sub_domain_data)
+                sub_domain_data = cast(SubDomainSchema, sub_domain_data)
                 assert sub_domain_data is not None
+                scored_data: SubDomainSchema = sub_domain_data
                 if (
-                    sub_domain_data.primary_domain
-                    and sub_domain_data.primary_domain != primary_domain
+                    scored_data.primary_domain
+                    and scored_data.primary_domain != primary_domain
                 ):
                     logger.warning(
                         f"Primary domain mismatch between Step 1 ('{primary_domain}') and Step 2 output ('{sub_domain_data.primary_domain}'). Using Step 1's."
                     )
-                    sub_domain_data.primary_domain = (
-                        primary_domain  # Ensure consistency
-                    )
-                elif not sub_domain_data.primary_domain:
-                    sub_domain_data.primary_domain = (
+                    scored_data.primary_domain = primary_domain  # Ensure consistency
+                elif not scored_data.primary_domain:
+                    scored_data.primary_domain = (
                         primary_domain  # Ensure primary domain is set
                     )
 
-                scored_data: SubDomainSchema = await score_sub_domains(
-                    sub_domain_data, content
-                )
+                scored_data = await score_sub_domains(scored_data, content)
 
                 scored_result = await run_agent_with_retry(
                     sub_domain_result_agent,
@@ -276,4 +273,4 @@ async def identify_subdomains(
         print(f"\nAn unexpected error occurred during Step 2: {type(e).__name__}: {e}")
         sub_domain_data = None
 
-    return cast(Optional[SubDomainSchema], sub_domain_data)
+    return sub_domain_data
