@@ -216,20 +216,7 @@ topic_identifier_agent = Agent(
         "Output the results ONLY using the provided SingleSubDomainTopicSchema. Every item in identified_topics MUST include the topic string plus 'confidence_score', 'relevance_score', and 'clarity_score'."
     ),
     model=TOPIC_MODEL,
-    tools=[
-        confidence_score_agent.as_tool(
-            tool_name="confidence_score",
-            tool_description="Evaluate confidence between 0.0 and 1.0",
-        ),
-        relevance_score_agent.as_tool(
-            tool_name="relevance_score",
-            tool_description="Judge relevance between 0.0 and 1.0",
-        ),
-        clarity_score_agent.as_tool(
-            tool_name="clarity_score",
-            tool_description="Assess clarity between 0.0 and 1.0",
-        ),
-    ],
+    tools=[],
     handoffs=[],
     output_type=SingleSubDomainTopicSchema,
 )
