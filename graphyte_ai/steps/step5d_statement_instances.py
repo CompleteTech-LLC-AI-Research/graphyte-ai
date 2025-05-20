@@ -20,7 +20,11 @@ from ..schemas import (
     TopicSchema,
     StatementTypeSchema,
 )
-from ..utils import direct_save_json_output, run_agent_with_retry
+from ..utils import (
+    direct_save_json_output,
+    run_agent_with_retry,
+    score_statement_instances,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -131,6 +135,7 @@ async def identify_statement_instances(
                     instance_data.analyzed_sub_domains = [
                         sd.sub_domain for sd in sub_domain_data.identified_sub_domains
                     ]
+                instance_data = await score_statement_instances(instance_data, content)
                 logger.info(
                     f"Step 5d Result (Structured Instances):\n{instance_data.model_dump_json(indent=2)}"
                 )
