@@ -74,6 +74,7 @@ from .schemas import (
     EvidenceInstanceSchema,
     MeasurementInstanceSchema,
     ModalityInstanceSchema,
+    RelationshipInstanceSchema,
 )
 
 # Get logger for utils module
@@ -1084,6 +1085,51 @@ async def score_modality_instances(
             logger.error(
                 "Scoring failed for modality instance '%s'",
                 item.text_span,
+                exc_info=result,
+            )
+            continue
+
+        conf_data, rel_data, clar_data = cast(
+            tuple[
+                Optional[ConfidenceScoreSchema],
+                Optional[RelevanceScoreSchema],
+                Optional[ClarityScoreSchema],
+            ],
+            result,
+        )
+        item.confidence_score = conf_data.confidence_score if conf_data else None
+        item.relevance_score = rel_data.relevance_score if rel_data else None
+        item.clarity_score = clar_data.clarity_score if clar_data else None
+
+    return instance_data
+
+
+async def score_relationship_instances(
+    instance_data: RelationshipInstanceSchema, context_text: str
+) -> RelationshipInstanceSchema:
+    """Score each relationship instance within ``instance_data``."""
+
+    tasks = [
+        run_parallel_scoring(
+            (
+                item.snippet
+                if item.snippet
+                else f"{item.subject} {item.relationship_type} {item.object}"
+            ),
+            context_text,
+        )
+        for item in instance_data.identified_instances
+    ]
+
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    for item, result in zip(instance_data.identified_instances, results):
+        if isinstance(result, Exception):
+            logger.error(
+                "Scoring failed for relationship instance '%s - %s - %s'",
+                item.subject,
+                item.relationship_type,
+                item.object,
                 exc_info=result,
             )
             continue
