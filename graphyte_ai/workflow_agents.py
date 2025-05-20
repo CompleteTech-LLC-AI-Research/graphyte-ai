@@ -16,13 +16,13 @@ from .schemas import (
     SubDomainSchema,
     SingleSubDomainTopicSchema,
     TopicSchema,
-    EntityTypeIdentifierSchema,
-    OntologyTypeIdentifierSchema,
-    EventTypeIdentifierSchema,
-    StatementTypeIdentifierSchema,
-    EvidenceTypeIdentifierSchema,
-    MeasurementTypeIdentifierSchema,
-    ModalityTypeIdentifierSchema,
+    EntityTypeSchema,
+    OntologyTypeSchema,
+    EventTypeSchema,
+    StatementTypeSchema,
+    EvidenceTypeSchema,
+    MeasurementTypeSchema,
+    ModalityTypeSchema,
     EntityInstanceSchema,
     StatementInstanceSchema,
     EvidenceInstanceSchema,
@@ -277,7 +277,7 @@ entity_type_identifier_agent = base_type_identifier_agent.clone(
         item_field_name="entity_type",
     ),
     model=ENTITY_TYPE_MODEL,
-    output_type=EntityTypeIdentifierSchema,
+    output_type=EntityTypeSchema,
 )
 
 # --- Agent 4b: Ontology Type Identifier ---
@@ -291,7 +291,7 @@ ontology_type_identifier_agent = base_type_identifier_agent.clone(
         item_field_name="ontology_type",
     ),
     model=ONTOLOGY_TYPE_MODEL,
-    output_type=OntologyTypeIdentifierSchema,
+    output_type=OntologyTypeSchema,
 )
 
 # --- Agent 4c: Event Type Identifier ---
@@ -305,7 +305,7 @@ event_type_identifier_agent = base_type_identifier_agent.clone(
         item_field_name="event_type",
     ),
     model=EVENT_TYPE_MODEL,
-    output_type=EventTypeIdentifierSchema,
+    output_type=EventTypeSchema,
 )
 
 # --- Agent 4d: Statement Type Identifier ---
@@ -319,7 +319,7 @@ statement_type_identifier_agent = base_type_identifier_agent.clone(
         item_field_name="statement_type",
     ),
     model=STATEMENT_TYPE_MODEL,
-    output_type=StatementTypeIdentifierSchema,
+    output_type=StatementTypeSchema,
 )
 
 # --- Agent 4e: Evidence Type Identifier ---
@@ -333,7 +333,7 @@ evidence_type_identifier_agent = base_type_identifier_agent.clone(
         item_field_name="evidence_type",
     ),
     model=EVIDENCE_TYPE_MODEL,
-    output_type=EvidenceTypeIdentifierSchema,
+    output_type=EvidenceTypeSchema,
 )
 
 # --- Agent 4f: Measurement Type Identifier ---
@@ -347,7 +347,7 @@ measurement_type_identifier_agent = base_type_identifier_agent.clone(
         item_field_name="measurement_type",
     ),
     model=MEASUREMENT_TYPE_MODEL,
-    output_type=MeasurementTypeIdentifierSchema,
+    output_type=MeasurementTypeSchema,
 )
 
 # --- Agent 4g: Modality Type Identifier ---
@@ -361,7 +361,7 @@ modality_type_identifier_agent = base_type_identifier_agent.clone(
         item_field_name="modality_type",
     ),
     model=MODALITY_TYPE_MODEL,
-    output_type=ModalityTypeIdentifierSchema,
+    output_type=ModalityTypeSchema,
 )
 
 

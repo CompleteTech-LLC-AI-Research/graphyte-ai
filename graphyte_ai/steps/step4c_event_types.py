@@ -16,8 +16,6 @@ from ..config import (
 )  # Import new config vars
 from ..schemas import (
     EventTypeSchema,
-    EventTypeIdentifierSchema,
-    EventDetail,
     SubDomainSchema,
     TopicSchema,
 )  # Import new output schema
@@ -84,7 +82,6 @@ async def identify_event_types(
     )
     step4c_result: Optional[RunResult] = None
     event_data: Optional[EventTypeSchema] = None
-    identifier_data: Optional[EventTypeIdentifierSchema] = None
 
     # Prepare context summary for the prompt
     context_summary_for_prompt = (
@@ -101,7 +98,7 @@ async def identify_event_types(
                 f"Analyze the following text to identify key EVENT types (e.g., Meeting, Acquisition, Conference, Product Launch, Election). "
                 f"Focus only on event types. Use the provided context:\n{context_summary_for_prompt}\n\n"
                 f"Identify event types relevant to this overall context. "
-                f"Output ONLY using the required EventTypeIdentifierSchema, including the primary_domain and analyzed_sub_domains list in the output."
+                f"Output ONLY using the required EventTypeSchema, including the primary_domain and analyzed_sub_domains list in the output."
             ),
         },
         {
@@ -119,42 +116,24 @@ async def identify_event_types(
 
         if step4c_result:
             potential_output_step4c = getattr(step4c_result, "final_output", None)
-            if isinstance(potential_output_step4c, EventTypeIdentifierSchema):
-                identifier_data = potential_output_step4c
+            if isinstance(potential_output_step4c, EventTypeSchema):
+                event_data = potential_output_step4c
                 logger.info(
-                    "Successfully extracted EventTypeIdentifierSchema from step4c_result.final_output."
+                    "Successfully extracted EventTypeSchema from step4c_result.final_output."
                 )
             elif isinstance(potential_output_step4c, dict):
                 try:
-                    identifier_data = EventTypeIdentifierSchema.model_validate(
-                        potential_output_step4c
-                    )
+                    event_data = EventTypeSchema.model_validate(potential_output_step4c)
                     logger.info(
-                        "Successfully validated EventTypeIdentifierSchema from step4c_result.final_output dict."
+                        "Successfully validated EventTypeSchema from step4c_result.final_output dict."
                     )
                 except ValidationError as e:
                     logger.warning(
-                        f"Step 4c dict output failed EventTypeIdentifierSchema validation: {e}"
+                        f"Step 4c dict output failed EventTypeSchema validation: {e}"
                     )
             else:
                 logger.warning(
-                    f"Step 4c final_output was not EventTypeIdentifierSchema or dict (type: {type(potential_output_step4c)})."
-                )
-
-            if identifier_data and identifier_data.identified_events:
-                event_data = EventTypeSchema(
-                    primary_domain=identifier_data.primary_domain,
-                    analyzed_sub_domains=identifier_data.analyzed_sub_domains,
-                    identified_events=[
-                        EventDetail(
-                            event_type=item.event_type,
-                            confidence_score=None,
-                            relevance_score=None,
-                            clarity_score=None,
-                        )
-                        for item in identifier_data.identified_events
-                    ],
-                    analysis_summary=identifier_data.analysis_summary,
+                    f"Step 4c final_output was not EventTypeSchema or dict (type: {type(potential_output_step4c)})."
                 )
 
             if event_data and event_data.identified_events:
