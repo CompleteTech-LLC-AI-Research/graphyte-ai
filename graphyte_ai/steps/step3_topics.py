@@ -7,12 +7,7 @@ from typing import List, Optional
 
 from pydantic import ValidationError
 
-from agents import (
-    RunConfig,
-    RunResult,
-    TResponseInputItem,
-    gen_trace_id,
-)  # type: ignore[attr-defined]
+from agents import RunConfig, RunResult, TResponseInputItem  # type: ignore[attr-defined]
 
 from ..workflow_agents import topic_identifier_agent, topic_result_agent
 from ..config import TOPIC_MODEL, TOPIC_OUTPUT_DIR, TOPIC_OUTPUT_FILENAME
@@ -74,7 +69,6 @@ async def identify_topics(
     sub_domains_being_processed = (
         []
     )  # Keep track of which sub-domain corresponds to which task/result
-    topic_trace_ids: List[str] = []
     aggregated_topic_results: List[SingleSubDomainTopicSchema] = []
 
     # --- Prepare tasks for parallel execution ---
@@ -94,9 +88,6 @@ async def identify_topics(
             if len(current_sub_domain) > 28
             else current_sub_domain
         )
-
-        step3_iter_trace_id = gen_trace_id()
-
         step3_iter_metadata_for_trace = {
             "workflow_step": f"3_topic_id_batch_{index+1}",
             "agent_name": f"Topic ID ({display_sub_domain})",
@@ -105,11 +96,10 @@ async def identify_topics(
             "sub_domain_analyzed": current_sub_domain,
             "batch_index": str(index + 1),
             "batch_size": str(len(sub_domains_list_for_step3)),
-            "topic_run_trace_id": step3_iter_trace_id,
         }
         step3_iter_run_config = RunConfig(
-            workflow_name=f"step3_topics_{display_sub_domain}",
-            trace_id=step3_iter_trace_id,
+            workflow_name="step3_topics",
+            trace_id=trace_id,
             group_id=group_id,
             trace_metadata={
                 k: str(v) for k, v in step3_iter_metadata_for_trace.items()
@@ -140,7 +130,6 @@ async def identify_topics(
         sub_domains_being_processed.append(
             current_sub_domain
         )  # Track the sub-domain for this task
-        topic_trace_ids.append(step3_iter_trace_id)
 
     # --- Execute tasks in parallel ---
     if not topic_tasks:
@@ -167,7 +156,6 @@ async def identify_topics(
         current_sub_domain = sub_domains_being_processed[
             index
         ]  # Get corresponding sub-domain
-        current_trace_id = topic_trace_ids[index]
 
         try:
             # Check if an exception was returned by gather
@@ -275,7 +263,7 @@ async def identify_topics(
         except (ValidationError, TypeError) as e:
             logger.exception(
                 f"Validation or Type error processing result for '{current_sub_domain}'. Error: {e}",
-                extra={"trace_id": current_trace_id or "N/A"},
+                extra={"trace_id": trace_id or "N/A"},
             )
             print(
                 f"\nError: A data validation or type issue occurred processing result for sub-domain '{current_sub_domain}'."
@@ -284,7 +272,7 @@ async def identify_topics(
         except Exception as e:
             logger.exception(
                 f"An unexpected error occurred processing result for '{current_sub_domain}'.",
-                extra={"trace_id": current_trace_id or "N/A"},
+                extra={"trace_id": trace_id or "N/A"},
             )
             print(
                 f"\nAn unexpected error occurred processing result for sub-domain '{current_sub_domain}': {type(e).__name__}: {e}"
@@ -370,11 +358,9 @@ async def identify_topics(
             "output_schema_final": TopicSchema.__name__,
             "output_schema_per_call": SingleSubDomainTopicIdentifierSchema.__name__,
             "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-            "topic_run_trace_ids": topic_trace_ids,
         },
         "trace_information": {
-            "overall_trace_id": trace_id or "N/A",
-            "topic_run_trace_ids": topic_trace_ids,
+            "trace_id": trace_id or "N/A",
             "notes": f"Aggregated from PARALLEL calls to {topic_identifier_agent.name} in Step 3 of workflow.",
         },
     }
