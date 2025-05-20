@@ -12,6 +12,7 @@ except ImportError:
 from .schemas import (
     DomainSchema,
     DomainResultSchema,
+    SubDomainIdentifierSchema,
     SubDomainSchema,
     SingleSubDomainTopicSchema,
     TopicSchema,
@@ -190,12 +191,12 @@ sub_domain_identifier_agent = Agent(
         "You are given text content and its primary domain. Your task is to identify specific sub-domains "
         "within the text related to the primary domain. "
         "Also provide a brief overall analysis summary.\n"
-        "Output ONLY the result using the provided SubDomainSchema."
+        "Output ONLY the result using the provided SubDomainIdentifierSchema."
     ),
     model=SUB_DOMAIN_MODEL,
     tools=[],
     handoffs=[],
-    output_type=SubDomainSchema,
+    output_type=SubDomainIdentifierSchema,
 )
 
 # --- Agent 2b: Sub-Domain Result ---

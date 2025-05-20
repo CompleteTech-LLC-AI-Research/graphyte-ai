@@ -13,7 +13,7 @@ from ..workflow_agents import (
     sub_domain_result_agent,
 )
 from ..config import SUB_DOMAIN_MODEL, SUB_DOMAIN_OUTPUT_DIR, SUB_DOMAIN_OUTPUT_FILENAME
-from ..schemas import SubDomainSchema
+from ..schemas import SubDomainSchema, SubDomainDetail, SubDomainIdentifierSchema
 from ..utils import direct_save_json_output, run_agent_with_retry, score_sub_domains
 
 logger = logging.getLogger(__name__)
@@ -61,6 +61,7 @@ async def identify_subdomains(
         trace_metadata={k: str(v) for k, v in step2_metadata_for_trace.items()},
     )
     step2_result: Optional[RunResult] = None
+    raw_sub_domain_data: Optional[SubDomainIdentifierSchema] = None
     sub_domain_data: Optional[SubDomainSchema] = None
 
     step2_input_list: List[TResponseInputItem] = [
@@ -90,29 +91,42 @@ async def identify_subdomains(
             print(f"\nStep 2 finished. Final agent: {final_agent_name_step2}")
 
             potential_output_step2 = getattr(step2_result, "final_output", None)
-            if isinstance(potential_output_step2, SubDomainSchema):
-                sub_domain_data = potential_output_step2
+            if isinstance(potential_output_step2, SubDomainIdentifierSchema):
+                raw_sub_domain_data = potential_output_step2
                 logger.info(
-                    "Successfully extracted SubDomainSchema from step2_result.final_output."
+                    "Successfully extracted SubDomainIdentifierSchema from step2_result.final_output."
                 )
             elif isinstance(potential_output_step2, dict):
                 try:
-                    sub_domain_data = SubDomainSchema.model_validate(
+                    raw_sub_domain_data = SubDomainIdentifierSchema.model_validate(
                         potential_output_step2
                     )
                     logger.info(
-                        "Successfully validated SubDomainSchema from step2_result.final_output dict."
+                        "Successfully validated SubDomainIdentifierSchema from step2_result.final_output dict."
                     )
                 except ValidationError as e:
                     logger.warning(
-                        f"Step 2 dict output failed SubDomainSchema validation: {e}"
+                        f"Step 2 dict output failed SubDomainIdentifierSchema validation: {e}"
                     )
             else:
                 logger.warning(
-                    f"Step 2 final_output was not SubDomainSchema or dict (type: {type(potential_output_step2)})."
+                    f"Step 2 final_output was not SubDomainIdentifierSchema or dict (type: {type(potential_output_step2)})."
                 )
 
-            if sub_domain_data and sub_domain_data.identified_sub_domains:
+            if raw_sub_domain_data and raw_sub_domain_data.identified_sub_domains:
+                sub_domain_data = SubDomainSchema(
+                    primary_domain=raw_sub_domain_data.primary_domain,
+                    identified_sub_domains=[
+                        SubDomainDetail(
+                            sub_domain=item.sub_domain,
+                            confidence_score=None,
+                            relevance_score=None,
+                            clarity_score=None,
+                        )
+                        for item in raw_sub_domain_data.identified_sub_domains
+                    ],
+                    analysis_summary=raw_sub_domain_data.analysis_summary,
+                )
                 sub_domain_data = cast(SubDomainSchema, sub_domain_data)
                 assert sub_domain_data is not None
                 scored_data: SubDomainSchema = sub_domain_data
