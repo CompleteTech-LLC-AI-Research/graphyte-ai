@@ -2,13 +2,13 @@
 
 import logging
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import List, Optional, cast
 
 from pydantic import ValidationError
 
 from agents import RunConfig, RunResult, TResponseInputItem  # type: ignore[attr-defined]
 
-from ..workflow_agents import entity_type_identifier_agent
+from ..workflow_agents import entity_type_identifier_agent, entity_type_result_agent
 from ..config import (
     ENTITY_TYPE_MODEL,
     ENTITY_TYPE_OUTPUT_DIR,
@@ -139,6 +139,8 @@ async def identify_entity_types(
                 )
 
             if entity_data and entity_data.identified_entities:
+                assert entity_data is not None
+                entity_data = cast(EntityTypeSchema, entity_data)
                 # Ensure context fields in output schema match expectations
                 if entity_data.primary_domain != primary_domain:
                     logger.warning(
@@ -154,6 +156,43 @@ async def identify_entity_types(
                     )
 
                 entity_data = await score_entity_types(entity_data, content)
+
+                scored_result = await run_agent_with_retry(
+                    entity_type_result_agent,
+                    entity_data.model_dump_json(),
+                )
+
+                if scored_result:
+                    potential_scored_output = getattr(
+                        scored_result, "final_output", None
+                    )
+                    if isinstance(potential_scored_output, EntityTypeSchema):
+                        entity_data = potential_scored_output
+                    elif isinstance(potential_scored_output, dict):
+                        try:
+                            entity_data = EntityTypeSchema.model_validate(
+                                potential_scored_output
+                            )
+                        except ValidationError as e:
+                            logger.warning(
+                                "EntityTypeSchema validation error after scoring: %s",
+                                e,
+                            )
+                            entity_data = EntityTypeSchema.model_validate(
+                                entity_data.model_dump()
+                            )
+                    else:
+                        logger.error(
+                            "Unexpected entity type result output type: %s",
+                            type(potential_scored_output),
+                        )
+                        entity_data = EntityTypeSchema.model_validate(
+                            entity_data.model_dump()
+                        )
+                else:
+                    entity_data = EntityTypeSchema.model_validate(
+                        entity_data.model_dump()
+                    )
 
                 # Log and print results
                 entity_log_items = [

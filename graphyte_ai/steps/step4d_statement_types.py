@@ -2,7 +2,7 @@
 
 import logging
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import List, Optional, cast
 
 from pydantic import ValidationError
 
@@ -13,7 +13,10 @@ except ImportError:
     print("Error: 'agents' SDK library not found or incomplete for step 4d.")
     raise
 
-from ..workflow_agents import statement_type_identifier_agent  # Import the new agent
+from ..workflow_agents import (
+    statement_type_identifier_agent,  # Import the new agent
+    statement_type_result_agent,
+)
 from ..config import (
     STATEMENT_TYPE_MODEL,
     STATEMENT_TYPE_OUTPUT_DIR,
@@ -146,6 +149,8 @@ async def identify_statement_types(
                 )
 
             if statement_data and statement_data.identified_statements:
+                assert statement_data is not None
+                statement_data = cast(StatementTypeSchema, statement_data)
                 # Ensure context fields match
                 if statement_data.primary_domain != primary_domain:
                     logger.warning(
@@ -160,6 +165,43 @@ async def identify_statement_types(
                     )
 
                 statement_data = await score_statement_types(statement_data, content)
+
+                scored_result = await run_agent_with_retry(
+                    statement_type_result_agent,
+                    statement_data.model_dump_json(),
+                )
+
+                if scored_result:
+                    potential_scored_output = getattr(
+                        scored_result, "final_output", None
+                    )
+                    if isinstance(potential_scored_output, StatementTypeSchema):
+                        statement_data = potential_scored_output
+                    elif isinstance(potential_scored_output, dict):
+                        try:
+                            statement_data = StatementTypeSchema.model_validate(
+                                potential_scored_output
+                            )
+                        except ValidationError as e:
+                            logger.warning(
+                                "StatementTypeSchema validation error after scoring: %s",
+                                e,
+                            )
+                            statement_data = StatementTypeSchema.model_validate(
+                                statement_data.model_dump()
+                            )
+                    else:
+                        logger.error(
+                            "Unexpected statement type result output type: %s",
+                            type(potential_scored_output),
+                        )
+                        statement_data = StatementTypeSchema.model_validate(
+                            statement_data.model_dump()
+                        )
+                else:
+                    statement_data = StatementTypeSchema.model_validate(
+                        statement_data.model_dump()
+                    )
 
                 # Log and print results
                 statement_log_items = [

@@ -2,7 +2,7 @@
 
 import logging
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import List, Optional, cast
 
 from pydantic import ValidationError
 
@@ -13,7 +13,10 @@ except ImportError:
     print("Error: 'agents' SDK library not found or incomplete for step 4e.")
     raise
 
-from ..workflow_agents import evidence_type_identifier_agent  # Import the new agent
+from ..workflow_agents import (
+    evidence_type_identifier_agent,  # Import the new agent
+    evidence_type_result_agent,
+)
 from ..config import (
     EVIDENCE_TYPE_MODEL,
     EVIDENCE_TYPE_OUTPUT_DIR,
@@ -146,6 +149,8 @@ async def identify_evidence_types(
                 )
 
             if evidence_data and evidence_data.identified_evidence:
+                assert evidence_data is not None
+                evidence_data = cast(EvidenceTypeSchema, evidence_data)
                 # Ensure context fields match
                 if evidence_data.primary_domain != primary_domain:
                     logger.warning(
@@ -160,6 +165,43 @@ async def identify_evidence_types(
                     )
 
                 evidence_data = await score_evidence_types(evidence_data, content)
+
+                scored_result = await run_agent_with_retry(
+                    evidence_type_result_agent,
+                    evidence_data.model_dump_json(),
+                )
+
+                if scored_result:
+                    potential_scored_output = getattr(
+                        scored_result, "final_output", None
+                    )
+                    if isinstance(potential_scored_output, EvidenceTypeSchema):
+                        evidence_data = potential_scored_output
+                    elif isinstance(potential_scored_output, dict):
+                        try:
+                            evidence_data = EvidenceTypeSchema.model_validate(
+                                potential_scored_output
+                            )
+                        except ValidationError as e:
+                            logger.warning(
+                                "EvidenceTypeSchema validation error after scoring: %s",
+                                e,
+                            )
+                            evidence_data = EvidenceTypeSchema.model_validate(
+                                evidence_data.model_dump()
+                            )
+                    else:
+                        logger.error(
+                            "Unexpected evidence type result output type: %s",
+                            type(potential_scored_output),
+                        )
+                        evidence_data = EvidenceTypeSchema.model_validate(
+                            evidence_data.model_dump()
+                        )
+                else:
+                    evidence_data = EvidenceTypeSchema.model_validate(
+                        evidence_data.model_dump()
+                    )
 
                 # Log and print results
                 evidence_log_items = [
