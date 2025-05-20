@@ -506,12 +506,27 @@ relationship_type_identifier_agent = Agent(
         "You will be given the *full text* and context, PLUS **one specific entity type** (identified in a previous step) to focus on (e.g., 'ORGANIZATION').\n"
         "Identify explicit or strongly implied relationships mentioned in the text where the **focus entity type** is involved as one of the participants.\n"
         "Examples of relationships: WORKS_FOR, LOCATED_IN, ACQUIRED, PARTNERED_WITH, COMPETES_WITH, FOUNDED_BY, MANUFACTURES, USES_TECHNOLOGY, etc.\n"
-        "For EACH identified relationship involving the focus entity type, state the unique type of relationship found.\n"
-        "Output ONLY the result using the provided SingleEntityTypeRelationshipSchema. Ensure the 'entity_type_focus' field matches the entity type you were asked to focus on."
+        "For EACH identified relationship involving the focus entity type:\n"
+        "1. State the unique type of relationship found.\n"
+        "2. Call the confidence_score, relevance_score, and clarity_score tools to score the relationship before producing the final output.\n"
+        "Output ONLY the result using the provided SingleEntityTypeRelationshipSchema. Ensure the 'entity_type_focus' field matches the entity type you were asked to focus on. Every RelationshipDetail in the 'identified_relationships' list MUST include 'confidence_score', 'relevance_score', and 'clarity_score'. Do not add commentary outside the schema."
     ),
     model=RELATIONSHIP_MODEL,
     output_type=SingleEntityTypeRelationshipSchema,
-    tools=[],
+    tools=[
+        confidence_score_agent.as_tool(
+            tool_name="confidence_score",
+            tool_description="Evaluate confidence between 0.0 and 1.0",
+        ),
+        relevance_score_agent.as_tool(
+            tool_name="relevance_score",
+            tool_description="Judge relevance between 0.0 and 1.0",
+        ),
+        clarity_score_agent.as_tool(
+            tool_name="clarity_score",
+            tool_description="Assess clarity between 0.0 and 1.0",
+        ),
+    ],
     handoffs=[],
 )
 
