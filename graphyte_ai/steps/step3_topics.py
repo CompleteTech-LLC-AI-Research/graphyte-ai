@@ -7,7 +7,13 @@ from typing import List, Optional
 
 from pydantic import ValidationError
 
-from agents import RunConfig, RunResult, TResponseInputItem  # type: ignore[attr-defined]
+from agents import (
+    RunConfig,
+    RunResult,
+    TResponseInputItem,
+    custom_span,
+    gen_trace_id,
+)  # type: ignore[attr-defined]
 
 from ..workflow_agents import topic_identifier_agent, topic_result_agent
 from ..config import TOPIC_MODEL, TOPIC_OUTPUT_DIR, TOPIC_OUTPUT_FILENAME
@@ -65,6 +71,27 @@ async def identify_topics(
     )
     print(f"\n--- Running Step 3: PARALLEL Topic ID using model: {TOPIC_MODEL} ---")
 
+    async def _topic_task(
+        sub_domain: str,
+        input_list: List[TResponseInputItem],
+        metadata: dict[str, str],
+    ) -> RunResult:
+        """Run the topic identifier agent for a single sub-domain within a trace."""
+
+        step3_iter_trace_id = gen_trace_id()
+        step3_iter_run_config = RunConfig(
+            workflow_name="step3_topics",
+            trace_id=step3_iter_trace_id,
+            group_id=group_id,
+            trace_metadata={k: str(v) for k, v in metadata.items()},
+        )
+        with custom_span(f"Step3 topic ID: {sub_domain}"):
+            return await run_agent_with_retry(
+                agent=topic_identifier_agent,
+                input_data=input_list,
+                config=step3_iter_run_config,
+            )
+
     topic_tasks = []
     sub_domains_being_processed = (
         []
@@ -97,15 +124,6 @@ async def identify_topics(
             "batch_index": str(index + 1),
             "batch_size": str(len(sub_domains_list_for_step3)),
         }
-        step3_iter_run_config = RunConfig(
-            workflow_name="step3_topics",
-            trace_id=trace_id,
-            group_id=group_id,
-            trace_metadata={
-                k: str(v) for k, v in step3_iter_metadata_for_trace.items()
-            },
-        )
-
         step3_iter_input_list: List[TResponseInputItem] = [
             {
                 "role": "user",
@@ -117,12 +135,12 @@ async def identify_topics(
             },
         ]
 
-        # Create the async task using the retry wrapper
+        # Create the async task using the helper wrapper
         task = asyncio.create_task(
-            run_agent_with_retry(
-                agent=topic_identifier_agent,
-                input_data=step3_iter_input_list,
-                config=step3_iter_run_config,
+            _topic_task(
+                current_sub_domain,
+                step3_iter_input_list,
+                step3_iter_metadata_for_trace,
             ),
             name=f"TopicTask_{current_sub_domain[:20]}",  # Optional: name task for debugging
         )
@@ -299,7 +317,7 @@ async def identify_topics(
         analysis_summary=f"Generated topics in parallel for {len(aggregated_topic_results)} sub-domains (out of {len(sub_domains_being_processed)} attempted).",  # Use processed count
     )
 
-    final_topic_data = await score_topics(final_topic_data, content, group_id)
+    final_topic_data = await score_topics(final_topic_data, content)
 
     scored_result = await run_agent_with_retry(
         topic_result_agent,
